@@ -7,6 +7,7 @@ import { CurrencyText, QuantityText } from '@/components/inventory/selectors'
 import { DataTable, DetailGrid, DetailItem, EmptyState, InlineNotice, LoadingState, PageHeader, SectionCard, StatusBadge } from '@/components/common'
 import { Button } from '@/components/ui'
 import { formatDateTime, getDisplayName } from '@/lib/utils'
+import { LANGUAGE_CODES } from '@/types/common'
 
 export function ProductDetailPage() {
   const { id } = useParams()
@@ -25,6 +26,9 @@ export function ProductDetailPage() {
   }
 
   const product = productQuery.data
+  const visibleTranslations = (product.translations ?? []).filter((translation) =>
+    LANGUAGE_CODES.includes(translation.language as (typeof LANGUAGE_CODES)[number]),
+  )
 
   return (
     <div className="space-y-6">
@@ -68,7 +72,7 @@ export function ProductDetailPage() {
 
         <SectionCard title="Translations" description="Backend-provided localized records.">
           <div className="space-y-3">
-            {(product.translations ?? []).map((translation) => (
+            {visibleTranslations.map((translation) => (
               <div key={translation.language} className="rounded-md border border-slate-200 bg-slate-50/80 p-4">
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{translation.language}</p>
                 <p className="mt-2 font-medium text-slate-900">{translation.name}</p>

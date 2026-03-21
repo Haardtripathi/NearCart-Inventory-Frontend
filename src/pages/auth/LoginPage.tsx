@@ -68,7 +68,7 @@ export function LoginPage() {
 
             <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {[
-                { label: 'Localized catalog', value: 'EN / HI / GU', icon: Globe2 },
+                { label: 'Localized catalog', value: 'EN / HI', icon: Globe2 },
                 { label: 'Tenant aware', value: 'Organizations + branches', icon: ShieldCheck },
                 { label: 'Operations ready', value: 'Purchases, orders, transfers', icon: Warehouse },
               ].map((item) => {

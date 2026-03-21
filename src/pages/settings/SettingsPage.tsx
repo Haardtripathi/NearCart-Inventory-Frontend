@@ -12,6 +12,7 @@ import { Badge, Button, Input } from '@/components/ui'
 import { useAuth } from '@/hooks/useAuth'
 import { useHealthQuery, useLocalizationContextQuery } from '@/features/meta/meta.api'
 import { useChangePasswordMutation } from '@/features/auth/auth.api'
+import { normalizeBackendLanguage } from '@/lib/locale'
 import { formatDateTime, parseApiError } from '@/lib/utils'
 
 const passwordSchema = z
@@ -79,7 +80,8 @@ export function SettingsPage() {
             <LanguageSwitcher />
           </div>
           <InlineNotice className="mt-4" tone="success">
-            {t('backendPreferredLanguage')}: <span className="font-semibold text-slate-900">{user?.preferredLanguage ?? 'EN'}</span>
+            {t('backendPreferredLanguage')}:{' '}
+            <span className="font-semibold text-slate-900">{normalizeBackendLanguage(user?.preferredLanguage)}</span>
           </InlineNotice>
         </SectionCard>
 
@@ -105,9 +107,18 @@ export function SettingsPage() {
         <SectionCard title={t('organizationLanguages')} description={t('organizationLanguagesDescription')}>
           <DetailGrid className="xl:grid-cols-2">
             <DetailItem label={t('activeOrganization')} value={activeMembership?.organization.name ?? '—'} />
-            <DetailItem label={t('resolvedLanguage')} value={localizationQuery.data?.resolvedLanguage ?? '—'} />
-            <DetailItem label={t('organizationDefaultLanguage')} value={localizationQuery.data?.orgDefaultLanguage ?? '—'} />
-            <DetailItem label={t('requestedLanguage')} value={localizationQuery.data?.requestedLanguage ?? '—'} />
+            <DetailItem
+              label={t('resolvedLanguage')}
+              value={localizationQuery.data?.resolvedLanguage ? normalizeBackendLanguage(localizationQuery.data.resolvedLanguage) : '—'}
+            />
+            <DetailItem
+              label={t('organizationDefaultLanguage')}
+              value={localizationQuery.data?.orgDefaultLanguage ? normalizeBackendLanguage(localizationQuery.data.orgDefaultLanguage) : '—'}
+            />
+            <DetailItem
+              label={t('requestedLanguage')}
+              value={localizationQuery.data?.requestedLanguage ? normalizeBackendLanguage(localizationQuery.data.requestedLanguage) : '—'}
+            />
           </DetailGrid>
         </SectionCard>
 

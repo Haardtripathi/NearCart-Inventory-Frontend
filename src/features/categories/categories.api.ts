@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api, unwrapResponse } from '@/lib/axios'
 import { useAuthStore } from '@/store/auth.store'
 import { useUiStore } from '@/store/ui.store'
+import { APP_LANGUAGES } from '@/types/common'
 import type { PaginatedResponse } from '@/types/api'
 import type { Category } from '@/types/common'
 
@@ -74,9 +75,9 @@ export function useUpdateCategoryMutation() {
     onSuccess: async (_, variables) => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['categories'] }),
-        queryClient.invalidateQueries({ queryKey: categoriesKeys.detail(variables.id, 'en') }),
-        queryClient.invalidateQueries({ queryKey: categoriesKeys.detail(variables.id, 'hi') }),
-        queryClient.invalidateQueries({ queryKey: categoriesKeys.detail(variables.id, 'gu') }),
+        ...APP_LANGUAGES.map((language) =>
+          queryClient.invalidateQueries({ queryKey: categoriesKeys.detail(variables.id, language) }),
+        ),
       ])
     },
   })

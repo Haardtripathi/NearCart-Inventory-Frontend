@@ -1,9 +1,9 @@
 import type { PaginationMeta } from './api'
 
-export const APP_LANGUAGES = ['en', 'hi', 'gu'] as const
+export const APP_LANGUAGES = ['en', 'hi'] as const
 export type AppLanguage = (typeof APP_LANGUAGES)[number]
 
-export const LANGUAGE_CODES = ['EN', 'HI', 'GU'] as const
+export const LANGUAGE_CODES = ['EN', 'HI'] as const
 export type LanguageCode = (typeof LANGUAGE_CODES)[number]
 
 export const USER_ROLES = ['SUPER_ADMIN', 'ORG_ADMIN', 'MANAGER', 'STAFF'] as const

@@ -377,10 +377,13 @@ export function MasterCatalogItemDialog({
       allowNegativeStock: item?.allowNegativeStock ?? false,
       isActive: item?.isActive ?? true,
       translations: item?.translations ?? [],
-      aliases: item?.aliases?.map((alias) => ({
-        language: alias.language as 'EN' | 'HI' | 'GU',
-        value: alias.value,
-      })) ?? [],
+      aliases:
+        item?.aliases
+          ?.filter((alias) => LANGUAGE_CODES.includes(alias.language as (typeof LANGUAGE_CODES)[number]))
+          .map((alias) => ({
+            language: alias.language as (typeof LANGUAGE_CODES)[number],
+            value: alias.value,
+          })) ?? [],
       variantTemplates: item?.variantTemplates?.map((template) => ({
         code: template.code,
         name: template.name ?? '',

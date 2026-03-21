@@ -10,6 +10,7 @@ import { IndustryDialog } from '@/components/platform/IndustryDialog'
 import { DataTable, DetailGrid, DetailItem, EmptyState, InlineNotice, LoadingState, PageHeader, SectionCard, StatusBadge } from '@/components/common'
 import { Button } from '@/components/ui'
 import { getDisplayName } from '@/lib/utils'
+import { LANGUAGE_CODES } from '@/types/common'
 import type { MasterCatalogCategory } from '@/types/masterCatalog'
 
 function flattenCategories(items: MasterCatalogCategory[]): MasterCatalogCategory[] {
@@ -35,6 +36,12 @@ export function MasterCatalogItemPage() {
   }
 
   const item = itemQuery.data
+  const visibleTranslations = (item.translations ?? []).filter((translation) =>
+    LANGUAGE_CODES.includes(translation.language as (typeof LANGUAGE_CODES)[number]),
+  )
+  const visibleAliases = (item.aliases ?? []).filter((alias) =>
+    LANGUAGE_CODES.includes(alias.language as (typeof LANGUAGE_CODES)[number]),
+  )
 
   return (
     <div className="space-y-6">
@@ -76,16 +83,16 @@ export function MasterCatalogItemPage() {
 
         <SectionCard title="Translations and aliases" description="Localized names and search aliases.">
           <div className="space-y-3">
-            {(item.translations ?? []).map((translation) => (
+            {visibleTranslations.map((translation) => (
               <div key={translation.language} className="rounded-md border border-slate-200 bg-slate-50/80 p-4">
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{translation.language}</p>
                 <p className="mt-2 font-medium text-slate-900">{translation.name}</p>
                 {translation.description ? <p className="mt-1 text-sm text-slate-600">{translation.description}</p> : null}
               </div>
             ))}
-            {item.aliases?.length ? (
+            {visibleAliases.length ? (
               <InlineNotice>
-                Aliases: {item.aliases.map((alias) => `${alias.language}: ${alias.value}`).join(', ')}
+                Aliases: {visibleAliases.map((alias) => `${alias.language}: ${alias.value}`).join(', ')}
               </InlineNotice>
             ) : null}
           </div>

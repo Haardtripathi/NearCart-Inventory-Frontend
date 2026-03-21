@@ -154,7 +154,7 @@ export function OrganizationsPage() {
         phone: normalizeNullableString(values.phone) ?? undefined,
         primaryIndustryId: values.primaryIndustryId,
         defaultLanguage: values.defaultLanguage,
-        enabledLanguages: ['EN', 'HI', 'GU'],
+        enabledLanguages: [...LANGUAGE_CODES],
         currencyCode: 'INR',
         timezone: 'Asia/Kolkata',
         ...(role === 'SUPER_ADMIN' && ownerMode === 'existing' && values.ownerUserId

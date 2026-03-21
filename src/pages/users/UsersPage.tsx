@@ -34,6 +34,7 @@ import {
   type BranchAccessState,
   type OrganizationUser,
 } from '@/types/common'
+import { normalizeBackendLanguage } from '@/lib/locale'
 import { formatDateTime, parseApiError } from '@/lib/utils'
 
 const createUserSchema = z.object({
@@ -147,7 +148,7 @@ export function UsersPage() {
       fullName: user.fullName,
       email: user.email,
       role: user.role,
-      preferredLanguage: user.preferredLanguage,
+      preferredLanguage: normalizeBackendLanguage(user.preferredLanguage),
       status: user.status,
       branchScope: user.branchAccess.scope,
       branchIds: user.branchAccess.branchIds,
