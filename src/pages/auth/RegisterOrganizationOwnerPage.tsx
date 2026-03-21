@@ -12,7 +12,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { useLocale } from '@/hooks/useLocale'
 import { ControlledSelect, FormField } from '@/components/forms'
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input } from '@/components/ui'
-import { BRANCH_TYPES, LANGUAGE_CODES } from '@/types/common'
+import { APP_LANGUAGES, BRANCH_TYPES, LANGUAGE_CODES } from '@/types/common'
 import { normalizeNullableString, parseApiError } from '@/lib/utils'
 
 const registerSchema = z.object({
@@ -93,7 +93,7 @@ export function RegisterOrganizationOwnerPage() {
         currencyCode: 'INR',
         timezone: 'Asia/Kolkata',
         firstBranch: {
-          code: normalizeNullableString(values.firstBranchCode) ?? undefined, // Auto-generated if not provided
+          code: normalizeNullableString(values.firstBranchCode) ?? '', // Empty string lets backend auto-generate
           name: values.firstBranchName.trim(),
           type: values.firstBranchType,
           city: normalizeNullableString(values.city) ?? undefined,
@@ -121,10 +121,10 @@ export function RegisterOrganizationOwnerPage() {
             </CardDescription>
           </div>
           <div className="flex gap-2">
-            {LANGUAGE_CODES.map((lang) => (
+            {APP_LANGUAGES.map((lang) => (
               <button
                 key={lang}
-                onClick={() => setLanguage(lang as any)}
+                onClick={() => setLanguage(lang)}
                 className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
                   language === lang
                     ? 'bg-emerald-700 text-white'
@@ -190,7 +190,7 @@ export function RegisterOrganizationOwnerPage() {
                       options={
                         industriesQuery.data?.map((industry) => ({
                           value: industry.id,
-                          label: industry.displayName ?? industry.name ?? industry.code,
+                          label: industry.displayName ?? industry.name ?? industry.code ?? industry.id,
                         })) ?? []
                       }
                     />
@@ -218,7 +218,11 @@ export function RegisterOrganizationOwnerPage() {
                 <FormField label={t('register:branchName')} error={form.formState.errors.firstBranchName?.message}>
                   <Input placeholder={t('register:branchNamePlaceholder')} {...form.register('firstBranchName')} />
                 </FormField>
-                <FormField label={t('register:branchCode')} helperText={t('register:branchCodeHelper')} error={form.formState.errors.firstBranchCode?.message}>
+                <FormField
+                  label={t('register:branchCode')}
+                  description={t('register:branchCodeHelper')}
+                  error={form.formState.errors.firstBranchCode?.message}
+                >
                   <Input placeholder={t('register:branchCodePlaceholder')} {...form.register('firstBranchCode')} />
                 </FormField>
                 <FormField label={t('register:branchType')}>
