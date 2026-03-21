@@ -78,7 +78,7 @@ export function CustomersPage() {
   })
 
   if (customersQuery.isLoading) {
-    return <LoadingState label="Loading customers..." />
+    return <LoadingState label={t('loadingData', { ns: 'common' })} />
   }
 
   return (
@@ -122,7 +122,7 @@ export function CustomersPage() {
             <DialogTitle>{editingCustomer ? t('customers:editCustomer') : t('customers:addCustomer')}</DialogTitle>
           </DialogHeader>
           <form className="space-y-5" onSubmit={onSubmit}>
-            <FormField label={t('customers:name')} error={form.formState.errors.name?.message}>
+            <FormField label={t('customers:name')} error={form.formState.errors.name?.message} required>
               <Input placeholder={t('customers:namePlaceholder')} {...form.register('name')} />
             </FormField>
             <div className="grid gap-4 md:grid-cols-2">

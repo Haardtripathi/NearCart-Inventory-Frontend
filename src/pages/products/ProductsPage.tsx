@@ -107,7 +107,7 @@ export function ProductsPage() {
           emptyLabel={t('allBrands')}
           options={(brandsQuery.data?.items ?? []).map((brand) => ({
             value: brand.id,
-            label: brand.name,
+            label: getDisplayName(brand, brand.name),
           }))}
         />
         <OptionSelect
@@ -128,7 +128,7 @@ export function ProductsPage() {
         columns={[
           { key: 'name', header: t('product'), render: (product) => <div><p className="font-medium text-slate-900">{getDisplayName(product)}</p><p className="text-xs text-slate-500">{product.variants.map((variant) => variant.sku).join(', ')}</p></div> },
           { key: 'category', header: t('category', { ns: 'common' }), render: (product) => product.category ? getDisplayName(product.category) : '—' },
-          { key: 'brand', header: t('brand'), render: (product) => product.brand?.name ?? '—' },
+          { key: 'brand', header: t('brand'), render: (product) => product.brand ? getDisplayName(product.brand, product.brand.name) : '—' },
           { key: 'type', header: t('type', { ns: 'common' }), render: (product) => t(`typeValues.${product.productType}`, { defaultValue: product.productType }) },
           { key: 'status', header: t('status', { ns: 'common' }), render: (product) => <StatusBadge value={t(`statusValues.${product.status}`, { defaultValue: product.status })} /> },
           { key: 'variants', header: t('variantsCount'), render: (product) => product.variants.length },

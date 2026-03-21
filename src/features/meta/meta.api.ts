@@ -17,8 +17,8 @@ export const metaKeys = {
   localizationContext: (language: string, organizationId: string | null) =>
     ['meta', 'localization-context', language, organizationId] as const,
   industries: (language: string) => ['platform', 'industries', language] as const,
-  units: (organizationId: string | null) => ['units', organizationId] as const,
-  taxRates: (organizationId: string | null) => ['tax-rates', organizationId] as const,
+  units: (organizationId: string | null, language: string) => ['units', organizationId, language] as const,
+  taxRates: (organizationId: string | null, language: string) => ['tax-rates', organizationId, language] as const,
   health: ['system', 'health'] as const,
 }
 
@@ -92,10 +92,11 @@ export function useCreateIndustryMutation() {
 
 export function useUnitsQuery() {
   const activeOrganizationId = useAuthStore((state) => state.activeOrganizationId)
+  const language = useUiStore((state) => state.language)
   const token = useAuthStore((state) => state.token)
 
   return useQuery({
-    queryKey: metaKeys.units(activeOrganizationId),
+    queryKey: metaKeys.units(activeOrganizationId, language),
     queryFn: async () =>
       unwrapResponse<PaginatedResponse<Unit>>(api.get('/units', { params: { page: 1, limit: 100 } })),
     enabled: Boolean(token) && Boolean(activeOrganizationId),
@@ -105,10 +106,11 @@ export function useUnitsQuery() {
 
 export function useTaxRatesQuery() {
   const activeOrganizationId = useAuthStore((state) => state.activeOrganizationId)
+  const language = useUiStore((state) => state.language)
   const token = useAuthStore((state) => state.token)
 
   return useQuery({
-    queryKey: metaKeys.taxRates(activeOrganizationId),
+    queryKey: metaKeys.taxRates(activeOrganizationId, language),
     queryFn: async () =>
       unwrapResponse<PaginatedResponse<TaxRate>>(api.get('/tax-rates', { params: { page: 1, limit: 100 } })),
     enabled: Boolean(token) && Boolean(activeOrganizationId),

@@ -12,6 +12,7 @@ import { useDebounce } from '@/hooks/useDebounce'
 import { DataTable, EmptyState, FilterBar, LoadingState, PageHeader, PaginationControls, SearchInput, StatusBadge } from '@/components/common'
 import { CheckboxField, FormField } from '@/components/forms'
 import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, Input } from '@/components/ui'
+import { getDisplayName } from '@/lib/utils'
 import type { Unit } from '@/types/common'
 
 const unitSchema = z.object({
@@ -84,7 +85,7 @@ export function UnitsPage() {
       <DataTable<Unit>
         columns={[
           { key: 'code', header: t('units:code'), render: (unit) => <span className="font-mono text-sm font-medium text-slate-900">{unit.code}</span> },
-          { key: 'name', header: t('units:name'), render: (unit) => unit.name },
+          { key: 'name', header: t('units:name'), render: (unit) => getDisplayName(unit, unit.name) },
           { key: 'symbol', header: t('units:symbol'), render: (unit) => unit.symbol || '—' },
           { key: 'decimal', header: t('units:allowsDecimal'), render: (unit) => <StatusBadge value={unit.allowsDecimal ? 'ACTIVE' : 'INACTIVE'} /> },
           { key: 'source', header: t('common:type'), render: (unit) => (
@@ -107,10 +108,10 @@ export function UnitsPage() {
           </DialogHeader>
           <form className="space-y-5" onSubmit={onSubmit}>
             <div className="grid gap-4 md:grid-cols-2">
-              <FormField label={t('units:code')} error={form.formState.errors.code?.message}>
+              <FormField label={t('units:code')} error={form.formState.errors.code?.message} required>
                 <Input placeholder={t('units:codePlaceholder')} {...form.register('code')} />
               </FormField>
-              <FormField label={t('units:name')} error={form.formState.errors.name?.message}>
+              <FormField label={t('units:name')} error={form.formState.errors.name?.message} required>
                 <Input placeholder={t('units:namePlaceholder')} {...form.register('name')} />
               </FormField>
             </div>

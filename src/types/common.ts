@@ -184,11 +184,12 @@ export interface Category extends LocalizedRecord {
   children?: Category[]
 }
 
-export interface Brand {
+export interface Brand extends LocalizedRecord {
   id: string
   name: string
   slug: string
   isActive: boolean
+  translations?: TranslationInput[]
 }
 
 export interface OrganizationUser {
@@ -228,7 +229,7 @@ export interface DirectoryUser {
   membershipCount: number
 }
 
-export interface Unit {
+export interface Unit extends LocalizedRecord {
   id: string
   organizationId?: Nullable<string>
   code: string
@@ -238,7 +239,7 @@ export interface Unit {
   allowsDecimal?: boolean
 }
 
-export interface TaxRate {
+export interface TaxRate extends LocalizedRecord {
   id: string
   name: string
   code?: Nullable<string>

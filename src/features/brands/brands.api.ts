@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { api, unwrapResponse } from '@/lib/axios'
 import { useAuthStore } from '@/store/auth.store'
+import { useUiStore } from '@/store/ui.store'
 import type { PaginatedResponse } from '@/types/api'
 import type { Brand } from '@/types/common'
 
@@ -13,14 +14,15 @@ export interface BrandFilters {
 }
 
 export const brandsKeys = {
-  list: (organizationId: string | null, filters: BrandFilters) => ['brands', organizationId, filters] as const,
+  list: (organizationId: string | null, language: string, filters: BrandFilters) => ['brands', organizationId, language, filters] as const,
 }
 
 export function useBrandsQuery(filters: BrandFilters) {
   const activeOrganizationId = useAuthStore((state) => state.activeOrganizationId)
+  const language = useUiStore((state) => state.language)
 
   return useQuery({
-    queryKey: brandsKeys.list(activeOrganizationId, filters),
+    queryKey: brandsKeys.list(activeOrganizationId, language, filters),
     queryFn: async () => unwrapResponse<PaginatedResponse<Brand>>(api.get('/brands', { params: filters })),
     enabled: Boolean(activeOrganizationId),
   })

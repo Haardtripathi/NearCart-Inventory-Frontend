@@ -15,7 +15,7 @@ import { CheckboxField, ControlledSelect, FormField } from '@/components/forms'
 import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, Input } from '@/components/ui'
 
 const branchSchema = z.object({
-  code: z.string().trim().min(1),
+  code: z.string().trim().optional(),
   name: z.string().trim().min(1),
   type: z.enum(BRANCH_TYPES),
   phone: z.string().trim().optional(),
@@ -118,7 +118,7 @@ export function BranchesPage() {
   })
 
   if (branchesQuery.isLoading) {
-    return <LoadingState label="Loading branches..." />
+    return <LoadingState label={t('loadingData', { ns: 'common' })} />
   }
 
   return (
@@ -180,7 +180,7 @@ export function BranchesPage() {
             <FormField label={t('branches:code')} error={form.formState.errors.code?.message}>
               <Input placeholder={t('branches:codePlaceholder')} {...form.register('code')} />
             </FormField>
-            <FormField label={t('branches:name')} error={form.formState.errors.name?.message}>
+            <FormField label={t('branches:name')} error={form.formState.errors.name?.message} required>
               <Input placeholder={t('branches:namePlaceholder')} {...form.register('name')} />
             </FormField>
             <FormField label={t('branches:type')}>

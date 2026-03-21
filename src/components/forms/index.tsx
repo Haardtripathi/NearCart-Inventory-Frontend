@@ -14,19 +14,24 @@ export function FormField({
   label,
   error,
   description,
+  required = false,
   children,
   className,
 }: {
   label: string
   error?: unknown
   description?: string
+  required?: boolean
   children: React.ReactNode
   className?: string
 }) {
   return (
     <label className={cn('flex flex-col gap-2', className)}>
       <div className="flex flex-col gap-1">
-        <span className="text-sm font-semibold text-slate-800">{label}</span>
+        <span className="text-sm font-semibold text-slate-800">
+          {label}
+          {required ? <span className="ml-1 text-rose-600">*</span> : null}
+        </span>
         {description ? <span className="text-xs leading-5 text-slate-500">{description}</span> : null}
       </div>
       {children}
@@ -89,7 +94,7 @@ export function TranslationFields({
   const safeValue = value ?? []
 
   return (
-    <div className="grid gap-4 lg:grid-cols-3">
+    <div className="grid gap-4 lg:grid-cols-2">
       {APP_LANGUAGES.map((language) => {
         const backendLanguage = toBackendLanguage(language)
         const current = safeValue.find((item) => item.language === backendLanguage)

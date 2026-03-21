@@ -145,13 +145,13 @@ export function RegisterOrganizationOwnerPage() {
                   <p className="mt-1 text-sm text-slate-600">{t('register:ownerAccountDesc')}</p>
                 </div>
                 <div className="grid gap-4 md:grid-cols-2">
-                  <FormField label={t('register:fullName')} error={form.formState.errors.fullName?.message}>
+                  <FormField label={t('register:fullName')} error={form.formState.errors.fullName?.message} required>
                     <Input placeholder={t('register:fullNamePlaceholder')} {...form.register('fullName')} />
                   </FormField>
-                  <FormField label={t('register:email')} error={form.formState.errors.email?.message}>
+                  <FormField label={t('register:email')} error={form.formState.errors.email?.message} required>
                     <Input type="email" placeholder={t('register:emailPlaceholder')} {...form.register('email')} />
                   </FormField>
-                  <FormField label={t('register:password')} error={form.formState.errors.password?.message}>
+                  <FormField label={t('register:password')} error={form.formState.errors.password?.message} required>
                     <Input type="password" placeholder={t('register:passwordPlaceholder')} {...form.register('password')} />
                   </FormField>
                   <FormField label={t('register:preferredLanguage')}>
@@ -173,7 +173,7 @@ export function RegisterOrganizationOwnerPage() {
                   <p className="mt-1 text-sm text-slate-600">{t('register:workspaceBasicsDesc')}</p>
                 </div>
                 <div className="grid gap-4 md:grid-cols-2">
-                  <FormField label={t('register:organizationName')} error={form.formState.errors.organizationName?.message}>
+                  <FormField label={t('register:organizationName')} error={form.formState.errors.organizationName?.message} required>
                     <Input placeholder={t('register:organizationNamePlaceholder')} {...form.register('organizationName')} />
                   </FormField>
                   <FormField label={t('register:organizationEmail')} error={form.formState.errors.organizationEmail?.message}>
@@ -182,7 +182,7 @@ export function RegisterOrganizationOwnerPage() {
                   <FormField label={t('register:phone')}>
                     <Input placeholder={t('register:phonePlaceholder')} {...form.register('phone')} />
                   </FormField>
-                  <FormField label={t('register:primaryIndustry')} error={form.formState.errors.primaryIndustryId?.message}>
+                  <FormField label={t('register:primaryIndustry')} error={form.formState.errors.primaryIndustryId?.message} required>
                     <ControlledSelect
                       control={form.control as never}
                       name="primaryIndustryId"
@@ -215,7 +215,7 @@ export function RegisterOrganizationOwnerPage() {
                 <p className="mt-1 text-sm text-slate-600">{t('register:firstBranchDesc')}</p>
               </div>
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                <FormField label={t('register:branchName')} error={form.formState.errors.firstBranchName?.message}>
+                <FormField label={t('register:branchName')} error={form.formState.errors.firstBranchName?.message} required>
                   <Input placeholder={t('register:branchNamePlaceholder')} {...form.register('firstBranchName')} />
                 </FormField>
                 <FormField

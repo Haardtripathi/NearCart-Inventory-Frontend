@@ -104,10 +104,10 @@ export function LoginPage() {
           </CardHeader>
           <CardContent className="p-7 pt-2 sm:p-8 sm:pt-2">
             <form className="space-y-5" onSubmit={onSubmit}>
-              <FormField label={t('auth:email')} error={form.formState.errors.email?.message}>
+              <FormField label={t('auth:email')} error={form.formState.errors.email?.message} required>
                 <Input type="email" placeholder="merchant@example.com" {...form.register('email')} />
               </FormField>
-              <FormField label={t('auth:password')} error={form.formState.errors.password?.message}>
+              <FormField label={t('auth:password')} error={form.formState.errors.password?.message} required>
                 <Input type="password" placeholder="••••••••" {...form.register('password')} />
               </FormField>
               <Button className="w-full" disabled={loginMutation.isPending} type="submit">

@@ -82,7 +82,7 @@ export function SuppliersPage() {
   })
 
   if (suppliersQuery.isLoading) {
-    return <LoadingState label="Loading suppliers..." />
+    return <LoadingState label={t('loadingData', { ns: 'common' })} />
   }
 
   return (
@@ -127,7 +127,7 @@ export function SuppliersPage() {
             <DialogTitle>{editingSupplier ? t('suppliers:editSupplier') : t('suppliers:addSupplier')}</DialogTitle>
           </DialogHeader>
           <form className="space-y-5" onSubmit={onSubmit}>
-            <FormField label={t('suppliers:name')} error={form.formState.errors.name?.message}>
+            <FormField label={t('suppliers:name')} error={form.formState.errors.name?.message} required>
               <Input placeholder={t('suppliers:namePlaceholder')} {...form.register('name')} />
             </FormField>
             <div className="grid gap-4 md:grid-cols-2">

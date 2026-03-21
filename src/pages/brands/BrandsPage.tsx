@@ -12,6 +12,7 @@ import { useDebounce } from '@/hooks/useDebounce'
 import { ConfirmDialog, DataTable, EmptyState, FilterBar, LoadingState, PageHeader, PaginationControls, SearchInput, StatusBadge } from '@/components/common'
 import { CheckboxField, FormField } from '@/components/forms'
 import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, Input } from '@/components/ui'
+import { getDisplayName } from '@/lib/utils'
 import type { Brand } from '@/types/common'
 
 const brandSchema = z.object({
@@ -74,7 +75,7 @@ export function BrandsPage() {
   })
 
   if (brandsQuery.isLoading) {
-    return <LoadingState label="Loading brands..." />
+    return <LoadingState label={t('loadingData', { ns: 'common' })} />
   }
 
   return (
@@ -101,7 +102,7 @@ export function BrandsPage() {
 
       <DataTable
         columns={[
-          { key: 'name', header: t('brands:name'), render: (brand) => <span className="font-medium text-slate-900">{brand.name}</span> },
+          { key: 'name', header: t('brands:name'), render: (brand) => <span className="font-medium text-slate-900">{getDisplayName(brand, brand.name)}</span> },
           { key: 'slug', header: t('brands:slug'), render: (brand) => brand.slug },
           { key: 'status', header: t('common:status'), render: (brand) => <StatusBadge value={brand.isActive ? 'ACTIVE' : 'INACTIVE'} /> },
           {
@@ -132,7 +133,7 @@ export function BrandsPage() {
             <DialogTitle>{editingBrand ? t('brands:editBrand') : t('brands:addBrand')}</DialogTitle>
           </DialogHeader>
           <form className="space-y-5" onSubmit={onSubmit}>
-            <FormField label={t('brands:name')} error={form.formState.errors.name?.message}>
+            <FormField label={t('brands:name')} error={form.formState.errors.name?.message} required>
               <Input placeholder={t('brands:namePlaceholder')} {...form.register('name')} />
             </FormField>
             <FormField label={t('brands:slug')} error={form.formState.errors.slug?.message} description={t('brands:slugDescription')}>

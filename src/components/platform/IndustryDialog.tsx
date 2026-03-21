@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'react-hot-toast'
@@ -24,6 +25,7 @@ export function IndustryDialog({
   open: boolean
   onOpenChange: (open: boolean) => void
 }) {
+  const { t } = useTranslation(['masterCatalog', 'common'])
   const createIndustryMutation = useCreateIndustryMutation()
   const form = useForm<IndustryFormValues>({
     resolver: zodResolver(industrySchema),
@@ -53,7 +55,7 @@ export function IndustryDialog({
         isActive: true,
         defaultFeatures: {},
       })
-      toast.success('Industry created')
+      toast.success(t('industryCreated', { ns: 'masterCatalog' }))
       onOpenChange(false)
     } catch (error) {
       toast.error(parseApiError(error).message)
@@ -64,26 +66,33 @@ export function IndustryDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>Add industry</DialogTitle>
+          <DialogTitle>{t('addIndustryDialogTitle', { ns: 'masterCatalog' })}</DialogTitle>
         </DialogHeader>
 
         <form className="space-y-4" onSubmit={onSubmit}>
-          <FormField label="Code" error={form.formState.errors.code?.message} description="Short unique key. Example: GROCERY">
-            <Input placeholder="GROCERY" {...form.register('code')} />
+          <FormField
+            label={t('industryCode', { ns: 'masterCatalog' })}
+            error={form.formState.errors.code?.message}
+            description={t('industryCodeDescription', { ns: 'masterCatalog' })}
+            required
+          >
+            <Input placeholder={t('industryCodePlaceholder', { ns: 'masterCatalog' })} {...form.register('code')} />
           </FormField>
-          <FormField label="Name" error={form.formState.errors.name?.message}>
-            <Input placeholder="Grocery" {...form.register('name')} />
+          <FormField label={t('name', { ns: 'common' })} error={form.formState.errors.name?.message} required>
+            <Input placeholder={t('industryNamePlaceholder', { ns: 'masterCatalog' })} {...form.register('name')} />
           </FormField>
-          <FormField label="Description">
-            <Textarea placeholder="Default industry profile for grocery inventory." {...form.register('description')} />
+          <FormField label={t('descriptionLabel', { ns: 'common' })}>
+            <Textarea placeholder={t('industryDescriptionPlaceholder', { ns: 'masterCatalog' })} {...form.register('description')} />
           </FormField>
 
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
+              {t('cancel', { ns: 'common' })}
             </Button>
             <Button type="submit" disabled={createIndustryMutation.isPending}>
-              {createIndustryMutation.isPending ? 'Creating...' : 'Create industry'}
+              {createIndustryMutation.isPending
+                ? t('creatingIndustry', { ns: 'masterCatalog' })
+                : t('createIndustry', { ns: 'masterCatalog' })}
             </Button>
           </div>
         </form>

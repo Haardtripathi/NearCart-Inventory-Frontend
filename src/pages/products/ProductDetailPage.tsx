@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router-dom'
 
 import { useInventoryBalancesQuery, useInventoryLedgerQuery } from '@/features/inventory/inventory.api'
@@ -10,6 +11,7 @@ import { formatDateTime, getDisplayName } from '@/lib/utils'
 import { LANGUAGE_CODES } from '@/types/common'
 
 export function ProductDetailPage() {
+  const { t } = useTranslation(['products', 'common'])
   const { id } = useParams()
   const productQuery = useProductQuery(id)
   const balancesQuery = useInventoryBalancesQuery({ page: 1, limit: 100, productId: id })
@@ -18,11 +20,11 @@ export function ProductDetailPage() {
   const ledgerItems = useMemo(() => (ledgerQuery.data?.items ?? []).slice(0, 8), [ledgerQuery.data?.items])
 
   if (productQuery.isLoading) {
-    return <LoadingState label="Loading product..." />
+    return <LoadingState label={t('loadingData', { ns: 'common' })} />
   }
 
   if (!productQuery.data) {
-    return <EmptyState title="Product not found" />
+    return <EmptyState title={t('notFoundTitle')} />
   }
 
   const product = productQuery.data
@@ -34,43 +36,43 @@ export function ProductDetailPage() {
     <div className="space-y-6">
       <PageHeader
         title={getDisplayName(product)}
-        description={product.displayDescription ?? product.description ?? 'No description provided.'}
+        description={product.displayDescription ?? product.description ?? t('noDescriptionProvided')}
         actions={
           <div className="flex flex-wrap gap-2">
             <Button asChild variant="outline">
-              <Link to={`/products/${product.id}/edit`}>Edit product</Link>
+              <Link to={`/products/${product.id}/edit`}>{t('editProduct')}</Link>
             </Button>
             <Button asChild variant="outline">
-              <Link to={`/inventory/adjustments/new?productId=${product.id}&variantId=${product.variants[0]?.id ?? ''}`}>Adjust stock</Link>
+              <Link to={`/inventory/adjustments/new?productId=${product.id}&variantId=${product.variants[0]?.id ?? ''}`}>{t('adjustStock')}</Link>
             </Button>
             <Button asChild variant="outline">
-              <Link to="/purchases/new">Create purchase</Link>
+              <Link to="/purchases/new">{t('createPurchase')}</Link>
             </Button>
             <Button asChild>
-              <Link to="/sales-orders/new">Create sales order</Link>
+              <Link to="/sales-orders/new">{t('createSalesOrder')}</Link>
             </Button>
           </div>
         }
       />
 
       <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-        <SectionCard title="Product summary" description="Core classification, source, and inventory behavior.">
+        <SectionCard title={t('productSummaryTitle')} description={t('productSummaryDescription')}>
           <DetailGrid className="xl:grid-cols-3">
-            <DetailItem label="Source type" value={<StatusBadge value={product.sourceType} />} />
-            <DetailItem label="Status" value={<StatusBadge value={product.status} />} />
-            <DetailItem label="Category" value={product.category ? getDisplayName(product.category) : '—'} />
-            <DetailItem label="Brand" value={product.brand?.name ?? '—'} />
-            <DetailItem label="Product type" value={product.productType} />
-            <DetailItem label="Track method" value={product.trackMethod} />
+            <DetailItem label={t('sourceType')} value={<StatusBadge value={product.sourceType} />} />
+            <DetailItem label={t('status', { ns: 'common' })} value={<StatusBadge value={product.status} />} />
+            <DetailItem label={t('category', { ns: 'common' })} value={product.category ? getDisplayName(product.category) : '—'} />
+            <DetailItem label={t('brand')} value={product.brand ? getDisplayName(product.brand, product.brand.name) : '—'} />
+            <DetailItem label={t('productType')} value={t(`typeValues.${product.productType}`, { defaultValue: product.productType })} />
+            <DetailItem label={t('trackMethod')} value={t(`trackMethodValues.${product.trackMethod}`, { defaultValue: product.trackMethod })} />
           </DetailGrid>
           {product.masterCatalogItem ? (
             <InlineNotice className="mt-4" tone="success">
-              Imported from master item <Link className="font-semibold underline" to={`/master-catalog/items/${product.masterCatalogItem.id}`}>{product.masterCatalogItem.canonicalName}</Link>
+              {t('importedFromMasterItem')} <Link className="font-semibold underline" to={`/master-catalog/items/${product.masterCatalogItem.id}`}>{product.masterCatalogItem.canonicalName}</Link>
             </InlineNotice>
           ) : null}
         </SectionCard>
 
-        <SectionCard title="Translations" description="Backend-provided localized records.">
+        <SectionCard title={t('translations')} description={t('translationsDescription')}>
           <div className="space-y-3">
             {visibleTranslations.map((translation) => (
               <div key={translation.language} className="rounded-md border border-slate-200 bg-slate-50/80 p-4">
@@ -83,48 +85,48 @@ export function ProductDetailPage() {
         </SectionCard>
       </div>
 
-      <SectionCard title="Variants" description="Sellable or stock-tracked product variants.">
+      <SectionCard title={t('variants')} description={t('variantsSectionDescription')}>
         <DataTable
           columns={[
-            { key: 'name', header: 'Variant', render: (variant) => <div><p className="font-medium text-slate-900">{getDisplayName(variant)}</p><p className="text-xs text-slate-500">{variant.sku}</p></div> },
-            { key: 'prices', header: 'Prices', render: (variant) => <div className="text-sm text-slate-600">Sell: <CurrencyText value={variant.sellingPrice} /> · Cost: <CurrencyText value={variant.costPrice} /></div> },
-            { key: 'levels', header: 'Levels', render: (variant) => <div className="text-sm text-slate-600">Reorder <QuantityText value={variant.reorderLevel} /></div> },
-            { key: 'status', header: 'Status', render: (variant) => <StatusBadge value={variant.isActive ? 'ACTIVE' : 'INACTIVE'} /> },
-            { key: 'actions', header: 'Actions', render: (variant) => <Button asChild size="sm" variant="ghost"><Link to={`/products/${product.id}/variants/${variant.id}/edit`}>Edit variant</Link></Button> },
+            { key: 'name', header: t('variant'), render: (variant) => <div><p className="font-medium text-slate-900">{getDisplayName(variant)}</p><p className="text-xs text-slate-500">{variant.sku}</p></div> },
+            { key: 'prices', header: t('prices'), render: (variant) => <div className="text-sm text-slate-600">{t('sell')}: <CurrencyText value={variant.sellingPrice} /> · {t('cost')}: <CurrencyText value={variant.costPrice} /></div> },
+            { key: 'levels', header: t('levels'), render: (variant) => <div className="text-sm text-slate-600">{t('reorderLevel')} <QuantityText value={variant.reorderLevel} /></div> },
+            { key: 'status', header: t('status', { ns: 'common' }), render: (variant) => <StatusBadge value={variant.isActive ? 'ACTIVE' : 'INACTIVE'} /> },
+            { key: 'actions', header: t('actions', { ns: 'common' }), render: (variant) => <Button asChild size="sm" variant="ghost"><Link to={`/products/${product.id}/variants/${variant.id}/edit`}>{t('edit', { ns: 'common' })}</Link></Button> },
           ]}
           items={product.variants}
-          empty={<EmptyState title="No variants found" />}
+          empty={<EmptyState title={t('noVariantsTitle')} />}
           rowKey={(variant) => variant.id}
         />
       </SectionCard>
 
-      <SectionCard title="Current inventory by branch" description="Branch-level stock balances for this product.">
+      <SectionCard title={t('currentInventoryByBranchTitle')} description={t('currentInventoryByBranchDescription')}>
         <DataTable
           columns={[
-            { key: 'branch', header: 'Branch', render: (row) => row.branch.name },
-            { key: 'variant', header: 'Variant', render: (row) => getDisplayName(row.variant) },
-            { key: 'onHand', header: 'On hand', render: (row) => <QuantityText value={row.onHand} /> },
-            { key: 'reserved', header: 'Reserved', render: (row) => <QuantityText value={row.reserved} /> },
-            { key: 'available', header: 'Available', render: (row) => <QuantityText value={row.available} /> },
+            { key: 'branch', header: t('branch', { ns: 'common' }), render: (row) => row.branch.name },
+            { key: 'variant', header: t('variant'), render: (row) => getDisplayName(row.variant) },
+            { key: 'onHand', header: t('onHand', { ns: 'inventory' }), render: (row) => <QuantityText value={row.onHand} /> },
+            { key: 'reserved', header: t('reserved', { ns: 'inventory' }), render: (row) => <QuantityText value={row.reserved} /> },
+            { key: 'available', header: t('available', { ns: 'inventory' }), render: (row) => <QuantityText value={row.available} /> },
           ]}
           items={balancesQuery.data?.items ?? []}
-          empty={<EmptyState title="No branch balances yet" description="Stock balances will appear after operational activity." />}
+          empty={<EmptyState title={t('noBranchBalancesTitle')} description={t('noBranchBalancesDescription')} />}
           rowKey={(row) => row.id}
         />
       </SectionCard>
 
-      <SectionCard title="Recent ledger entries" description="Most recent ledger rows for this product's variants.">
+      <SectionCard title={t('recentLedgerEntriesTitle')} description={t('recentLedgerEntriesDescription')}>
         <DataTable
           columns={[
-            { key: 'date', header: 'Date', render: (entry) => formatDateTime(entry.createdAt) },
-            { key: 'variant', header: 'Variant', render: (entry) => getDisplayName(entry.variant) },
-            { key: 'branch', header: 'Branch', render: (entry) => entry.branch.name },
-            { key: 'movement', header: 'Movement', render: (entry) => <StatusBadge value={entry.movementType} /> },
-            { key: 'delta', header: 'Delta', render: (entry) => <QuantityText value={entry.quantityDelta} /> },
-            { key: 'reference', header: 'Reference', render: (entry) => entry.referenceType },
+            { key: 'date', header: t('date', { ns: 'common', defaultValue: 'Date' }), render: (entry) => formatDateTime(entry.createdAt) },
+            { key: 'variant', header: t('variant'), render: (entry) => getDisplayName(entry.variant) },
+            { key: 'branch', header: t('branch', { ns: 'common' }), render: (entry) => entry.branch.name },
+            { key: 'movement', header: t('movement', { ns: 'products', defaultValue: 'Movement' }), render: (entry) => <StatusBadge value={entry.movementType} /> },
+            { key: 'delta', header: t('delta', { ns: 'products', defaultValue: 'Delta' }), render: (entry) => <QuantityText value={entry.quantityDelta} /> },
+            { key: 'reference', header: t('reference', { ns: 'products', defaultValue: 'Reference' }), render: (entry) => entry.referenceType },
           ]}
           items={ledgerItems}
-          empty={<EmptyState title="No recent ledger entries" description="Stock entries for this product will show here once variants are used in operations." />}
+          empty={<EmptyState title={t('noRecentLedgerEntriesTitle')} description={t('noRecentLedgerEntriesDescription')} />}
           rowKey={(entry) => entry.id}
         />
       </SectionCard>

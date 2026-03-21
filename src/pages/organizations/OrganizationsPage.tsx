@@ -41,7 +41,7 @@ const organizationSchema = z.object({
   primaryIndustryId: z.string().min(1, 'Select an industry'),
   defaultLanguage: z.enum(LANGUAGE_CODES),
   firstBranchName: z.string().trim().min(2, 'Branch name is required'),
-  firstBranchCode: z.string().trim().min(1, 'Branch code is required'),
+  firstBranchCode: z.string().trim().optional(),
   firstBranchType: z.enum(BRANCH_TYPES),
   addressLine1: z.string().trim().optional(),
   city: z.string().trim().optional(),
@@ -172,7 +172,7 @@ export function OrganizationsPage() {
             }
           : {}),
         firstBranch: {
-          code: values.firstBranchCode.trim(),
+          code: normalizeNullableString(values.firstBranchCode) ?? '',
           name: values.firstBranchName.trim(),
           type: values.firstBranchType,
           addressLine1: normalizeNullableString(values.addressLine1) ?? undefined,
@@ -363,7 +363,7 @@ export function OrganizationsPage() {
                   <p className="text-sm text-slate-600">{t('basicsDescription')}</p>
                 </div>
                 <div className="grid gap-4 md:grid-cols-2">
-                  <FormField label={t('organizationName')} error={form.formState.errors.name?.message}>
+                  <FormField label={t('organizationName')} error={form.formState.errors.name?.message} required>
                     <Input placeholder="NearCart Grocery" {...form.register('name')} />
                   </FormField>
                   <FormField label="Slug" error={form.formState.errors.slug?.message}>
@@ -375,7 +375,7 @@ export function OrganizationsPage() {
                   <FormField label={t('phone', { ns: 'common' })} error={form.formState.errors.phone?.message}>
                     <Input placeholder="+91 9876543210" {...form.register('phone')} />
                   </FormField>
-                  <FormField label={t('primaryIndustry')} error={form.formState.errors.primaryIndustryId?.message}>
+                  <FormField label={t('primaryIndustry')} error={form.formState.errors.primaryIndustryId?.message} required>
                     <ControlledSelect
                       control={form.control as never}
                       name="primaryIndustryId"
@@ -462,7 +462,7 @@ export function OrganizationsPage() {
                   <p className="text-sm text-slate-600">{t('firstBranchDescription')}</p>
                 </div>
                 <div className="grid gap-4 md:grid-cols-2">
-                  <FormField label={t('firstBranchName')} error={form.formState.errors.firstBranchName?.message}>
+                  <FormField label={t('firstBranchName')} error={form.formState.errors.firstBranchName?.message} required>
                     <Input placeholder="Main Store" {...form.register('firstBranchName')} />
                   </FormField>
                   <FormField label={t('firstBranchCode')} error={form.formState.errors.firstBranchCode?.message}>

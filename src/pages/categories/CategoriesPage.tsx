@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Controller, useForm, useWatch } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'react-hot-toast'
@@ -53,8 +54,10 @@ function normalizeCategoryPayload(values: CategoryFormValues) {
 }
 
 function CategoryTreeView({ items }: { items: Category[] }) {
+  const { t } = useTranslation(['categories', 'common'])
+
   if (!items.length) {
-    return <EmptyState title="No categories yet" description="Create categories to organize products and master imports." />
+    return <EmptyState title={t('noCategoriesTitle')} description={t('noCategoriesDescription')} />
   }
 
   return (
@@ -77,6 +80,7 @@ function CategoryTreeView({ items }: { items: Category[] }) {
 }
 
 export function CategoriesPage() {
+  const { t } = useTranslation(['categories', 'common'])
   const permissions = usePermissions()
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
@@ -132,10 +136,10 @@ export function CategoriesPage() {
 
       if (editingCategory) {
         await updateCategoryMutation.mutateAsync({ id: editingCategory.id, payload })
-        toast.success('Category updated')
+        toast.success(t('updated'))
       } else {
         await createCategoryMutation.mutateAsync(payload)
-        toast.success('Category created')
+        toast.success(t('created'))
       }
       setDialogOpen(false)
     } catch (error) {
@@ -144,20 +148,20 @@ export function CategoriesPage() {
   })
 
   if (categoriesQuery.isLoading && categoryTreeQuery.isLoading) {
-    return <LoadingState label="Loading categories..." />
+    return <LoadingState label={t('loadingCategories')} />
   }
 
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Catalog"
-        title="Categories"
-        description="Manage localized product categories in list or tree form."
+        eyebrow={t('categories', { ns: 'common' })}
+        title={t('title')}
+        description={t('description')}
         actions={
           permissions.canManageCatalog ? (
             <Button onClick={openCreate}>
               <Plus className="h-4 w-4" />
-              Add category
+              {t('addCategory')}
             </Button>
           ) : null
         }
@@ -166,13 +170,13 @@ export function CategoriesPage() {
         <SearchInput value={search} onChange={(event) => {
           setPage(1)
           setSearch(event.target.value)
-        }} placeholder="Search categories..." />
+        }} placeholder={t('searchPlaceholder')} />
         <div className="flex items-center gap-1 rounded-md border border-slate-200 bg-slate-50/80 p-1">
           <Button size="sm" variant={view === 'list' ? 'default' : 'ghost'} onClick={() => setView('list')}>
-            List
+            {t('listView')}
           </Button>
           <Button size="sm" variant={view === 'tree' ? 'default' : 'ghost'} onClick={() => setView('tree')}>
-            Tree
+            {t('treeView')}
           </Button>
         </div>
       </FilterBar>
@@ -181,23 +185,23 @@ export function CategoriesPage() {
         <>
           <DataTable
             columns={[
-              { key: 'name', header: 'Category', render: (category) => <div><p className="font-medium text-slate-900">{getDisplayName(category)}</p><p className="text-xs text-slate-500">{category.slug}</p></div> },
-              { key: 'parent', header: 'Parent', render: (category) => category.parent ? getDisplayName(category.parent) : '—' },
-              { key: 'children', header: 'Children', render: (category) => category.children?.length ?? 0 },
-              { key: 'status', header: 'Status', render: (category) => <StatusBadge value={category.isActive ? 'ACTIVE' : 'INACTIVE'} /> },
+              { key: 'name', header: t('category'), render: (category) => <div><p className="font-medium text-slate-900">{getDisplayName(category)}</p><p className="text-xs text-slate-500">{category.slug}</p></div> },
+              { key: 'parent', header: t('parent'), render: (category) => category.parent ? getDisplayName(category.parent) : '—' },
+              { key: 'children', header: t('children'), render: (category) => category.children?.length ?? 0 },
+              { key: 'status', header: t('status', { ns: 'common' }), render: (category) => <StatusBadge value={category.isActive ? 'ACTIVE' : 'INACTIVE'} /> },
               {
                 key: 'actions',
-                header: 'Actions',
+                header: t('actions', { ns: 'common' }),
                 render: (category) => (
                   <div className="flex gap-2">
-                    <Button size="sm" variant="outline" onClick={() => openEdit(category)} disabled={!permissions.canManageCatalog}>Edit</Button>
-                    <Button size="sm" variant="ghost" onClick={() => setDeletingCategory(category)} disabled={!permissions.canManageCatalog}>Archive</Button>
+                    <Button size="sm" variant="outline" onClick={() => openEdit(category)} disabled={!permissions.canManageCatalog}>{t('edit', { ns: 'common' })}</Button>
+                    <Button size="sm" variant="ghost" onClick={() => setDeletingCategory(category)} disabled={!permissions.canManageCatalog}>{t('archive', { ns: 'common' })}</Button>
                   </div>
                 ),
               },
             ]}
             items={categoriesQuery.data?.items ?? []}
-            empty={<EmptyState title="No categories yet" description="Create categories to organize products." />}
+            empty={<EmptyState title={t('noCategoriesTitle')} description={t('noCategoriesDescription')} />}
             rowKey={(category) => category.id}
           />
           <PaginationControls pagination={categoriesQuery.data?.pagination} onPageChange={setPage} />
@@ -209,22 +213,22 @@ export function CategoriesPage() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-4xl">
           <DialogHeader>
-            <DialogTitle>{editingCategory ? 'Edit category' : 'Add category'}</DialogTitle>
+            <DialogTitle>{editingCategory ? t('editCategory') : t('addCategory')}</DialogTitle>
           </DialogHeader>
           <form className="space-y-5" onSubmit={onSubmit}>
             <div className="grid gap-4 md:grid-cols-2">
-              <FormField label="Name" error={form.formState.errors.name?.message}>
-                <Input placeholder="Dairy" {...form.register('name')} />
+              <FormField label={t('name', { ns: 'common' })} error={form.formState.errors.name?.message} required>
+                <Input placeholder={t('namePlaceholder')} {...form.register('name')} />
               </FormField>
-              <FormField label="Slug" description="Optional. Use it when you want a stable readable identifier.">
-                <Input placeholder="dairy" {...form.register('slug')} />
+              <FormField label={t('slug')} description={t('slugDescription')}>
+                <Input placeholder={t('slugPlaceholder')} {...form.register('slug')} />
               </FormField>
-              <FormField label="Parent category">
+              <FormField label={t('parentCategory')}>
                 <ControlledSelect
                   control={form.control}
                   name="parentId"
-                  placeholder="No parent"
-                  emptyOptionLabel="No parent"
+                  placeholder={t('noParent')}
+                  emptyOptionLabel={t('noParent')}
                   options={parentOptions
                     .filter((item) => item.id !== editingCategory?.id)
                     .map((category) => ({
@@ -233,32 +237,32 @@ export function CategoriesPage() {
                     }))}
                 />
               </FormField>
-              <FormField label="Sort order">
+              <FormField label={t('sortOrder')}>
                 <Input type="number" {...form.register('sortOrder')} />
               </FormField>
             </div>
-            <FormField label="Description">
-              <Textarea placeholder="Milk, curd, paneer, butter, and chilled dairy items." {...form.register('description')} />
+            <FormField label={t('descriptionLabel', { ns: 'common' })}>
+              <Textarea placeholder={t('descriptionPlaceholder')} {...form.register('description')} />
             </FormField>
             <CheckboxField
               checked={isActive}
-              label="Active"
-              description="Inactive categories stay attached to history but should not be used in new catalog setup."
+              label={t('active', { ns: 'common' })}
+              description={t('activeDescription')}
               onCheckedChange={(checked) => form.setValue('isActive', checked, { shouldDirty: true })}
             />
             <Controller
               control={form.control}
               name="translations"
               render={({ field }) => (
-                <FormField label="Translations">
+                <FormField label={t('translations')}>
                   <TranslationFields value={field.value} onChange={field.onChange} />
                 </FormField>
               )}
             />
             <div className="flex justify-end gap-2">
-              <Button variant="outline" type="button" onClick={() => setDialogOpen(false)}>Cancel</Button>
+              <Button variant="outline" type="button" onClick={() => setDialogOpen(false)}>{t('cancel', { ns: 'common' })}</Button>
               <Button disabled={createCategoryMutation.isPending || updateCategoryMutation.isPending} type="submit">
-                {editingCategory ? 'Update category' : 'Create category'}
+                {editingCategory ? t('updateCategory') : t('createCategory')}
               </Button>
             </div>
           </form>
@@ -268,17 +272,17 @@ export function CategoriesPage() {
       <ConfirmDialog
         open={Boolean(deletingCategory)}
         onOpenChange={(open) => !open && setDeletingCategory(null)}
-        title="Archive category?"
-        description={deletingCategory ? `${getDisplayName(deletingCategory)} will be archived.` : undefined}
-        confirmLabel="Archive"
+        title={t('archiveTitle')}
+        description={deletingCategory ? t('archiveDescription', { name: getDisplayName(deletingCategory) }) : undefined}
+        confirmLabel={t('archive', { ns: 'common' })}
         onConfirm={async () => {
           if (!deletingCategory) return
           try {
             await deleteCategoryMutation.mutateAsync(deletingCategory.id)
-            toast.success('Category archived')
+            toast.success(t('archived'))
             setDeletingCategory(null)
           } catch {
-            toast.error('Could not archive category')
+            toast.error(t('archiveFailed'))
           }
         }}
       />
