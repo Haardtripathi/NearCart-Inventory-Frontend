@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { useInventoryLedgerQuery } from '@/features/inventory/inventory.api'
 import { useDebounce } from '@/hooks/useDebounce'
@@ -8,8 +9,10 @@ import { DataTable, EmptyState, FilterBar, LoadingState, PageHeader, PaginationC
 import { DatePicker, OptionSelect } from '@/components/ui'
 import { STOCK_MOVEMENT_TYPES, type StockMovementType } from '@/types/common'
 import { formatDateForInput, formatDateTime, getDisplayName, parseDateValue } from '@/lib/utils'
+import { getStockMovementTypeLabel } from '@/lib/labels'
 
 export function InventoryLedgerPage() {
+  const { t } = useTranslation('common')
   const defaultBranchId = useOrgStore((state) => state.activeBranchId)
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
@@ -69,10 +72,10 @@ export function InventoryLedgerPage() {
             setPage(1)
             setMovementType(value as StockMovementType | '')
           }}
-          emptyLabel="All movements"
+          emptyLabel={t('allMovements')}
           options={STOCK_MOVEMENT_TYPES.map((item) => ({
             value: item,
-            label: item,
+            label: getStockMovementTypeLabel(t, item),
           }))}
         />
         <div className="grid gap-3 md:grid-cols-2 xl:col-span-2">
@@ -82,7 +85,7 @@ export function InventoryLedgerPage() {
               setPage(1)
               setStartDate(formatDateForInput(date))
             }}
-            placeholder="Start date"
+            placeholder={t('startDate')}
           />
           <DatePicker
             value={parseDateValue(endDate)}
@@ -90,7 +93,7 @@ export function InventoryLedgerPage() {
               setPage(1)
               setEndDate(formatDateForInput(date))
             }}
-            placeholder="End date"
+            placeholder={t('endDate')}
           />
         </div>
       </FilterBar>

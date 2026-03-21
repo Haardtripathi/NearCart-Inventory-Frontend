@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { useBranchesQuery } from '@/features/branches/branches.api'
 import { useProductsQuery, useProductVariantsQuery } from '@/features/products/products.api'
@@ -14,17 +15,18 @@ export function BranchSelector({
   onChange: (value: string) => void
   includeAll?: boolean
 }) {
+  const { t } = useTranslation('common')
   const { data } = useBranchesQuery({ page: 1, limit: 100 })
 
   return (
     <OptionSelect
       value={value ?? ''}
       onValueChange={onChange}
-      placeholder="Select branch"
-      emptyLabel={includeAll ? 'All branches' : undefined}
+      placeholder={t('selectBranch')}
+      emptyLabel={includeAll ? t('allBranches') : undefined}
       options={(data?.items ?? []).map((branch) => ({
         value: branch.id,
-        label: branch.name,
+        label: getDisplayName(branch),
       }))}
     />
   )
@@ -39,14 +41,15 @@ export function ProductSelector({
   onChange: (value: string) => void
   includeAll?: boolean
 }) {
+  const { t } = useTranslation('common')
   const { data } = useProductsQuery({ page: 1, limit: 100 })
 
   return (
     <OptionSelect
       value={value ?? ''}
       onValueChange={onChange}
-      placeholder="Select product"
-      emptyLabel={includeAll ? 'All products' : undefined}
+      placeholder={t('selectProduct')}
+      emptyLabel={includeAll ? t('allProducts') : undefined}
       options={(data?.items ?? []).map((product) => ({
         value: product.id,
         label: getDisplayName(product),
@@ -66,6 +69,7 @@ export function VariantSelector({
   onChange: (value: string) => void
   includeAll?: boolean
 }) {
+  const { t } = useTranslation('common')
   const { data } = useProductVariantsQuery(productId)
 
   const variants = useMemo(() => data ?? [], [data])
@@ -74,8 +78,8 @@ export function VariantSelector({
     <OptionSelect
       value={value ?? ''}
       onValueChange={onChange}
-      placeholder={productId ? 'Select variant' : 'Select product first'}
-      emptyLabel={includeAll ? 'All variants' : undefined}
+      placeholder={productId ? t('selectVariant') : t('selectProductFirst')}
+      emptyLabel={includeAll ? t('allVariants') : undefined}
       disabled={!productId}
       options={variants.map((variant) => ({
         value: variant.id,

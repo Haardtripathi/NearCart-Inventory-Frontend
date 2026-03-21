@@ -13,6 +13,7 @@ import { useLocale } from '@/hooks/useLocale'
 import { ControlledSelect, FormField } from '@/components/forms'
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input } from '@/components/ui'
 import { APP_LANGUAGES, BRANCH_TYPES, LANGUAGE_CODES } from '@/types/common'
+import { getBranchTypeLabel, getLanguageLabel } from '@/lib/labels'
 import { normalizeNullableString, parseApiError } from '@/lib/utils'
 
 const registerSchema = z.object({
@@ -160,7 +161,7 @@ export function RegisterOrganizationOwnerPage() {
                       name="preferredLanguage"
                       options={LANGUAGE_CODES.map((language) => ({
                         value: language,
-                        label: language,
+                        label: getLanguageLabel(t, language),
                       }))}
                     />
                   </FormField>
@@ -201,7 +202,7 @@ export function RegisterOrganizationOwnerPage() {
                       name="defaultLanguage"
                       options={LANGUAGE_CODES.map((language) => ({
                         value: language,
-                        label: language,
+                        label: getLanguageLabel(t, language),
                       }))}
                     />
                   </FormField>
@@ -231,7 +232,7 @@ export function RegisterOrganizationOwnerPage() {
                     name="firstBranchType"
                     options={BRANCH_TYPES.map((type) => ({
                       value: type,
-                      label: type,
+                      label: getBranchTypeLabel(t, type),
                     }))}
                   />
                 </FormField>

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { useAuditLogsQuery } from '@/features/audit/audit.api'
 import { usePermissions } from '@/hooks/usePermissions'
@@ -7,8 +8,10 @@ import { DataTable, EmptyState, FilterBar, LoadingState, PageHeader, PaginationC
 import { DatePicker, Input, OptionSelect } from '@/components/ui'
 import { AUDIT_ACTIONS, type AuditAction } from '@/types/common'
 import { formatDateForInput, formatDateTime, parseDateValue } from '@/lib/utils'
+import { getAuditActionLabel } from '@/lib/labels'
 
 export function AuditLogsPage() {
+  const { t } = useTranslation('common')
   const permissions = usePermissions()
   const [page, setPage] = useState(1)
   const [action, setAction] = useState<AuditAction | ''>('')
@@ -56,10 +59,10 @@ export function AuditLogsPage() {
             setPage(1)
             setAction(value as AuditAction | '')
           }}
-          emptyLabel="All actions"
+          emptyLabel={t('allActions')}
           options={AUDIT_ACTIONS.map((item) => ({
             value: item,
-            label: item,
+            label: getAuditActionLabel(t, item),
           }))}
         />
         <DatePicker
@@ -68,7 +71,7 @@ export function AuditLogsPage() {
             setPage(1)
             setStartDate(formatDateForInput(date))
           }}
-          placeholder="Start date"
+          placeholder={t('startDate')}
         />
         <DatePicker
           value={parseDateValue(endDate)}
@@ -76,7 +79,7 @@ export function AuditLogsPage() {
             setPage(1)
             setEndDate(formatDateForInput(date))
           }}
-          placeholder="End date"
+          placeholder={t('endDate')}
         />
       </FilterBar>
       <DataTable

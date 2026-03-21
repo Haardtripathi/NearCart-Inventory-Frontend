@@ -10,9 +10,10 @@ import { useCreateSupplierMutation, useDeleteSupplierMutation, useSuppliersQuery
 import { usePermissions } from '@/hooks/usePermissions'
 import { useDebounce } from '@/hooks/useDebounce'
 import { ConfirmDialog, DataTable, EmptyState, FilterBar, LoadingState, PageHeader, PaginationControls, SearchInput, StatusBadge } from '@/components/common'
-import { CheckboxField, FormField } from '@/components/forms'
+import { CheckboxField, FormField, TranslationFields } from '@/components/forms'
 import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, Input, Textarea } from '@/components/ui'
-import type { Supplier } from '@/types/common'
+import { getDisplayName } from '@/lib/utils'
+import type { Supplier, TranslationInput } from '@/types/common'
 
 const supplierSchema = z.object({
   name: z.string().trim().min(1),
@@ -22,6 +23,7 @@ const supplierSchema = z.object({
   taxNumber: z.string().trim().optional(),
   notes: z.string().trim().optional(),
   isActive: z.boolean().default(true),
+  translations: z.array(z.custom<TranslationInput>()).default([]),
 })
 
 export function SuppliersPage() {
@@ -40,7 +42,7 @@ export function SuppliersPage() {
 
   const form = useForm({
     resolver: zodResolver(supplierSchema),
-    defaultValues: { name: '', code: '', phone: '', email: '', taxNumber: '', notes: '', isActive: true },
+    defaultValues: { name: '', code: '', phone: '', email: '', taxNumber: '', notes: '', isActive: true, translations: [] },
   })
   const isActive = Boolean(useWatch({ control: form.control, name: 'isActive' }))
 
@@ -48,7 +50,7 @@ export function SuppliersPage() {
 
   const openCreate = () => {
     setEditingSupplier(null)
-    form.reset({ name: '', code: '', phone: '', email: '', taxNumber: '', notes: '', isActive: true })
+    form.reset({ name: '', code: '', phone: '', email: '', taxNumber: '', notes: '', isActive: true, translations: [] })
     setDialogOpen(true)
   }
 
@@ -62,6 +64,7 @@ export function SuppliersPage() {
       taxNumber: supplier.taxNumber ?? '',
       notes: supplier.notes ?? '',
       isActive: supplier.isActive,
+      translations: supplier.translations ?? [],
     })
     setDialogOpen(true)
   }
@@ -100,7 +103,7 @@ export function SuppliersPage() {
       </FilterBar>
       <DataTable
         columns={[
-          { key: 'name', header: t('suppliers:name'), render: (supplier) => <div><p className="font-medium text-slate-900">{supplier.name}</p><p className="text-xs text-slate-500">{supplier.code ?? 'No code'}</p></div> },
+          { key: 'name', header: t('suppliers:name'), render: (supplier) => <div><p className="font-medium text-slate-900">{getDisplayName(supplier, supplier.name)}</p><p className="text-xs text-slate-500">{supplier.code ?? 'No code'}</p></div> },
           { key: 'contact', header: t('suppliers:contactDetails'), render: (supplier) => supplier.phone || supplier.email || '—' },
           { key: 'tax', header: t('suppliers:taxNumber'), render: (supplier) => supplier.taxNumber || '—' },
           { key: 'status', header: t('common:status'), render: (supplier) => <StatusBadge value={supplier.isActive ? 'ACTIVE' : 'INACTIVE'} /> },
@@ -155,6 +158,12 @@ export function SuppliersPage() {
               description={t('suppliers:activeDescription')}
               onCheckedChange={(checked) => form.setValue('isActive', checked, { shouldDirty: true })}
             />
+            <FormField label={t('products:languageOverrides')}>
+              <TranslationFields
+                value={form.watch('translations')}
+                onChange={(value) => form.setValue('translations', value as TranslationInput[], { shouldDirty: true })}
+              />
+            </FormField>
             <div className="flex justify-end gap-2">
               <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>{t('common:cancel')}</Button>
               <Button disabled={createSupplierMutation.isPending || updateSupplierMutation.isPending} type="submit">

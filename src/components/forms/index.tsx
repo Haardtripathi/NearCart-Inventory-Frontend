@@ -4,8 +4,8 @@ import { useTranslation } from 'react-i18next'
 import { Plus } from 'lucide-react'
 
 import type { TranslationInput, VariantTranslationInput } from '@/types/common'
-import { APP_LANGUAGES } from '@/types/common'
-import { toBackendLanguage } from '@/lib/locale'
+import { LANGUAGE_CODES } from '@/types/common'
+import { getLanguageLabel } from '@/lib/labels'
 import { Button, Checkbox, Input, Textarea, Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui'
 import { DatePicker } from '@/components/ui/date-picker'
 import { cn } from '@/lib/utils'
@@ -95,16 +95,18 @@ export function TranslationFields({
 
   return (
     <div className="grid gap-4 lg:grid-cols-2">
-      {APP_LANGUAGES.map((language) => {
-        const backendLanguage = toBackendLanguage(language)
+      {LANGUAGE_CODES.map((languageCode) => {
+        const backendLanguage = languageCode
         const current = safeValue.find((item) => item.language === backendLanguage)
 
         return (
-          <div key={language} className="rounded-md border border-slate-200 bg-slate-50/80 p-4">
-            <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">{backendLanguage}</p>
+          <div key={languageCode} className="rounded-md border border-slate-200 bg-slate-50/80 p-4">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+              {getLanguageLabel(t, backendLanguage)}
+            </p>
             <div className="space-y-3">
               <Input
-                placeholder={`${t('name')} (${backendLanguage})`}
+                placeholder={`${t('name')} (${getLanguageLabel(t, backendLanguage)})`}
                 value={current?.name ?? ''}
                 onChange={(event) => {
                   const nextValue = [...safeValue]
@@ -125,7 +127,7 @@ export function TranslationFields({
               />
               {withDescription ? (
                 <Textarea
-                  placeholder={`${t('descriptionLabel', { ns: 'common' })} (${backendLanguage})`}
+                  placeholder={`${t('descriptionLabel', { ns: 'common' })} (${getLanguageLabel(t, backendLanguage)})`}
                   value={(current as TranslationInput | undefined)?.description ?? ''}
                   onChange={(event) => {
                     const nextValue = [...safeValue]

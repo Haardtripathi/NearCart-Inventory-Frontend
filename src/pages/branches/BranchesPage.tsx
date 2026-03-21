@@ -13,6 +13,8 @@ import { BRANCH_TYPES, type Branch, type BranchType } from '@/types/common'
 import { ConfirmDialog, DataTable, EmptyState, FilterBar, LoadingState, PageHeader, PaginationControls, SearchInput, StatusBadge } from '@/components/common'
 import { CheckboxField, ControlledSelect, FormField } from '@/components/forms'
 import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, Input } from '@/components/ui'
+import { getBranchTypeLabel } from '@/lib/labels'
+import { getDisplayName } from '@/lib/utils'
 
 const branchSchema = z.object({
   code: z.string().trim().optional(),
@@ -145,8 +147,8 @@ export function BranchesPage() {
 
       <DataTable
         columns={[
-          { key: 'name', header: t('branches:name'), render: (branch) => <div><p className="font-medium text-slate-900">{branch.name}</p><p className="text-xs text-slate-500">{branch.code}</p></div> },
-          { key: 'type', header: t('branches:type'), render: (branch) => branch.type },
+          { key: 'name', header: t('branches:name'), render: (branch) => <div><p className="font-medium text-slate-900">{getDisplayName(branch)}</p><p className="text-xs text-slate-500">{branch.code}</p></div> },
+          { key: 'type', header: t('branches:type'), render: (branch) => getBranchTypeLabel(t, branch.type) },
           { key: 'location', header: t('branches:location'), render: (branch) => [branch.city, branch.state, branch.country].filter(Boolean).join(', ') || '—' },
           { key: 'status', header: t('common:status'), render: (branch) => <StatusBadge value={branch.isActive ? 'ACTIVE' : 'INACTIVE'} /> },
           {
@@ -189,7 +191,7 @@ export function BranchesPage() {
                 name="type"
                 options={BRANCH_TYPES.map((type) => ({
                   value: type,
-                  label: type,
+                  label: getBranchTypeLabel(t, type),
                 }))}
               />
             </FormField>

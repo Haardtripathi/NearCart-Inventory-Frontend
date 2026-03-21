@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useForm, useWatch } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -35,7 +36,8 @@ import {
   type OrganizationUser,
 } from '@/types/common'
 import { normalizeBackendLanguage } from '@/lib/locale'
-import { formatDateTime, parseApiError } from '@/lib/utils'
+import { formatDateTime, getDisplayName, parseApiError } from '@/lib/utils'
+import { getLanguageLabel, getMembershipStatusLabel, getUserRoleLabel } from '@/lib/labels'
 
 const createUserSchema = z.object({
   fullName: z.string().trim().min(2, 'Full name is required'),
@@ -77,6 +79,7 @@ function toBranchAccess(scope: BranchAccessState['scope'], branchIds: string[]):
 }
 
 export function UsersPage() {
+  const { t } = useTranslation('common')
   const permissions = usePermissions()
   const { role } = useAuth()
   const usersQuery = useOrganizationUsersQuery()
@@ -134,13 +137,13 @@ export function UsersPage() {
 
   const roleOptions = useMemo(() => {
     const options = [
-      { value: 'STAFF', label: 'Staff' },
-      { value: 'MANAGER', label: 'Manager' },
-      { value: 'ORG_ADMIN', label: 'Org Admin' },
+      { value: 'STAFF', label: getUserRoleLabel(t, 'STAFF') },
+      { value: 'MANAGER', label: getUserRoleLabel(t, 'MANAGER') },
+      { value: 'ORG_ADMIN', label: getUserRoleLabel(t, 'ORG_ADMIN') },
     ]
 
     return role === 'SUPER_ADMIN' || role === 'ORG_ADMIN' ? options : options.filter((option) => option.value === 'STAFF')
-  }, [role])
+  }, [role, t])
 
   const openEdit = (user: OrganizationUser) => {
     setEditingUser(user)
@@ -280,7 +283,7 @@ export function UsersPage() {
             header: 'Role',
             render: (user) => (
               <div className="flex flex-wrap items-center gap-2">
-                <Badge>{user.role}</Badge>
+                <Badge>{getUserRoleLabel(t, user.role)}</Badge>
                 {user.isDefault ? <Badge tone="muted">Default</Badge> : null}
               </div>
             ),
@@ -290,8 +293,8 @@ export function UsersPage() {
             header: 'Branch access',
             render: (user) =>
               user.branchAccess.scope === 'ALL'
-                ? 'All branches'
-                : `${user.accessibleBranches.map((branch) => branch.name).join(', ') || user.branchAccess.branchIds.length} selected`,
+                ? t('allBranches')
+                : `${user.accessibleBranches.map((branch) => branch.name).join(', ') || user.branchAccess.branchIds.length} ${t('selectedBranches').toLowerCase()}`,
           },
           {
             key: 'status',
@@ -358,7 +361,7 @@ export function UsersPage() {
                 name="preferredLanguage"
                 options={LANGUAGE_CODES.map((language) => ({
                   value: language,
-                  label: language,
+                  label: getLanguageLabel(t, language),
                 }))}
               />
             </FormField>
@@ -369,7 +372,7 @@ export function UsersPage() {
                   name="branchScope"
                   options={BRANCH_ACCESS_SCOPES.map((scope) => ({
                     value: scope,
-                    label: scope === 'ALL' ? 'All branches' : 'Selected branches',
+                    label: scope === 'ALL' ? t('allBranches') : t('selectedBranches'),
                   }))}
                 />
               </FormField>
@@ -384,7 +387,7 @@ export function UsersPage() {
                       <CheckboxField
                         key={branch.id}
                         checked={selected}
-                        label={branch.name}
+                        label={getDisplayName(branch)}
                         description={branch.code}
                         onCheckedChange={(checked) => {
                           const current = createForm.getValues('branchIds')
@@ -436,7 +439,7 @@ export function UsersPage() {
                 name="status"
                 options={MEMBERSHIP_STATUSES.map((status) => ({
                   value: status,
-                  label: status,
+                  label: getMembershipStatusLabel(t, status),
                 }))}
               />
             </FormField>
@@ -446,7 +449,7 @@ export function UsersPage() {
                 name="preferredLanguage"
                 options={LANGUAGE_CODES.map((language) => ({
                   value: language,
-                  label: language,
+                  label: getLanguageLabel(t, language),
                 }))}
               />
             </FormField>
@@ -457,7 +460,7 @@ export function UsersPage() {
                   name="branchScope"
                   options={BRANCH_ACCESS_SCOPES.map((scope) => ({
                     value: scope,
-                    label: scope === 'ALL' ? 'All branches' : 'Selected branches',
+                    label: scope === 'ALL' ? t('allBranches') : t('selectedBranches'),
                   }))}
                 />
               </FormField>
@@ -472,7 +475,7 @@ export function UsersPage() {
                       <CheckboxField
                         key={branch.id}
                         checked={selected}
-                        label={branch.name}
+                        label={getDisplayName(branch)}
                         description={branch.code}
                         onCheckedChange={(checked) => {
                           const current = updateForm.getValues('branchIds')

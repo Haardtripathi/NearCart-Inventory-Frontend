@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { api, unwrapResponse } from '@/lib/axios'
 import { useAuthStore } from '@/store/auth.store'
+import { useUiStore } from '@/store/ui.store'
 import type { PaginatedResponse } from '@/types/api'
 import type { Branch } from '@/types/common'
 
@@ -13,23 +14,26 @@ export interface BranchFilters {
 }
 
 export const branchesKeys = {
-  list: (organizationId: string | null, filters: BranchFilters) => ['branches', organizationId, filters] as const,
-  detail: (id: string) => ['branches', id] as const,
+  list: (organizationId: string | null, language: string, filters: BranchFilters) => ['branches', organizationId, language, filters] as const,
+  detail: (id: string, language: string) => ['branches', id, language] as const,
 }
 
 export function useBranchesQuery(filters: BranchFilters) {
   const activeOrganizationId = useAuthStore((state) => state.activeOrganizationId)
+  const language = useUiStore((state) => state.language)
 
   return useQuery({
-    queryKey: branchesKeys.list(activeOrganizationId, filters),
+    queryKey: branchesKeys.list(activeOrganizationId, language, filters),
     queryFn: async () => unwrapResponse<PaginatedResponse<Branch>>(api.get('/branches', { params: filters })),
     enabled: Boolean(activeOrganizationId),
   })
 }
 
 export function useBranchQuery(id?: string) {
+  const language = useUiStore((state) => state.language)
+
   return useQuery({
-    queryKey: branchesKeys.detail(id ?? 'unknown'),
+    queryKey: branchesKeys.detail(id ?? 'unknown', language),
     queryFn: async () => unwrapResponse<Branch>(api.get(`/branches/${id}`)),
     enabled: Boolean(id),
   })
@@ -55,7 +59,7 @@ export function useUpdateBranchMutation() {
     onSuccess: async (_, variables) => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['branches'] }),
-        queryClient.invalidateQueries({ queryKey: branchesKeys.detail(variables.id) }),
+        queryClient.invalidateQueries({ queryKey: ['branches', variables.id] }),
       ])
     },
   })
@@ -69,7 +73,7 @@ export function useDeleteBranchMutation() {
     onSuccess: async (_, id) => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['branches'] }),
-        queryClient.invalidateQueries({ queryKey: branchesKeys.detail(id) }),
+        queryClient.invalidateQueries({ queryKey: ['branches', id] }),
       ])
     },
   })

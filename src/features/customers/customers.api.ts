@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { api, unwrapResponse } from '@/lib/axios'
 import { useAuthStore } from '@/store/auth.store'
+import { useUiStore } from '@/store/ui.store'
 import type { PaginatedResponse } from '@/types/api'
 import type { Customer } from '@/types/common'
 
@@ -13,23 +14,26 @@ export interface CustomerFilters {
 }
 
 export const customersKeys = {
-  list: (organizationId: string | null, filters: CustomerFilters) => ['customers', organizationId, filters] as const,
-  detail: (id: string) => ['customers', id] as const,
+  list: (organizationId: string | null, language: string, filters: CustomerFilters) => ['customers', organizationId, language, filters] as const,
+  detail: (id: string, language: string) => ['customers', id, language] as const,
 }
 
 export function useCustomersQuery(filters: CustomerFilters) {
   const activeOrganizationId = useAuthStore((state) => state.activeOrganizationId)
+  const language = useUiStore((state) => state.language)
 
   return useQuery({
-    queryKey: customersKeys.list(activeOrganizationId, filters),
+    queryKey: customersKeys.list(activeOrganizationId, language, filters),
     queryFn: async () => unwrapResponse<PaginatedResponse<Customer>>(api.get('/customers', { params: filters })),
     enabled: Boolean(activeOrganizationId),
   })
 }
 
 export function useCustomerQuery(id?: string) {
+  const language = useUiStore((state) => state.language)
+
   return useQuery({
-    queryKey: customersKeys.detail(id ?? 'unknown'),
+    queryKey: customersKeys.detail(id ?? 'unknown', language),
     queryFn: async () => unwrapResponse<Customer>(api.get(`/customers/${id}`)),
     enabled: Boolean(id),
   })
@@ -56,7 +60,7 @@ export function useUpdateCustomerMutation() {
     onSuccess: async (_, variables) => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['customers'] }),
-        queryClient.invalidateQueries({ queryKey: customersKeys.detail(variables.id) }),
+        queryClient.invalidateQueries({ queryKey: ['customers', variables.id] }),
       ])
     },
   })
@@ -70,7 +74,7 @@ export function useDeleteCustomerMutation() {
     onSuccess: async (_, id) => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['customers'] }),
-        queryClient.invalidateQueries({ queryKey: customersKeys.detail(id) }),
+        queryClient.invalidateQueries({ queryKey: ['customers', id] }),
       ])
     },
   })

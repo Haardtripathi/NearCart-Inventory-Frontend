@@ -90,6 +90,19 @@ export function useCreateIndustryMutation() {
   })
 }
 
+export function useUpdateIndustryMutation() {
+  const queryClient = useQueryClient()
+  const language = useUiStore((state) => state.language)
+
+  return useMutation({
+    mutationFn: async ({ id, payload }: { id: string; payload: Partial<CreateIndustryPayload> }) =>
+      unwrapResponse<Industry>(api.patch(`/platform/industries/${id}`, payload)),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: metaKeys.industries(language) })
+    },
+  })
+}
+
 export function useUnitsQuery() {
   const activeOrganizationId = useAuthStore((state) => state.activeOrganizationId)
   const language = useUiStore((state) => state.language)

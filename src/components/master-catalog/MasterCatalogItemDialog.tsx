@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Controller, useFieldArray, useForm, useWatch, type Control } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -25,6 +26,7 @@ import {
   PRODUCT_TYPES,
   TRACK_METHODS,
 } from '@/types/common'
+import { getLanguageLabel } from '@/lib/labels'
 import { CheckboxField, ControlledSelect, FormField, KeyValueEditor, TranslationFields } from '@/components/forms'
 import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, Input, Textarea } from '@/components/ui'
 
@@ -313,6 +315,7 @@ export function MasterCatalogItemDialog({
   item?: MasterCatalogItem | null
   onAddIndustry?: () => void
 }) {
+  const { t } = useTranslation(['products', 'common'])
   const createMutation = useCreateMasterCatalogItemMutation()
   const updateMutation = useUpdateMasterCatalogItemMutation()
   const form = useForm({
@@ -562,14 +565,20 @@ export function MasterCatalogItemDialog({
               <ControlledSelect
                 control={form.control}
                 name="productType"
-                options={PRODUCT_TYPES.map((type) => ({ value: type, label: type }))}
+                options={PRODUCT_TYPES.map((type) => ({
+                  value: type,
+                  label: t(`typeValues.${type}`, { ns: 'products', defaultValue: type }),
+                }))}
               />
             </FormField>
             <FormField label="Track method">
               <ControlledSelect
                 control={form.control}
                 name="defaultTrackMethod"
-                options={TRACK_METHODS.map((method) => ({ value: method, label: method }))}
+                options={TRACK_METHODS.map((method) => ({
+                  value: method,
+                  label: t(`trackMethodValues.${method}`, { ns: 'products', defaultValue: method }),
+                }))}
               />
             </FormField>
             <FormField label="Default unit code">
@@ -658,7 +667,7 @@ export function MasterCatalogItemDialog({
                       name={`aliases.${index}.language` as const}
                       options={LANGUAGE_CODES.map((language) => ({
                         value: language,
-                        label: language,
+                        label: getLanguageLabel(t, language),
                       }))}
                     />
                     <Controller

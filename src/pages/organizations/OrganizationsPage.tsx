@@ -32,6 +32,7 @@ import { normalizeNullableString, parseApiError } from '@/lib/utils'
 import { useAuthStore } from '@/store/auth.store'
 import { IndustryDialog } from '@/components/platform/IndustryDialog'
 import { BRANCH_TYPES, LANGUAGE_CODES } from '@/types/common'
+import { getBranchTypeLabel, getLanguageLabel } from '@/lib/labels'
 
 const organizationSchema = z.object({
   name: z.string().trim().min(2, 'Organization name is required'),
@@ -326,6 +327,11 @@ export function OrganizationsPage() {
               />
             </FormField>
             <div className="flex flex-wrap gap-2">
+              {permissions.canManageMasterPlatform ? (
+                <Button type="button" variant="outline" onClick={() => setIndustryDialogOpen(true)}>
+                  {t('addIndustry')}
+                </Button>
+              ) : null}
               <Button
                 type="button"
                 disabled={!selectedAdditionalIndustryId || !availableAdditionalIndustries.length || addIndustryMutation.isPending}
@@ -395,7 +401,7 @@ export function OrganizationsPage() {
                     <ControlledSelect
                       control={form.control as never}
                       name="defaultLanguage"
-                      options={LANGUAGE_CODES.map((lang) => ({ value: lang, label: lang }))}
+                      options={LANGUAGE_CODES.map((lang) => ({ value: lang, label: getLanguageLabel(t, lang) }))}
                     />
                   </FormField>
                 </div>
@@ -445,7 +451,7 @@ export function OrganizationsPage() {
                               name="ownerPreferredLanguage"
                               options={LANGUAGE_CODES.map((language) => ({
                                 value: language,
-                                label: language,
+                                label: getLanguageLabel(t, language),
                               }))}
                             />
                           </FormField>
@@ -472,7 +478,7 @@ export function OrganizationsPage() {
                     <ControlledSelect
                       control={form.control as never}
                       name="firstBranchType"
-                      options={BRANCH_TYPES.map((type) => ({ value: type, label: type }))}
+                      options={BRANCH_TYPES.map((type) => ({ value: type, label: getBranchTypeLabel(t, type) }))}
                     />
                   </FormField>
                   <FormField label={t('addressLine1')} error={form.formState.errors.addressLine1?.message}>

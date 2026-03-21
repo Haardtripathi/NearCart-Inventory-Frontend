@@ -130,6 +130,7 @@ export function MasterCatalogPage() {
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false)
   const [itemDialogOpen, setItemDialogOpen] = useState(false)
   const [industryDialogOpen, setIndustryDialogOpen] = useState(false)
+  const [editingIndustry, setEditingIndustry] = useState(false)
   const debouncedSearch = useDebounce(search)
   const debouncedAdminCategorySearch = useDebounce(adminCategorySearch)
   const resolvedIndustryId = industryId || industriesQuery.data?.[0]?.id || ''
@@ -168,6 +169,10 @@ export function MasterCatalogPage() {
       ?? '—',
     [industriesQuery.data, resolvedIndustryId],
   )
+  const selectedIndustry = useMemo(
+    () => industriesQuery.data?.find((industry) => industry.id === resolvedIndustryId) ?? null,
+    [industriesQuery.data, resolvedIndustryId],
+  )
   const blockedImportCount = useMemo(
     () => items.filter((item) => !item.importable && !item.alreadyImportedProductId).length,
     [items],
@@ -188,6 +193,7 @@ export function MasterCatalogPage() {
               value={resolvedIndustryId}
               onValueChange={(value) => {
                 if (value === '__add_industry__') {
+                  setEditingIndustry(false)
                   setIndustryDialogOpen(true)
                   return
                 }
@@ -212,6 +218,16 @@ export function MasterCatalogPage() {
 
             {permissions.canManageMasterPlatform ? (
               <>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setEditingIndustry(true)
+                    setIndustryDialogOpen(true)
+                  }}
+                >
+                  <Pencil className="h-4 w-4" />
+                  {t('editIndustry')}
+                </Button>
                 <Button
                   variant="outline"
                   onClick={() => {
@@ -659,7 +675,16 @@ export function MasterCatalogPage() {
         initialIndustryId={resolvedIndustryId}
         item={editingItem}
       />
-      <IndustryDialog open={industryDialogOpen} onOpenChange={setIndustryDialogOpen} />
+      <IndustryDialog
+        open={industryDialogOpen}
+        onOpenChange={(open) => {
+          setIndustryDialogOpen(open)
+          if (!open) {
+            setEditingIndustry(false)
+          }
+        }}
+        industry={editingIndustry ? selectedIndustry : null}
+      />
     </div>
   )
 }

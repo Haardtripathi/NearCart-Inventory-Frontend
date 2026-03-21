@@ -13,6 +13,7 @@ import { ConfirmDialog, DataTable, EmptyState, FilterBar, LoadingState, PageHead
 import { CheckboxField, FormField } from '@/components/forms'
 import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, Input, Textarea } from '@/components/ui'
 import type { Customer } from '@/types/common'
+import { getDisplayName } from '@/lib/utils'
 
 const customerSchema = z.object({
   name: z.string().trim().min(1),
@@ -96,7 +97,7 @@ export function CustomersPage() {
       </FilterBar>
       <DataTable
         columns={[
-          { key: 'name', header: t('customers:name'), render: (customer) => <span className="font-medium text-slate-900">{customer.name}</span> },
+          { key: 'name', header: t('customers:name'), render: (customer) => <span className="font-medium text-slate-900">{getDisplayName(customer)}</span> },
           { key: 'contact', header: t('common:phone'), render: (customer) => customer.phone || customer.email || '—' },
           { key: 'status', header: t('common:status'), render: (customer) => <StatusBadge value={customer.isActive ? 'ACTIVE' : 'INACTIVE'} /> },
           {

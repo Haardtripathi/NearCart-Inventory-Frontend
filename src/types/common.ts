@@ -1,9 +1,9 @@
 import type { PaginationMeta } from './api'
 
-export const APP_LANGUAGES = ['en', 'hi'] as const
+export const APP_LANGUAGES = ['en', 'hi', 'gu'] as const
 export type AppLanguage = (typeof APP_LANGUAGES)[number]
 
-export const LANGUAGE_CODES = ['EN', 'HI'] as const
+export const LANGUAGE_CODES = ['EN', 'HI', 'GU'] as const
 export type LanguageCode = (typeof LANGUAGE_CODES)[number]
 
 export const USER_ROLES = ['SUPER_ADMIN', 'ORG_ADMIN', 'MANAGER', 'STAFF'] as const
@@ -147,7 +147,7 @@ export interface OrganizationSummary {
   }>
 }
 
-export interface Branch {
+export interface Branch extends LocalizedRecord {
   id: string
   organizationId?: string
   code: string
@@ -237,6 +237,7 @@ export interface Unit extends LocalizedRecord {
   symbol?: Nullable<string>
   isSystem?: boolean
   allowsDecimal?: boolean
+  translations?: TranslationInput[]
 }
 
 export interface TaxRate extends LocalizedRecord {
@@ -248,7 +249,7 @@ export interface TaxRate extends LocalizedRecord {
   isActive: boolean
 }
 
-export interface Supplier {
+export interface Supplier extends LocalizedRecord {
   id: string
   name: string
   code?: Nullable<string>
@@ -258,9 +259,10 @@ export interface Supplier {
   address?: unknown
   notes?: Nullable<string>
   isActive: boolean
+  translations?: TranslationInput[]
 }
 
-export interface Customer {
+export interface Customer extends LocalizedRecord {
   id: string
   name: string
   phone?: Nullable<string>

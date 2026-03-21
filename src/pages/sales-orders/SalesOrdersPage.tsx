@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { Plus } from 'lucide-react'
 
@@ -8,8 +9,10 @@ import { DataTable, EmptyState, FilterBar, LoadingState, PageHeader, PaginationC
 import { Button, OptionSelect } from '@/components/ui'
 import { PAYMENT_STATUSES, SALES_ORDER_STATUSES, type PaymentStatus, type SalesOrderStatus } from '@/types/common'
 import { formatDateTime } from '@/lib/utils'
+import { getPaymentStatusLabel, getSalesOrderStatusLabel } from '@/lib/labels'
 
 export function SalesOrdersPage() {
+  const { t } = useTranslation(['common', 'orders'])
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
   const [branchId, setBranchId] = useState('')
@@ -58,8 +61,8 @@ export function SalesOrdersPage() {
             setPage(1)
             setStatus(value as SalesOrderStatus | '')
           }}
-          emptyLabel="All statuses"
-          options={SALES_ORDER_STATUSES.map((item) => ({ value: item, label: item }))}
+          emptyLabel={t('allStatuses', { ns: 'common' })}
+          options={SALES_ORDER_STATUSES.map((item) => ({ value: item, label: getSalesOrderStatusLabel(t, item) }))}
         />
         <OptionSelect
           value={paymentStatus}
@@ -67,8 +70,8 @@ export function SalesOrdersPage() {
             setPage(1)
             setPaymentStatus(value as PaymentStatus | '')
           }}
-          emptyLabel="All payment statuses"
-          options={PAYMENT_STATUSES.map((item) => ({ value: item, label: item }))}
+          emptyLabel={t('allPaymentStatuses', { ns: 'common' })}
+          options={PAYMENT_STATUSES.map((item) => ({ value: item, label: getPaymentStatusLabel(t, item) }))}
         />
       </FilterBar>
       <DataTable

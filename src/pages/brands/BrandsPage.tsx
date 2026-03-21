@@ -10,15 +10,16 @@ import { useBrandsQuery, useCreateBrandMutation, useDeleteBrandMutation, useUpda
 import { usePermissions } from '@/hooks/usePermissions'
 import { useDebounce } from '@/hooks/useDebounce'
 import { ConfirmDialog, DataTable, EmptyState, FilterBar, LoadingState, PageHeader, PaginationControls, SearchInput, StatusBadge } from '@/components/common'
-import { CheckboxField, FormField } from '@/components/forms'
+import { CheckboxField, FormField, TranslationFields } from '@/components/forms'
 import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, Input } from '@/components/ui'
 import { getDisplayName } from '@/lib/utils'
-import type { Brand } from '@/types/common'
+import type { Brand, TranslationInput } from '@/types/common'
 
 const brandSchema = z.object({
   name: z.string().trim().min(1),
   slug: z.string().trim().optional(),
   isActive: z.boolean().default(true),
+  translations: z.array(z.custom<TranslationInput>()).default([]),
 })
 
 export function BrandsPage() {
@@ -37,7 +38,7 @@ export function BrandsPage() {
   const deleteBrandMutation = useDeleteBrandMutation()
   const form = useForm({
     resolver: zodResolver(brandSchema),
-    defaultValues: { name: '', slug: '', isActive: true },
+    defaultValues: { name: '', slug: '', isActive: true, translations: [] },
   })
   const isActive = Boolean(useWatch({ control: form.control, name: 'isActive' }))
 
@@ -45,7 +46,7 @@ export function BrandsPage() {
 
   const openCreate = () => {
     setEditingBrand(null)
-    form.reset({ name: '', slug: '', isActive: true })
+    form.reset({ name: '', slug: '', isActive: true, translations: [] })
     setIsDialogOpen(true)
   }
 
@@ -55,6 +56,7 @@ export function BrandsPage() {
       name: brand.name,
       slug: brand.slug,
       isActive: brand.isActive,
+      translations: brand.translations ?? [],
     })
     setIsDialogOpen(true)
   }
@@ -145,6 +147,12 @@ export function BrandsPage() {
               description={t('brands:activeDescription')}
               onCheckedChange={(checked) => form.setValue('isActive', checked, { shouldDirty: true })}
             />
+            <FormField label={t('products:languageOverrides')}>
+              <TranslationFields
+                value={form.watch('translations')}
+                onChange={(value) => form.setValue('translations', value as TranslationInput[], { shouldDirty: true })}
+              />
+            </FormField>
             <div className="flex justify-end gap-2">
               <Button variant="outline" type="button" onClick={() => setIsDialogOpen(false)}>
                 {t('common:cancel')}
