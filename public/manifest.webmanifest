@@ -1,0 +1,19 @@
+{
+  "name": "NearCart Inventory",
+  "short_name": "NearCart",
+  "description": "NearCart Inventory Console for catalog, stock, orders, and master imports.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#059669",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/pwa-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

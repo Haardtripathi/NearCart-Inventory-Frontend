@@ -1,0 +1,287 @@
+import { useMemo, useState } from 'react'
+import { Controller, useForm, useWatch } from 'react-hook-form'
+import { z } from 'zod'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { toast } from 'react-hot-toast'
+import { Plus } from 'lucide-react'
+
+import { useCategoriesQuery, useCategoryTreeQuery, useCreateCategoryMutation, useDeleteCategoryMutation, useUpdateCategoryMutation } from '@/features/categories/categories.api'
+import { usePermissions } from '@/hooks/usePermissions'
+import { useDebounce } from '@/hooks/useDebounce'
+import { ConfirmDialog, DataTable, EmptyState, FilterBar, LoadingState, PageHeader, PaginationControls, SearchInput, StatusBadge } from '@/components/common'
+import { CheckboxField, ControlledSelect, FormField, TranslationFields } from '@/components/forms'
+import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, Input, Textarea } from '@/components/ui'
+import { getDisplayName, parseApiError } from '@/lib/utils'
+import type { Category, TranslationInput } from '@/types/common'
+
+const categorySchema = z.object({
+  parentId: z.string().trim().optional(),
+  name: z.string().trim().min(1),
+  slug: z.string().trim().optional(),
+  description: z.string().trim().optional(),
+  sortOrder: z.coerce.number().int().min(0).default(0),
+  isActive: z.boolean().default(true),
+  translations: z.array(z.custom<TranslationInput>()).default([]),
+})
+
+type CategoryFormValues = z.infer<typeof categorySchema>
+
+function normalizeCategoryPayload(values: CategoryFormValues) {
+  const translations = (values.translations ?? [])
+    .map((translation) => ({
+      ...translation,
+      name: translation.name?.trim() ?? '',
+      description: translation.description?.trim() || undefined,
+    }))
+    .filter((translation) => translation.name || translation.description)
+
+  const invalidTranslation = translations.find((translation) => !translation.name)
+
+  if (invalidTranslation) {
+    throw new Error(`Translation name is required for ${invalidTranslation.language}`)
+  }
+
+  return {
+    parentId: values.parentId?.trim() || undefined,
+    name: values.name.trim(),
+    slug: values.slug?.trim() || undefined,
+    description: values.description?.trim() || undefined,
+    sortOrder: values.sortOrder,
+    isActive: values.isActive,
+    translations,
+  }
+}
+
+function CategoryTreeView({ items }: { items: Category[] }) {
+  if (!items.length) {
+    return <EmptyState title="No categories yet" description="Create categories to organize products and master imports." />
+  }
+
+  return (
+    <div className="space-y-3">
+      {items.map((category) => (
+        <div key={category.id} className="rounded-md border border-slate-200 bg-slate-50/80 p-4">
+          <div className="flex items-center justify-between gap-3">
+            <p className="font-medium text-slate-900">{getDisplayName(category)}</p>
+            <StatusBadge value={category.isActive ? 'ACTIVE' : 'INACTIVE'} />
+          </div>
+          {category.children?.length ? (
+            <div className="mt-4 space-y-3 border-l border-dashed border-border pl-4">
+              <CategoryTreeView items={category.children} />
+            </div>
+          ) : null}
+        </div>
+      ))}
+    </div>
+  )
+}
+
+export function CategoriesPage() {
+  const permissions = usePermissions()
+  const [page, setPage] = useState(1)
+  const [search, setSearch] = useState('')
+  const [view, setView] = useState<'list' | 'tree'>('list')
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null)
+  const [deletingCategory, setDeletingCategory] = useState<Category | null>(null)
+  const debouncedSearch = useDebounce(search)
+
+  const categoriesQuery = useCategoriesQuery({ page, limit: 12, search: debouncedSearch || undefined })
+  const categoryTreeQuery = useCategoryTreeQuery()
+  const createCategoryMutation = useCreateCategoryMutation()
+  const updateCategoryMutation = useUpdateCategoryMutation()
+  const deleteCategoryMutation = useDeleteCategoryMutation()
+  const parentOptions = useMemo(() => categoriesQuery.data?.items ?? [], [categoriesQuery.data?.items])
+  const form = useForm({
+    resolver: zodResolver(categorySchema),
+    defaultValues: {
+      parentId: '',
+      name: '',
+      slug: '',
+      description: '',
+      sortOrder: 0,
+      isActive: true,
+      translations: [],
+    },
+  })
+  const isActive = Boolean(useWatch({ control: form.control, name: 'isActive' }))
+
+  const openCreate = () => {
+    setEditingCategory(null)
+    form.reset({ parentId: '', name: '', slug: '', description: '', sortOrder: 0, isActive: true, translations: [] })
+    setDialogOpen(true)
+  }
+
+  const openEdit = (category: Category) => {
+    setEditingCategory(category)
+    form.reset({
+      parentId: category.parentId ?? '',
+      name: category.name ?? '',
+      slug: category.slug,
+      description: category.description ?? '',
+      sortOrder: category.sortOrder,
+      isActive: category.isActive,
+      translations: category.translations ?? [],
+    })
+    setDialogOpen(true)
+  }
+
+  const onSubmit = form.handleSubmit(async (values) => {
+    try {
+      const payload = normalizeCategoryPayload(values)
+
+      if (editingCategory) {
+        await updateCategoryMutation.mutateAsync({ id: editingCategory.id, payload })
+        toast.success('Category updated')
+      } else {
+        await createCategoryMutation.mutateAsync(payload)
+        toast.success('Category created')
+      }
+      setDialogOpen(false)
+    } catch (error) {
+      toast.error(parseApiError(error).message)
+    }
+  })
+
+  if (categoriesQuery.isLoading && categoryTreeQuery.isLoading) {
+    return <LoadingState label="Loading categories..." />
+  }
+
+  return (
+    <div className="space-y-6">
+      <PageHeader
+        eyebrow="Catalog"
+        title="Categories"
+        description="Manage localized product categories in list or tree form."
+        actions={
+          permissions.canManageCatalog ? (
+            <Button onClick={openCreate}>
+              <Plus className="h-4 w-4" />
+              Add category
+            </Button>
+          ) : null
+        }
+      />
+      <FilterBar className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto]">
+        <SearchInput value={search} onChange={(event) => {
+          setPage(1)
+          setSearch(event.target.value)
+        }} placeholder="Search categories..." />
+        <div className="flex items-center gap-1 rounded-md border border-slate-200 bg-slate-50/80 p-1">
+          <Button size="sm" variant={view === 'list' ? 'default' : 'ghost'} onClick={() => setView('list')}>
+            List
+          </Button>
+          <Button size="sm" variant={view === 'tree' ? 'default' : 'ghost'} onClick={() => setView('tree')}>
+            Tree
+          </Button>
+        </div>
+      </FilterBar>
+
+      {view === 'list' ? (
+        <>
+          <DataTable
+            columns={[
+              { key: 'name', header: 'Category', render: (category) => <div><p className="font-medium text-slate-900">{getDisplayName(category)}</p><p className="text-xs text-slate-500">{category.slug}</p></div> },
+              { key: 'parent', header: 'Parent', render: (category) => category.parent ? getDisplayName(category.parent) : '—' },
+              { key: 'children', header: 'Children', render: (category) => category.children?.length ?? 0 },
+              { key: 'status', header: 'Status', render: (category) => <StatusBadge value={category.isActive ? 'ACTIVE' : 'INACTIVE'} /> },
+              {
+                key: 'actions',
+                header: 'Actions',
+                render: (category) => (
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="outline" onClick={() => openEdit(category)} disabled={!permissions.canManageCatalog}>Edit</Button>
+                    <Button size="sm" variant="ghost" onClick={() => setDeletingCategory(category)} disabled={!permissions.canManageCatalog}>Archive</Button>
+                  </div>
+                ),
+              },
+            ]}
+            items={categoriesQuery.data?.items ?? []}
+            empty={<EmptyState title="No categories yet" description="Create categories to organize products." />}
+            rowKey={(category) => category.id}
+          />
+          <PaginationControls pagination={categoriesQuery.data?.pagination} onPageChange={setPage} />
+        </>
+      ) : (
+        <CategoryTreeView items={categoryTreeQuery.data ?? []} />
+      )}
+
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>{editingCategory ? 'Edit category' : 'Add category'}</DialogTitle>
+          </DialogHeader>
+          <form className="space-y-5" onSubmit={onSubmit}>
+            <div className="grid gap-4 md:grid-cols-2">
+              <FormField label="Name" error={form.formState.errors.name?.message}>
+                <Input placeholder="Dairy" {...form.register('name')} />
+              </FormField>
+              <FormField label="Slug" description="Optional. Use it when you want a stable readable identifier.">
+                <Input placeholder="dairy" {...form.register('slug')} />
+              </FormField>
+              <FormField label="Parent category">
+                <ControlledSelect
+                  control={form.control}
+                  name="parentId"
+                  placeholder="No parent"
+                  emptyOptionLabel="No parent"
+                  options={parentOptions
+                    .filter((item) => item.id !== editingCategory?.id)
+                    .map((category) => ({
+                      value: category.id,
+                      label: getDisplayName(category),
+                    }))}
+                />
+              </FormField>
+              <FormField label="Sort order">
+                <Input type="number" {...form.register('sortOrder')} />
+              </FormField>
+            </div>
+            <FormField label="Description">
+              <Textarea placeholder="Milk, curd, paneer, butter, and chilled dairy items." {...form.register('description')} />
+            </FormField>
+            <CheckboxField
+              checked={isActive}
+              label="Active"
+              description="Inactive categories stay attached to history but should not be used in new catalog setup."
+              onCheckedChange={(checked) => form.setValue('isActive', checked, { shouldDirty: true })}
+            />
+            <Controller
+              control={form.control}
+              name="translations"
+              render={({ field }) => (
+                <FormField label="Translations">
+                  <TranslationFields value={field.value} onChange={field.onChange} />
+                </FormField>
+              )}
+            />
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" type="button" onClick={() => setDialogOpen(false)}>Cancel</Button>
+              <Button disabled={createCategoryMutation.isPending || updateCategoryMutation.isPending} type="submit">
+                {editingCategory ? 'Update category' : 'Create category'}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <ConfirmDialog
+        open={Boolean(deletingCategory)}
+        onOpenChange={(open) => !open && setDeletingCategory(null)}
+        title="Archive category?"
+        description={deletingCategory ? `${getDisplayName(deletingCategory)} will be archived.` : undefined}
+        confirmLabel="Archive"
+        onConfirm={async () => {
+          if (!deletingCategory) return
+          try {
+            await deleteCategoryMutation.mutateAsync(deletingCategory.id)
+            toast.success('Category archived')
+            setDeletingCategory(null)
+          } catch {
+            toast.error('Could not archive category')
+          }
+        }}
+      />
+    </div>
+  )
+}
