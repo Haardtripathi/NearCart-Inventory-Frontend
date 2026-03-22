@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate } from 'react-router-dom'
+import { createBrowserRouter } from 'react-router-dom'
 
 import { AppShell, ProtectedRoute } from '@/components/layout/AppShell'
 import { AccessDeniedPage } from '@/pages/errors/AccessDeniedPage'
@@ -6,6 +6,12 @@ import { NotFoundPage } from '@/pages/errors/NotFoundPage'
 import { RouteErrorPage } from '@/pages/errors/RouteErrorPage'
 
 export const router = createBrowserRouter([
+  {
+    path: '/',
+    lazy: async () => ({
+      Component: (await import('@/pages/public/HomePage')).HomePage,
+    }),
+  },
   {
     path: '/login',
     lazy: async () => ({
@@ -31,21 +37,28 @@ export const router = createBrowserRouter([
     }),
   },
   {
+    path: '/privacy',
+    lazy: async () => ({
+      Component: (await import('@/pages/public/LegalPages')).PrivacyPage,
+    }),
+  },
+  {
+    path: '/terms',
+    lazy: async () => ({
+      Component: (await import('@/pages/public/LegalPages')).TermsPage,
+    }),
+  },
+  {
     path: '/access-denied',
     element: <AccessDeniedPage />,
   },
   {
-    path: '/',
     element: <ProtectedRoute />,
     errorElement: <RouteErrorPage />,
     children: [
       {
         element: <AppShell />,
         children: [
-          {
-            index: true,
-            element: <Navigate to="/dashboard" replace />,
-          },
           {
             path: 'organizations',
             lazy: async () => ({
