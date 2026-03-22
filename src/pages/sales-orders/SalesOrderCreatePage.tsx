@@ -15,6 +15,7 @@ import { DisclosurePanel, PageHeader, SectionCard } from '@/components/common'
 import { Button, Input, Textarea } from '@/components/ui'
 import { usePermissions } from '@/hooks/usePermissions'
 import { ORDER_SOURCES, PAYMENT_STATUSES } from '@/types/common'
+import type { SalesOrderPayload } from '@/types/inventory'
 import { getDisplayName } from '@/lib/utils'
 import { getOrderSourceLabel, getPaymentStatusLabel } from '@/lib/labels'
 
@@ -39,6 +40,29 @@ const salesOrderSchema = z.object({
 })
 
 type SalesOrderFormValues = z.input<typeof salesOrderSchema>
+
+function normalizeSalesOrderPayload(
+  values: SalesOrderFormValues,
+  submitStatus: 'DRAFT' | 'PENDING',
+): SalesOrderPayload {
+  return {
+    branchId: values.branchId,
+    customerId: values.customerId?.trim() ? values.customerId : undefined,
+    orderNumber: values.orderNumber?.trim() ? values.orderNumber : undefined,
+    source: values.source,
+    status: submitStatus,
+    paymentStatus: values.paymentStatus,
+    notes: values.notes?.trim() ? values.notes : undefined,
+    items: values.items.map((item) => ({
+      productId: item.productId,
+      variantId: item.variantId,
+      quantity: item.quantity as string | number,
+      unitPrice: item.unitPrice as string | number,
+      taxRate: item.taxRate as string | number | undefined,
+      discountAmount: item.discountAmount as string | number | undefined,
+    })),
+  }
+}
 
 function SalesOrderItemRow({
   control,
@@ -143,10 +167,7 @@ export function SalesOrderCreatePage() {
 
   const onSubmit = form.handleSubmit(async (values) => {
     try {
-      const order = await createSalesOrderMutation.mutateAsync({
-        ...values,
-        status: submitStatus,
-      })
+      const order = await createSalesOrderMutation.mutateAsync(normalizeSalesOrderPayload(values, submitStatus))
       toast.success(`Sales order ${submitStatus === 'DRAFT' ? 'saved as draft' : 'created'}`)
       navigate(`/sales-orders/${order.id}`)
     } catch {

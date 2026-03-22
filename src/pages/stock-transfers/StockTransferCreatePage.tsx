@@ -12,6 +12,7 @@ import { DirtyStatePrompt, FormField } from '@/components/forms'
 import { DisclosurePanel, PageHeader, SectionCard } from '@/components/common'
 import { Button, Input, Textarea } from '@/components/ui'
 import { usePermissions } from '@/hooks/usePermissions'
+import type { StockTransferPayload } from '@/types/inventory'
 
 const transferItemSchema = z.object({
   productId: z.string().trim().min(1),
@@ -32,6 +33,21 @@ const stockTransferSchema = z.object({
 })
 
 type StockTransferFormValues = z.input<typeof stockTransferSchema>
+
+function normalizeStockTransferPayload(values: StockTransferFormValues): StockTransferPayload {
+  return {
+    fromBranchId: values.fromBranchId,
+    toBranchId: values.toBranchId,
+    transferNumber: values.transferNumber?.trim() ? values.transferNumber : undefined,
+    notes: values.notes?.trim() ? values.notes : undefined,
+    items: values.items.map((item) => ({
+      productId: item.productId,
+      variantId: item.variantId,
+      quantity: item.quantity as string | number,
+      unitCost: item.unitCost == null || item.unitCost === '' ? undefined : (item.unitCost as string | number),
+    })),
+  }
+}
 
 function TransferItemRow({
   control,
@@ -109,14 +125,14 @@ export function StockTransferCreatePage() {
       toBranchId: '',
       transferNumber: '',
       notes: '',
-      items: [{ productId: '', variantId: '', quantity: 1, unitCost: 0 }],
+      items: [{ productId: '', variantId: '', quantity: 1, unitCost: undefined }],
     },
   })
   const itemsFieldArray = useFieldArray({ control: form.control, name: 'items' })
 
   const onSubmit = form.handleSubmit(async (values) => {
     try {
-      const transfer = await createTransferMutation.mutateAsync(values)
+      const transfer = await createTransferMutation.mutateAsync(normalizeStockTransferPayload(values))
       toast.success('Transfer draft created')
       navigate(`/stock-transfers/${transfer.id}`)
     } catch {
@@ -179,7 +195,7 @@ export function StockTransferCreatePage() {
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <h3 className="text-base font-semibold text-slate-900">Items</h3>
-              <Button type="button" variant="outline" onClick={() => itemsFieldArray.append({ productId: '', variantId: '', quantity: 1, unitCost: 0 })}>
+              <Button type="button" variant="outline" onClick={() => itemsFieldArray.append({ productId: '', variantId: '', quantity: 1, unitCost: undefined })}>
                 Add line
               </Button>
             </div>

@@ -15,6 +15,7 @@ import { DisclosurePanel, PageHeader, SectionCard } from '@/components/common'
 import { Button, DatePicker, Input, Textarea } from '@/components/ui'
 import { usePermissions } from '@/hooks/usePermissions'
 import { formatDateForInput, parseDateValue } from '@/lib/utils'
+import type { PurchasePayload } from '@/types/inventory'
 
 const purchaseItemSchema = z.object({
   productId: z.string().trim().min(1),
@@ -38,6 +39,31 @@ const purchaseSchema = z.object({
 })
 
 type PurchaseFormValues = z.input<typeof purchaseSchema>
+
+function normalizeOptionalDate(value?: string) {
+  return value?.trim() ? value : undefined
+}
+
+function normalizePurchasePayload(values: PurchaseFormValues): PurchasePayload {
+  return {
+    branchId: values.branchId,
+    supplierId: values.supplierId?.trim() ? values.supplierId : undefined,
+    receiptNumber: values.receiptNumber?.trim() ? values.receiptNumber : undefined,
+    invoiceDate: normalizeOptionalDate(values.invoiceDate),
+    receivedAt: normalizeOptionalDate(values.receivedAt),
+    notes: values.notes?.trim() ? values.notes : undefined,
+    items: values.items.map((item) => ({
+      productId: item.productId,
+      variantId: item.variantId,
+      quantity: item.quantity as string | number,
+      unitCost: item.unitCost as string | number,
+      taxRate: item.taxRate as string | number | undefined,
+      discountAmount: item.discountAmount as string | number | undefined,
+      batchNumber: item.batchNumber?.trim() ? item.batchNumber : undefined,
+      expiryDate: normalizeOptionalDate(item.expiryDate),
+    })),
+  }
+}
 
 function PurchaseItemRow({
   control,
@@ -156,7 +182,7 @@ export function PurchaseCreatePage() {
 
   const onSubmit = form.handleSubmit(async (values) => {
     try {
-      const purchase = await createPurchaseMutation.mutateAsync(values)
+      const purchase = await createPurchaseMutation.mutateAsync(normalizePurchasePayload(values))
       if (submitMode === 'post') {
         await postPurchaseMutation.mutateAsync(purchase.id)
         toast.success('Purchase created and posted')

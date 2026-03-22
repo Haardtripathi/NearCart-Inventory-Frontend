@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
-import { Plus, Upload } from 'lucide-react'
+import { ImageOff, Plus, Upload } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 
 import { useBrandsQuery } from '@/features/brands/brands.api'
@@ -126,7 +126,29 @@ export function ProductsPage() {
 
       <DataTable
         columns={[
-          { key: 'name', header: t('product'), render: (product) => <div><p className="font-medium text-slate-900">{getDisplayName(product)}</p><p className="text-xs text-slate-500">{product.variants.map((variant) => variant.sku).join(', ')}</p></div> },
+          {
+            key: 'name',
+            header: t('product'),
+            render: (product) => {
+              const imageUrl = product.imageUrl ?? product.variants.find((variant) => variant.imageUrl)?.imageUrl
+
+              return (
+                <div className="flex items-center gap-3">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-slate-100">
+                    {imageUrl ? (
+                      <img alt={getDisplayName(product)} className="h-full w-full object-cover" src={imageUrl} />
+                    ) : (
+                      <ImageOff className="h-4 w-4 text-slate-400" />
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="truncate font-medium text-slate-900">{getDisplayName(product)}</p>
+                    <p className="truncate text-xs text-slate-500">{product.variants.map((variant) => variant.sku).join(', ')}</p>
+                  </div>
+                </div>
+              )
+            },
+          },
           { key: 'category', header: t('category', { ns: 'common' }), render: (product) => product.category ? getDisplayName(product.category) : '—' },
           { key: 'brand', header: t('brand'), render: (product) => product.brand ? getDisplayName(product.brand, product.brand.name) : '—' },
           { key: 'type', header: t('type', { ns: 'common' }), render: (product) => t(`typeValues.${product.productType}`, { defaultValue: product.productType }) },
