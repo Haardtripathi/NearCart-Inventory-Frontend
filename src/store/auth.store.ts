@@ -21,8 +21,13 @@ function resolveActiveOrganizationId(
   requestedOrganizationId: string | null | undefined,
   memberships: OrganizationMembership[],
   fallbackOrganizationId?: string | null,
+  role?: UserRole | null,
 ) {
   const membershipIds = new Set(memberships.map((membership) => membership.organizationId))
+
+  if (role === 'SUPER_ADMIN') {
+    return requestedOrganizationId ?? fallbackOrganizationId ?? null
+  }
 
   if (requestedOrganizationId && membershipIds.has(requestedOrganizationId)) {
     return requestedOrganizationId
@@ -53,7 +58,12 @@ export const useAuthStore = create<AuthState>()(
           user: session.user,
           role: session.role,
           memberships: session.memberships,
-          activeOrganizationId: resolveActiveOrganizationId(session.activeOrganizationId, session.memberships),
+          activeOrganizationId: resolveActiveOrganizationId(
+            session.activeOrganizationId,
+            session.memberships,
+            undefined,
+            session.role,
+          ),
         }),
       syncProfile: (profile) =>
         set((state) => ({
@@ -72,6 +82,7 @@ export const useAuthStore = create<AuthState>()(
             profile.activeOrganizationId,
             profile.memberships,
             state.activeOrganizationId,
+            profile.role,
           ),
         })),
       updateUser: (user) =>

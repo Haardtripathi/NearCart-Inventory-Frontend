@@ -284,7 +284,7 @@ export function ControlledSelect<
       name={name}
       render={({ field }) => (
         <Select
-          value={field.value || (emptyOptionLabel ? EMPTY_OPTION_VALUE : undefined)}
+          value={field.value || (emptyOptionLabel ? EMPTY_OPTION_VALUE : '')}
           onValueChange={(value) => {
             if (value === ADD_ACTION_VALUE) {
               onAddAction?.()

@@ -17,7 +17,7 @@ import { MasterCatalogCategoryDialog } from '@/components/master-catalog/MasterC
 import { MasterCatalogItemDialog } from '@/components/master-catalog/MasterCatalogItemDialog'
 import { IndustryDialog } from '@/components/platform/IndustryDialog'
 import { DataTable, EmptyState, FilterBar, InlineNotice, LoadingState, PageHeader, PaginationControls, SearchInput, SectionCard, StatusBadge } from '@/components/common'
-import { Badge, Button, Card, CardContent, OptionSelect, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui'
+import { Badge, Button, OptionSelect, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui'
 import { getDisplayDescription, getDisplayName } from '@/lib/utils'
 import type { MasterCatalogCategory, MasterCatalogItem } from '@/types/masterCatalog'
 
@@ -277,40 +277,6 @@ export function MasterCatalogPage() {
         )}
       />
 
-      <div className="flex items-center gap-2 overflow-x-auto border-b border-slate-200 pb-2">
-        <button
-          type="button"
-          className={
-            resolvedCategoryId
-              ? 'rounded-md px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900'
-              : 'rounded-md bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700'
-          }
-          onClick={() => {
-            setPage(1)
-            setCategoryId('')
-          }}
-        >
-          {t('allItems')}
-        </button>
-        {topLevelCategories.slice(0, 8).map((category) => (
-          <button
-            key={category.id}
-            type="button"
-            className={
-              resolvedCategoryId === category.id
-                ? 'rounded-md bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700'
-                : 'rounded-md px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900'
-            }
-            onClick={() => {
-              setPage(1)
-              setCategoryId(category.id)
-            }}
-          >
-            {getDisplayName(category)}
-          </button>
-        ))}
-      </div>
-
       <FilterBar className="grid gap-3 md:grid-cols-2 xl:grid-cols-[minmax(240px,1fr)_180px_180px_auto]">
         <SearchInput
           value={search}
@@ -359,6 +325,89 @@ export function MasterCatalogPage() {
         </Button>
       </FilterBar>
 
+      <div className="rounded-md border border-slate-200 bg-white shadow-[0_3px_12px_rgba(15,23,42,0.04)]">
+        <div className="border-b border-slate-200 p-4">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div>
+              <h2 className="text-base font-semibold text-slate-900">{t('categories', { ns: 'common' })}</h2>
+              <p className="text-sm text-slate-500">
+                {activeCategory
+                  ? t('showingCategory', { category: getDisplayName(activeCategory) })
+                  : t('browseDescription')}
+              </p>
+            </div>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => {
+                setPage(1)
+                setCategorySearch('')
+                setCategoryId('')
+              }}
+            >
+              {t('reset', { ns: 'common' })}
+            </Button>
+          </div>
+
+          <div className="mt-4 flex flex-wrap gap-2">
+            <button
+              type="button"
+              className={
+                resolvedCategoryId
+                  ? 'rounded-md px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                  : 'rounded-md bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700'
+              }
+              onClick={() => {
+                setPage(1)
+                setCategoryId('')
+              }}
+            >
+              {t('allItems')}
+            </button>
+            {topLevelCategories.slice(0, 8).map((category) => (
+              <button
+                key={category.id}
+                type="button"
+                className={
+                  resolvedCategoryId === category.id
+                    ? 'rounded-md bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700'
+                    : 'rounded-md px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                }
+                onClick={() => {
+                  setPage(1)
+                  setCategoryId(category.id)
+                }}
+              >
+                {getDisplayName(category)}
+              </button>
+            ))}
+          </div>
+
+          <div className="mt-4">
+            <SearchInput
+              placeholder={t('filterCategories')}
+              value={categorySearch}
+              onChange={(event) => setCategorySearch(event.target.value)}
+            />
+          </div>
+        </div>
+
+        <div className="p-4">
+          {visibleCategoryTree.length ? (
+            <CategoryTree
+              items={visibleCategoryTree}
+              selectedCategoryId={resolvedCategoryId}
+              onSelect={(nextCategoryId) => {
+                setPage(1)
+                setCategoryId(nextCategoryId)
+              }}
+            />
+          ) : (
+            <EmptyState className="min-h-[160px]" title={t('noCategoriesTitle')} description={t('noCategoriesDescription')} />
+          )}
+        </div>
+      </div>
+
       {blockedImportCount > 0 ? (
         <InlineNotice className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between" tone="warning">
           <span>{t('importBlockedDescription')}</span>
@@ -368,174 +417,127 @@ export function MasterCatalogPage() {
         </InlineNotice>
       ) : null}
 
-      <div className="grid gap-4 xl:grid-cols-[240px_minmax(0,1fr)]">
-        <Card className="h-fit">
-          <CardContent className="p-0">
-            <div className="border-b border-slate-200 p-4">
-              <div className="mb-3 flex items-center justify-between">
-                <div>
-                  <h2 className="text-base font-semibold text-slate-900">{t('categories', { ns: 'common' })}</h2>
-                  <p className="text-sm text-slate-500">{t('categoryTree')}</p>
-                </div>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => {
-                    setPage(1)
-                    setCategoryId('')
-                  }}
-                >
-                  {t('reset', { ns: 'common' })}
-                </Button>
-              </div>
-              <SearchInput
-                placeholder={t('filterCategories')}
-                value={categorySearch}
-                onChange={(event) => setCategorySearch(event.target.value)}
-              />
-            </div>
-
-            <div className="p-4">
-              {visibleCategoryTree.length ? (
-                <CategoryTree
-                  items={visibleCategoryTree}
-                  selectedCategoryId={resolvedCategoryId}
-                  onSelect={(nextCategoryId) => {
-                    setPage(1)
-                    setCategoryId(nextCategoryId)
-                  }}
-                />
-              ) : (
-                <EmptyState className="min-h-[160px]" title={t('noCategoriesTitle')} description={t('noCategoriesDescription')} />
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        <div className="space-y-5">
-          <SectionCard
-            title={t('browseTitle')}
-            description={activeCategory ? t('showingCategory', { category: getDisplayName(activeCategory) }) : t('browseDescription')}
-            action={<Badge tone="muted">{itemsQuery.data?.pagination?.totalItems ?? 0} {t('items', { ns: 'common' })}</Badge>}
-          >
-            <div className="mb-4 flex flex-wrap items-center gap-2">
-              <Badge tone="muted">{t('selectedIndustry')}: {selectedIndustryName}</Badge>
-              <Badge tone="muted">{t('selectedCategory')}: {activeCategory ? getDisplayName(activeCategory) : t('allItems')}</Badge>
-              <Badge tone={blockedImportCount > 0 ? 'warning' : 'success'}>
-                {blockedImportCount > 0 ? t('requiresMatchingIndustry') : t('readyToImport')}
-              </Badge>
-            </div>
-
-            <DataTable
-              columns={[
-                {
-                  key: 'name',
-                  header: t('item', { ns: 'common' }),
-                  render: (item) => (
-                    <div>
-                      <p className="font-semibold text-slate-900">{getDisplayName(item)}</p>
-                      <p className="text-xs text-slate-500">{getDisplayDescription(item) || item.code}</p>
-                    </div>
-                  ),
-                },
-                {
-                  key: 'category',
-                  header: t('category', { ns: 'common' }),
-                  render: (item) => item.category ? getDisplayName(item.category) : t('uncategorized', { ns: 'common' }),
-                },
-                {
-                  key: 'unit',
-                  header: t('unit', { ns: 'common' }),
-                  render: (item) => {
-                    const unitCode = item.defaultUnitCode?.trim()
-                    if (!unitCode) {
-                      return '—'
-                    }
-
-                    return unitLabelByCode.get(unitCode.toUpperCase()) ?? unitCode
-                  },
-                },
-                {
-                  key: 'variants',
-                  header: t('variants', { ns: 'products' }),
-                  render: (item) => item.variantTemplates.length,
-                },
-                {
-                  key: 'status',
-                  header: t('status', { ns: 'common' }),
-                  render: (item) => <StatusBadge value={item.isActive ? 'ACTIVE' : 'INACTIVE'} />,
-                },
-                {
-                  key: 'importStatus',
-                  header: t('import'),
-                  render: (item) => {
-                    const state = getImportState(item)
-                    return <Badge tone={state.tone}>{t(state.label)}</Badge>
-                  },
-                },
-                {
-                  key: 'actions',
-                  header: t('actions', { ns: 'common' }),
-                  render: (item) => (
-                    <div className="flex flex-wrap gap-2">
-                      <Button asChild size="sm" variant="outline">
-                        <Link to={`/master-catalog/items/${item.id}`}>{t('view', { ns: 'common' })}</Link>
-                      </Button>
-                      {permissions.canManageMasterPlatform ? (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => {
-                            setEditingItem(item)
-                            setItemDialogOpen(true)
-                          }}
-                        >
-                          <Pencil className="h-4 w-4" />
-                          {t('edit', { ns: 'common' })}
-                        </Button>
-                      ) : null}
-                      {item.alreadyImportedProductId ? (
-                        <Button asChild size="sm">
-                          <Link to={`/products/${item.alreadyImportedProductId}`}>{t('openImportedProduct')}</Link>
-                        </Button>
-                      ) : permissions.canManageMasterImports ? (
-                        <Button size="sm" disabled={!item.importable} onClick={() => setImportingItem(item)}>
-                          {t('import')}
-                        </Button>
-                      ) : null}
-                    </div>
-                  ),
-                },
-              ]}
-              items={items}
-              empty={
-                <EmptyState
-                  title={t('noMasterItemsTitle')}
-                  description={t('noMasterItemsDescription')}
-                  action={
-                    permissions.canManageMasterPlatform ? (
-                      <Button
-                        onClick={() => {
-                          setEditingItem(null)
-                          setItemDialogOpen(true)
-                        }}
-                      >
-                        <Plus className="h-4 w-4" />
-                        {t('addMasterItem')}
-                      </Button>
-                    ) : undefined
-                  }
-                />
-              }
-              rowKey={(item) => item.id}
-            />
-
-            <div className="mt-5">
-              <PaginationControls pagination={itemsQuery.data?.pagination} onPageChange={setPage} />
-            </div>
-          </SectionCard>
+      <SectionCard
+        title={t('browseTitle')}
+        description={activeCategory ? t('showingCategory', { category: getDisplayName(activeCategory) }) : t('browseDescription')}
+        action={<Badge tone="muted">{itemsQuery.data?.pagination?.totalItems ?? 0} {t('items', { ns: 'common' })}</Badge>}
+      >
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          <Badge tone="muted">{t('selectedIndustry')}: {selectedIndustryName}</Badge>
+          <Badge tone="muted">{t('selectedCategory')}: {activeCategory ? getDisplayName(activeCategory) : t('allItems')}</Badge>
+          <Badge tone={blockedImportCount > 0 ? 'warning' : 'success'}>
+            {blockedImportCount > 0 ? t('requiresMatchingIndustry') : t('readyToImport')}
+          </Badge>
         </div>
-      </div>
+
+        <DataTable
+          columns={[
+            {
+              key: 'name',
+              header: t('item', { ns: 'common' }),
+              render: (item) => (
+                <div>
+                  <p className="font-semibold text-slate-900">{getDisplayName(item)}</p>
+                  <p className="text-xs text-slate-500">{getDisplayDescription(item) || item.code}</p>
+                </div>
+              ),
+            },
+            {
+              key: 'category',
+              header: t('category', { ns: 'common' }),
+              render: (item) => item.category ? getDisplayName(item.category) : t('uncategorized', { ns: 'common' }),
+            },
+            {
+              key: 'unit',
+              header: t('unit', { ns: 'common' }),
+              render: (item) => {
+                const unitCode = item.defaultUnitCode?.trim()
+                if (!unitCode) {
+                  return '—'
+                }
+
+                return unitLabelByCode.get(unitCode.toUpperCase()) ?? unitCode
+              },
+            },
+            {
+              key: 'variants',
+              header: t('variants', { ns: 'products' }),
+              render: (item) => item.variantTemplates.length,
+            },
+            {
+              key: 'status',
+              header: t('status', { ns: 'common' }),
+              render: (item) => <StatusBadge value={item.isActive ? 'ACTIVE' : 'INACTIVE'} />,
+            },
+            {
+              key: 'importStatus',
+              header: t('import'),
+              render: (item) => {
+                const state = getImportState(item)
+                return <Badge tone={state.tone}>{t(state.label)}</Badge>
+              },
+            },
+            {
+              key: 'actions',
+              header: t('actions', { ns: 'common' }),
+              render: (item) => (
+                <div className="flex flex-wrap gap-2">
+                  <Button asChild size="sm" variant="outline">
+                    <Link to={`/master-catalog/items/${item.id}`}>{t('view', { ns: 'common' })}</Link>
+                  </Button>
+                  {permissions.canManageMasterPlatform ? (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => {
+                        setEditingItem(item)
+                        setItemDialogOpen(true)
+                      }}
+                    >
+                      <Pencil className="h-4 w-4" />
+                      {t('edit', { ns: 'common' })}
+                    </Button>
+                  ) : null}
+                  {item.alreadyImportedProductId ? (
+                    <Button asChild size="sm">
+                      <Link to={`/products/${item.alreadyImportedProductId}`}>{t('openImportedProduct')}</Link>
+                    </Button>
+                  ) : permissions.canManageMasterImports ? (
+                    <Button size="sm" disabled={!item.importable} onClick={() => setImportingItem(item)}>
+                      {t('import')}
+                    </Button>
+                  ) : null}
+                </div>
+              ),
+            },
+          ]}
+          items={items}
+          empty={
+            <EmptyState
+              title={t('noMasterItemsTitle')}
+              description={t('noMasterItemsDescription')}
+              action={
+                permissions.canManageMasterPlatform ? (
+                  <Button
+                    onClick={() => {
+                      setEditingItem(null)
+                      setItemDialogOpen(true)
+                    }}
+                  >
+                    <Plus className="h-4 w-4" />
+                    {t('addMasterItem')}
+                  </Button>
+                ) : undefined
+              }
+            />
+          }
+          rowKey={(item) => item.id}
+        />
+
+        <div className="mt-5">
+          <PaginationControls pagination={itemsQuery.data?.pagination} onPageChange={setPage} />
+        </div>
+      </SectionCard>
 
       {permissions.canManageMasterPlatform ? (
         <Tabs defaultValue="categories">

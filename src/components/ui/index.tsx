@@ -164,7 +164,7 @@ export function OptionSelect({
 }) {
   const { t } = useTranslation('common')
   const hasValue = Boolean(value && options.some((option) => option.value === value))
-  const resolvedValue = hasValue ? value : emptyLabel ? EMPTY_SELECT_VALUE : undefined
+  const resolvedValue = hasValue ? value : emptyLabel ? EMPTY_SELECT_VALUE : ''
   const resolvedPlaceholder = placeholder ?? t('selectOption')
 
   return (

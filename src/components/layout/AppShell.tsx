@@ -28,6 +28,7 @@ import { Link, Navigate, Outlet, useLocation, useNavigation } from 'react-router
 import { LanguageSwitcher } from '@/components/language/LanguageSwitcher'
 import { BreadcrumbTrail, LoadingState } from '@/components/common'
 import { Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, OptionSelect, Sheet, SheetContent } from '@/components/ui'
+import { useMyOrganizationsQuery } from '@/features/organizations/organizations.api'
 import { useAuth } from '@/hooks/useAuth'
 import { useAuthStore } from '@/store/auth.store'
 
@@ -515,9 +516,23 @@ export function AppShell() {
   const pathname = useLocation().pathname
   const navigation = useNavigation()
   const { user, memberships, activeOrganizationId, role } = useAuth()
+  const organizationsQuery = useMyOrganizationsQuery()
   const setActiveOrganizationId = useAuthStore((state) => state.setActiveOrganizationId)
   const clearSession = useAuthStore((state) => state.clearSession)
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
+  const organizationOptions = useMemo(
+    () =>
+      (role === 'SUPER_ADMIN'
+        ? organizationsQuery.data?.map((organization) => ({
+            value: organization.id,
+            label: organization.name,
+          })) ?? []
+        : memberships.map((membership) => ({
+            value: membership.organizationId,
+            label: membership.organization.name,
+          }))),
+    [memberships, organizationsQuery.data, role],
+  )
 
   const activeMembership = useMemo(
     () => memberships.find((membership) => membership.organizationId === activeOrganizationId),
@@ -615,14 +630,11 @@ export function AppShell() {
               </div>
               <div className="hidden min-h-16 items-center justify-between gap-4 px-5 lg:flex xl:px-6">
                 <div className="flex min-w-0 items-center gap-3">
-                  {memberships.length ? (
+                  {organizationOptions.length ? (
                     <OptionSelect
                       value={activeOrganizationId ?? ''}
                       onValueChange={(value) => setActiveOrganizationId(value || null)}
-                      options={memberships.map((membership) => ({
-                        value: membership.organizationId,
-                        label: membership.organization.name,
-                      }))}
+                      options={organizationOptions}
                       placeholder={t('selectOrganization', { ns: 'common' })}
                       className="min-w-[240px]"
                     />
@@ -686,14 +698,11 @@ export function AppShell() {
                   </DropdownMenu>
                 </div>
 
-                {memberships.length ? (
+                {organizationOptions.length ? (
                   <OptionSelect
                     value={activeOrganizationId ?? ''}
                     onValueChange={(value) => setActiveOrganizationId(value || null)}
-                    options={memberships.map((membership) => ({
-                      value: membership.organizationId,
-                      label: membership.organization.name,
-                    }))}
+                    options={organizationOptions}
                     placeholder={t('selectOrganization', { ns: 'common' })}
                     className="w-full"
                   />
