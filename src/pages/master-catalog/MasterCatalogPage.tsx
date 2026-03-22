@@ -50,7 +50,11 @@ export function MasterCatalogPage() {
   const { t } = useTranslation(['masterCatalog', 'common'])
   const navigate = useNavigate()
   const permissions = usePermissions()
-  const { activeOrganization, defaultIndustryId } = useActiveOrganizationContext()
+  const {
+    activeOrganization,
+    defaultIndustryId,
+    isLoading: isActiveOrganizationLoading,
+  } = useActiveOrganizationContext()
   const industriesQuery = useIndustriesQuery()
   const unitsQuery = useUnitsQuery()
   const [industryId, setIndustryId] = useState('')
@@ -80,7 +84,7 @@ export function MasterCatalogPage() {
   const initializedOrganizationIdRef = useRef<string | null>(null)
 
   useEffect(() => {
-    if (!activeOrganization?.id || !industriesQuery.data?.length) {
+    if (isActiveOrganizationLoading || !activeOrganization?.id || !industriesQuery.data?.length) {
       return
     }
 
@@ -97,7 +101,7 @@ export function MasterCatalogPage() {
     setIndustryId(nextIndustryId)
     setCategoryId('')
     setPage(1)
-  }, [activeOrganization?.id, defaultIndustryId, industriesQuery.data])
+  }, [activeOrganization?.id, defaultIndustryId, industriesQuery.data, isActiveOrganizationLoading])
 
   const categoryTreeQuery = useMasterCatalogCategoryTreeQuery(resolvedIndustryId)
   const categoriesQuery = useMasterCatalogCategoriesQuery({
