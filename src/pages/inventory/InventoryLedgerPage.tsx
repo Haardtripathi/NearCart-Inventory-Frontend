@@ -39,7 +39,7 @@ export function InventoryLedgerPage() {
   const items = useMemo(() => ledgerQuery.data?.items ?? [], [ledgerQuery.data?.items])
 
   if (ledgerQuery.isLoading) {
-    return <LoadingState label="Loading inventory ledger..." />
+    return <LoadingState label="Loading inventory ledger..." variant="list" />
   }
 
   return (

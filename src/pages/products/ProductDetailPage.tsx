@@ -20,7 +20,7 @@ export function ProductDetailPage() {
   const ledgerItems = useMemo(() => (ledgerQuery.data?.items ?? []).slice(0, 8), [ledgerQuery.data?.items])
 
   if (productQuery.isLoading) {
-    return <LoadingState label={t('loadingData', { ns: 'common' })} />
+    return <LoadingState label={t('loadingData', { ns: 'common' })} variant="detail" />
   }
 
   if (!productQuery.data) {

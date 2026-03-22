@@ -25,7 +25,7 @@ export function StockTransfersPage() {
   })
 
   if (transfersQuery.isLoading) {
-    return <LoadingState label="Loading stock transfers..." />
+    return <LoadingState label="Loading stock transfers..." variant="list" />
   }
 
   return (

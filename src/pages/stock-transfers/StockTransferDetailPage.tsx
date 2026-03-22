@@ -14,7 +14,7 @@ export function StockTransferDetailPage() {
   const cancelMutation = useCancelStockTransferMutation()
 
   if (transferQuery.isLoading) {
-    return <LoadingState label="Loading stock transfer..." />
+    return <LoadingState label="Loading stock transfer..." variant="detail" />
   }
 
   if (!transferQuery.data) {

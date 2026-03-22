@@ -29,7 +29,7 @@ export function SalesOrdersPage() {
   })
 
   if (ordersQuery.isLoading) {
-    return <LoadingState label="Loading sales orders..." />
+    return <LoadingState label="Loading sales orders..." variant="list" />
   }
 
   return (

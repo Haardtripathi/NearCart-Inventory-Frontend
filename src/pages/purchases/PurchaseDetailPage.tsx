@@ -13,7 +13,7 @@ export function PurchaseDetailPage() {
   const postPurchaseMutation = usePostPurchaseMutation()
 
   if (purchaseQuery.isLoading) {
-    return <LoadingState label="Loading purchase..." />
+    return <LoadingState label="Loading purchase..." variant="detail" />
   }
 
   if (!purchaseQuery.data) {

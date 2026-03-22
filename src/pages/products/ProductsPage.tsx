@@ -42,7 +42,7 @@ export function ProductsPage() {
   const products = useMemo(() => productsQuery.data?.items ?? [], [productsQuery.data?.items])
 
   if (productsQuery.isLoading) {
-    return <LoadingState label={t('loadingProducts')} />
+    return <LoadingState label={t('loadingProducts')} variant="list" />
   }
 
   return (

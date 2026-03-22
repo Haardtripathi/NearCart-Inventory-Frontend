@@ -27,7 +27,7 @@ export function SalesOrderDetailPage() {
   const deliverMutation = useDeliverSalesOrderMutation()
 
   if (orderQuery.isLoading) {
-    return <LoadingState label="Loading sales order..." />
+    return <LoadingState label="Loading sales order..." variant="detail" />
   }
 
   if (!orderQuery.data) {

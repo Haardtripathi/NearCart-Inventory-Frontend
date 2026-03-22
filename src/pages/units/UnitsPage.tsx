@@ -81,7 +81,7 @@ export function UnitsPage() {
   })
 
   if (unitsQuery.isLoading) {
-    return <LoadingState label={t('common:loadingData')} />
+    return <LoadingState label={t('common:loadingData')} variant="list" />
   }
 
   const columns = [

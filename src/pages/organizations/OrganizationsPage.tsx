@@ -226,7 +226,7 @@ export function OrganizationsPage() {
   })
 
   if (organizationsQuery.isLoading && !organizationsQuery.data) {
-    return <LoadingState label={t('loadingOrganizations')} />
+    return <LoadingState label={t('loadingOrganizations')} variant="workspace" />
   }
 
   return (

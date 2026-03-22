@@ -35,7 +35,7 @@ export function InventoryBalancesPage() {
   const items = useMemo(() => balancesQuery.data?.items ?? [], [balancesQuery.data?.items])
 
   if (balancesQuery.isLoading) {
-    return <LoadingState label="Loading inventory balances..." />
+    return <LoadingState label="Loading inventory balances..." variant="list" />
   }
 
   return (

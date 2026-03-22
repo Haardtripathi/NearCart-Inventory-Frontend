@@ -35,7 +35,7 @@ export function AuditLogsPage() {
   }
 
   if (auditQuery.isLoading) {
-    return <LoadingState label="Loading audit logs..." />
+    return <LoadingState label="Loading audit logs..." variant="list" />
   }
 
   return (

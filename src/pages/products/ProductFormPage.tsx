@@ -551,7 +551,7 @@ export function ProductFormPage() {
   })
 
   if (isEdit && productQuery.isLoading) {
-    return <LoadingState label={t('loadingData', { ns: 'common' })} />
+    return <LoadingState label={t('loadingData', { ns: 'common' })} variant="form" />
   }
 
   return (

@@ -23,7 +23,7 @@ export function PurchasesPage() {
   })
 
   if (purchasesQuery.isLoading) {
-    return <LoadingState label="Loading purchases..." />
+    return <LoadingState label="Loading purchases..." variant="list" />
   }
 
   return (

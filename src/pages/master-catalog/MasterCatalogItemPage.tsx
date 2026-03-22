@@ -58,7 +58,7 @@ export function MasterCatalogItemPage() {
   )
 
   if (itemQuery.isLoading) {
-    return <LoadingState label={t('loadingData', { ns: 'common' })} />
+    return <LoadingState label={t('loadingData', { ns: 'common' })} variant="detail" />
   }
 
   if (!item) {

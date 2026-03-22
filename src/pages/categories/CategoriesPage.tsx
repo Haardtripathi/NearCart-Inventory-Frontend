@@ -148,7 +148,7 @@ export function CategoriesPage() {
   })
 
   if (categoriesQuery.isLoading && categoryTreeQuery.isLoading) {
-    return <LoadingState label={t('loadingCategories')} />
+    return <LoadingState label={t('loadingCategories')} variant="list" />
   }
 
   return (

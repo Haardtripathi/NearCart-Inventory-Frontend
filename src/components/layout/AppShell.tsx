@@ -23,7 +23,7 @@ import {
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { Link, Navigate, Outlet, useLocation } from 'react-router-dom'
+import { Link, Navigate, Outlet, useLocation, useNavigation } from 'react-router-dom'
 
 import { LanguageSwitcher } from '@/components/language/LanguageSwitcher'
 import { BreadcrumbTrail, LoadingState } from '@/components/common'
@@ -500,7 +500,7 @@ export function ProtectedRoute() {
   }
 
   if (!activeOrganizationId && fallbackOrganizationId) {
-    return <LoadingState label={t('loadingOrganizationContext')} />
+    return <LoadingState label={t('loadingOrganizationContext')} variant="compact" />
   }
 
   if (!activeOrganizationId && routeRequiresOrganization(pathname)) {
@@ -513,6 +513,7 @@ export function ProtectedRoute() {
 export function AppShell() {
   const { t } = useTranslation()
   const pathname = useLocation().pathname
+  const navigation = useNavigation()
   const { user, memberships, activeOrganizationId, role } = useAuth()
   const setActiveOrganizationId = useAuthStore((state) => state.setActiveOrganizationId)
   const clearSession = useAuthStore((state) => state.clearSession)
@@ -546,6 +547,7 @@ export function AppShell() {
       }),
     [role, t],
   )
+  const isNavigating = navigation.state !== 'idle'
 
   useEffect(() => {
     const title = activeRouteMeta
@@ -605,6 +607,12 @@ export function AppShell() {
             </SheetContent>
 
             <header className="sticky top-0 z-20 border-b border-slate-200/80 bg-white/90 backdrop-blur">
+              <div
+                aria-hidden="true"
+                className={`absolute inset-x-0 top-0 h-1 overflow-hidden transition-opacity ${isNavigating ? 'opacity-100' : 'opacity-0'}`}
+              >
+                <div className="h-full w-full origin-left animate-pulse bg-[linear-gradient(90deg,#10b981_0%,#34d399_45%,#bfdbfe_100%)]" />
+              </div>
               <div className="hidden min-h-16 items-center justify-between gap-4 px-5 lg:flex xl:px-6">
                 <div className="flex min-w-0 items-center gap-3">
                   {memberships.length ? (

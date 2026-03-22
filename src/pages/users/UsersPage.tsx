@@ -227,7 +227,7 @@ export function UsersPage() {
   }
 
   if (usersQuery.isLoading) {
-    return <LoadingState label="Loading organization users..." />
+    return <LoadingState label="Loading organization users..." variant="list" />
   }
 
   return (

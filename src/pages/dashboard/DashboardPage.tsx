@@ -46,7 +46,7 @@ export function DashboardPage() {
   const dashboardQuery = useDashboardQuery()
 
   if (dashboardQuery.isLoading) {
-    return <LoadingState label={t('loadingData', { ns: 'common' })} />
+    return <LoadingState label={t('loadingData', { ns: 'common' })} variant="dashboard" />
   }
 
   if (dashboardQuery.isError || !dashboardQuery.data) {

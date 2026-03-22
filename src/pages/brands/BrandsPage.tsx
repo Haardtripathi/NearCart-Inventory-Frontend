@@ -77,7 +77,7 @@ export function BrandsPage() {
   })
 
   if (brandsQuery.isLoading) {
-    return <LoadingState label={t('loadingData', { ns: 'common' })} />
+    return <LoadingState label={t('loadingData', { ns: 'common' })} variant="list" />
   }
 
   return (
