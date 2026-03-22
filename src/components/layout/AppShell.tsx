@@ -312,6 +312,15 @@ function resolveRouteMeta(pathname: string) {
   return routeMeta.find((meta) => meta.match.test(pathname)) ?? null
 }
 
+function getOrganizationOptionLabel(organization: { name: string; slug: string; email?: string | null }) {
+  return (
+    <div className="min-w-0">
+      <div className="truncate font-medium text-slate-900">{organization.name}</div>
+      <div className="truncate text-xs text-slate-500">{organization.email ?? organization.slug}</div>
+    </div>
+  )
+}
+
 function translateRouteTitle(meta: RouteMeta, translate: (key: string, options?: Record<string, unknown>) => string) {
   return meta.titleKey
     ? translate(meta.titleKey, { ns: meta.titleNs, defaultValue: meta.titleDefault })
@@ -525,11 +534,11 @@ export function AppShell() {
       (role === 'SUPER_ADMIN'
         ? organizationsQuery.data?.map((organization) => ({
             value: organization.id,
-            label: organization.name,
+            label: getOrganizationOptionLabel(organization),
           })) ?? []
         : memberships.map((membership) => ({
             value: membership.organizationId,
-            label: membership.organization.name,
+            label: getOrganizationOptionLabel(membership.organization),
           }))),
     [memberships, organizationsQuery.data, role],
   )

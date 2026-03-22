@@ -316,7 +316,7 @@ export const en = {
     basicsDescription: 'Core identity, industry, and default language for the workspace.',
     organizationName: 'Organization name',
     slugPlaceholder: 'nearcart-grocery',
-    // slugDescription: 'Optional. Leave blank to auto-generate.',
+    slugDescription: 'Optional. If repeated shop names exist, the system will auto-generate a unique slug using the organization name and email.',
     primaryIndustry: 'Primary industry',
     defaultLanguage: 'Default language',
     firstBranchTitle: 'First branch',

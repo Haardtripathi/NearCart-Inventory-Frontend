@@ -316,7 +316,7 @@ export const hi = {
     basicsDescription: 'वर्कस्पेस की मुख्य पहचान, इंडस्ट्री और डिफ़ॉल्ट भाषा।',
     organizationName: 'संगठन का नाम',
     slugPlaceholder: 'nearcart-grocery',
-    slugDescription: 'वैकल्पिक। खाली छोड़ने पर स्वतः बन जाएगा।',
+    slugDescription: 'वैकल्पिक। अगर एक जैसे दुकान नाम कई हों, तो सिस्टम संगठन नाम और ईमेल से यूनिक स्लग बना देगा।',
     primaryIndustry: 'प्राथमिक इंडस्ट्री',
     defaultLanguage: 'डिफ़ॉल्ट भाषा',
     firstBranchTitle: 'पहली शाखा',

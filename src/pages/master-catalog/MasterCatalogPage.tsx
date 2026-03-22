@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import { Pencil, Plus } from 'lucide-react'
@@ -117,7 +117,7 @@ export function MasterCatalogPage() {
   const { t } = useTranslation(['masterCatalog', 'common'])
   const navigate = useNavigate()
   const permissions = usePermissions()
-  const { defaultIndustryId } = useActiveOrganizationContext()
+  const { activeOrganization, defaultIndustryId } = useActiveOrganizationContext()
   const industriesQuery = useIndustriesQuery()
   const unitsQuery = useUnitsQuery()
   const [industryId, setIndustryId] = useState('')
@@ -145,6 +145,27 @@ export function MasterCatalogPage() {
   )
   const selectedIndustryId = industriesQuery.data?.some((industry) => industry.id === industryId) ? industryId : ''
   const resolvedIndustryId = selectedIndustryId || fallbackIndustryId
+  const initializedOrganizationIdRef = useRef<string | null>(null)
+
+  useEffect(() => {
+    if (!activeOrganization?.id || !industriesQuery.data?.length) {
+      return
+    }
+
+    if (initializedOrganizationIdRef.current === activeOrganization.id) {
+      return
+    }
+
+    const nextIndustryId =
+      defaultIndustryId && industriesQuery.data.some((industry) => industry.id === defaultIndustryId)
+        ? defaultIndustryId
+        : industriesQuery.data[0]?.id ?? ''
+
+    initializedOrganizationIdRef.current = activeOrganization.id
+    setIndustryId(nextIndustryId)
+    setCategoryId('')
+    setPage(1)
+  }, [activeOrganization?.id, defaultIndustryId, industriesQuery.data])
 
   const categoryTreeQuery = useMasterCatalogCategoryTreeQuery(resolvedIndustryId)
   const categoriesQuery = useMasterCatalogCategoriesQuery({

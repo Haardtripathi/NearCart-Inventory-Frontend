@@ -273,7 +273,8 @@ export function OrganizationsPage() {
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <p className="text-lg font-semibold text-slate-900">{organization.name}</p>
-                        <p className="text-sm text-slate-500">{organization.slug}</p>
+                        <p className="text-sm text-slate-500">{organization.email ?? 'No workspace email'}</p>
+                        <p className="text-xs text-slate-400">{organization.slug}</p>
                       </div>
                       <StatusBadge value={organization.status} />
                     </div>

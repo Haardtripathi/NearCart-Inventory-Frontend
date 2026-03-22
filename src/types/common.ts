@@ -136,6 +136,7 @@ export interface OrganizationSummary {
   id: string
   name: string
   slug: string
+  email?: Nullable<string>
   status: string
   role?: UserRole
   isDefault?: boolean
