@@ -25,73 +25,6 @@ function flattenCategories(items: MasterCatalogCategory[]): MasterCatalogCategor
   return items.flatMap((category) => [category, ...flattenCategories(category.children ?? [])])
 }
 
-function filterCategoryTree(items: MasterCatalogCategory[], search: string): MasterCatalogCategory[] {
-  const normalizedSearch = search.trim().toLowerCase()
-
-  if (!normalizedSearch) {
-    return items
-  }
-
-  return items
-    .map((category) => {
-      const filteredChildren = filterCategoryTree(category.children ?? [], normalizedSearch)
-      const haystack = [
-        category.displayName,
-        category.name,
-        category.code,
-        category.slug,
-        ...(category.translations ?? []).flatMap((translation) => [translation.name, translation.description ?? '']),
-      ]
-        .join(' ')
-        .toLowerCase()
-
-      if (haystack.includes(normalizedSearch) || filteredChildren.length) {
-        return {
-          ...category,
-          children: filteredChildren,
-        }
-      }
-
-      return null
-    })
-    .filter(Boolean) as MasterCatalogCategory[]
-}
-
-function CategoryTree({
-  items,
-  selectedCategoryId,
-  onSelect,
-}: {
-  items: MasterCatalogCategory[]
-  selectedCategoryId: string
-  onSelect: (categoryId: string) => void
-}) {
-  return (
-    <div className="space-y-2">
-      {items.map((category) => (
-        <div key={category.id}>
-          <button
-            className={`w-full rounded-md border px-3 py-2.5 text-left text-sm transition ${
-              selectedCategoryId === category.id
-                ? 'border-blue-500 bg-blue-50 text-blue-700'
-                : 'border-transparent text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-            }`}
-            onClick={() => onSelect(category.id)}
-            type="button"
-          >
-            {getDisplayName(category)}
-          </button>
-          {category.children?.length ? (
-            <div className="mt-2 space-y-2 border-l border-dashed border-slate-200 pl-4">
-              <CategoryTree items={category.children} onSelect={onSelect} selectedCategoryId={selectedCategoryId} />
-            </div>
-          ) : null}
-        </div>
-      ))}
-    </div>
-  )
-}
-
 function getImportState(item: MasterCatalogItem) {
   if (item.alreadyImportedProductId) {
     return {
@@ -124,7 +57,6 @@ export function MasterCatalogPage() {
   const [categoryId, setCategoryId] = useState('')
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
-  const [categorySearch, setCategorySearch] = useState('')
   const [adminCategorySearch, setAdminCategorySearch] = useState('')
   const [hasVariants, setHasVariants] = useState('')
   const [isActive, setIsActive] = useState('true')
@@ -175,7 +107,6 @@ export function MasterCatalogPage() {
     search: debouncedAdminCategorySearch || undefined,
   })
   const allCategories = useMemo(() => flattenCategories(categoryTreeQuery.data ?? []), [categoryTreeQuery.data])
-  const topLevelCategories = useMemo(() => categoryTreeQuery.data ?? [], [categoryTreeQuery.data])
   const resolvedCategoryId = useMemo(
     () => allCategories.some((category) => category.id === categoryId) ? categoryId : '',
     [allCategories, categoryId],
@@ -193,10 +124,6 @@ export function MasterCatalogPage() {
   const activeCategory = useMemo(
     () => allCategories.find((category) => category.id === resolvedCategoryId) ?? null,
     [allCategories, resolvedCategoryId],
-  )
-  const visibleCategoryTree = useMemo(
-    () => filterCategoryTree(categoryTreeQuery.data ?? [], categorySearch),
-    [categorySearch, categoryTreeQuery.data],
   )
   const selectedIndustryName = useMemo(
     () => industriesQuery.data?.find((industry) => industry.id === resolvedIndustryId)?.displayName
@@ -298,7 +225,7 @@ export function MasterCatalogPage() {
         )}
       />
 
-      <FilterBar className="grid gap-3 md:grid-cols-2 xl:grid-cols-[minmax(240px,1fr)_180px_180px_auto]">
+      <FilterBar className="grid gap-3 md:grid-cols-2 xl:grid-cols-[minmax(240px,1fr)_220px_180px_180px_auto]">
         <SearchInput
           value={search}
           onChange={(event) => {
@@ -306,6 +233,18 @@ export function MasterCatalogPage() {
             setSearch(event.target.value)
           }}
           placeholder={t('searchItemsPlaceholder')}
+        />
+        <OptionSelect
+          value={resolvedCategoryId}
+          onValueChange={(value) => {
+            setPage(1)
+            setCategoryId(value)
+          }}
+          emptyLabel={t('anyCategory')}
+          options={allCategories.map((category) => ({
+            value: category.id,
+            label: getDisplayName(category),
+          }))}
         />
         <OptionSelect
           value={hasVariants}
@@ -338,96 +277,12 @@ export function MasterCatalogPage() {
             setSearch('')
             setHasVariants('')
             setIsActive('true')
-            setCategorySearch('')
             setCategoryId('')
           }}
         >
           {t('clearFilters', { ns: 'common' })}
         </Button>
       </FilterBar>
-
-      <div className="rounded-md border border-slate-200 bg-white shadow-[0_3px_12px_rgba(15,23,42,0.04)]">
-        <div className="border-b border-slate-200 p-4">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-            <div>
-              <h2 className="text-base font-semibold text-slate-900">{t('categories', { ns: 'common' })}</h2>
-              <p className="text-sm text-slate-500">
-                {activeCategory
-                  ? t('showingCategory', { category: getDisplayName(activeCategory) })
-                  : t('browseDescription')}
-              </p>
-            </div>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => {
-                setPage(1)
-                setCategorySearch('')
-                setCategoryId('')
-              }}
-            >
-              {t('reset', { ns: 'common' })}
-            </Button>
-          </div>
-
-          <div className="mt-4 flex flex-wrap gap-2">
-            <button
-              type="button"
-              className={
-                resolvedCategoryId
-                  ? 'rounded-md px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900'
-                  : 'rounded-md bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700'
-              }
-              onClick={() => {
-                setPage(1)
-                setCategoryId('')
-              }}
-            >
-              {t('allItems')}
-            </button>
-            {topLevelCategories.slice(0, 8).map((category) => (
-              <button
-                key={category.id}
-                type="button"
-                className={
-                  resolvedCategoryId === category.id
-                    ? 'rounded-md bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700'
-                    : 'rounded-md px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900'
-                }
-                onClick={() => {
-                  setPage(1)
-                  setCategoryId(category.id)
-                }}
-              >
-                {getDisplayName(category)}
-              </button>
-            ))}
-          </div>
-
-          <div className="mt-4">
-            <SearchInput
-              placeholder={t('filterCategories')}
-              value={categorySearch}
-              onChange={(event) => setCategorySearch(event.target.value)}
-            />
-          </div>
-        </div>
-
-        <div className="p-4">
-          {visibleCategoryTree.length ? (
-            <CategoryTree
-              items={visibleCategoryTree}
-              selectedCategoryId={resolvedCategoryId}
-              onSelect={(nextCategoryId) => {
-                setPage(1)
-                setCategoryId(nextCategoryId)
-              }}
-            />
-          ) : (
-            <EmptyState className="min-h-[160px]" title={t('noCategoriesTitle')} description={t('noCategoriesDescription')} />
-          )}
-        </div>
-      </div>
 
       {blockedImportCount > 0 ? (
         <InlineNotice className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between" tone="warning">

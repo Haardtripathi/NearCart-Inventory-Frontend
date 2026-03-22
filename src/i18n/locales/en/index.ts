@@ -696,6 +696,7 @@ export const en = {
     selectedIndustry: 'Selected industry',
     selectedCategory: 'Selected category',
     currentOrganization: 'Current organization',
+    anyCategory: 'Any category',
     anyItemType: 'Any item type',
     singleVariant: 'Single variant',
     hasVariants: 'Has variants',

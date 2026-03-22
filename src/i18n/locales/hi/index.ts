@@ -696,6 +696,7 @@ export const hi = {
     selectedIndustry: 'चुनी गई इंडस्ट्री',
     selectedCategory: 'चुनी गई कैटेगरी',
     currentOrganization: 'वर्तमान संगठन',
+    anyCategory: 'कोई भी कैटेगरी',
     anyItemType: 'कोई भी आइटम प्रकार',
     singleVariant: 'सिंगल वेरिएंट',
     hasVariants: 'वेरिएंट्स हैं',
