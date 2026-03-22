@@ -12,7 +12,7 @@ import {
 } from '@/features/sales-orders/sales-orders.api'
 import { CurrencyText, QuantityText } from '@/components/inventory/selectors'
 import { DataTable, DetailGrid, DetailItem, EmptyState, InlineNotice, LoadingState, PageHeader, SectionCard, StatusBadge } from '@/components/common'
-import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, Input } from '@/components/ui'
+import { Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Input } from '@/components/ui'
 import { formatDateTime } from '@/lib/utils'
 
 export function SalesOrderDetailPage() {
@@ -116,6 +116,7 @@ export function SalesOrderDetailPage() {
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>Reject sales order</DialogTitle>
+            <DialogDescription>Provide a reason for rejecting this sales order before confirming.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <Input value={rejectReason} onChange={(event) => setRejectReason(event.target.value)} placeholder={t('rejectionReasonPlaceholder')} />

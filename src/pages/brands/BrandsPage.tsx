@@ -11,7 +11,7 @@ import { usePermissions } from '@/hooks/usePermissions'
 import { useDebounce } from '@/hooks/useDebounce'
 import { ConfirmDialog, DataTable, EmptyState, FilterBar, LoadingState, PageHeader, PaginationControls, SearchInput, StatusBadge } from '@/components/common'
 import { CheckboxField, FormField, TranslationFields } from '@/components/forms'
-import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, Input } from '@/components/ui'
+import { Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Input } from '@/components/ui'
 import { getDisplayName } from '@/lib/utils'
 import type { Brand, TranslationInput } from '@/types/common'
 
@@ -133,6 +133,9 @@ export function BrandsPage() {
         <DialogContent className="max-w-xl">
           <DialogHeader>
             <DialogTitle>{editingBrand ? t('brands:editBrand') : t('brands:addBrand')}</DialogTitle>
+            <DialogDescription>
+              {editingBrand ? 'Update the brand details and save your changes.' : 'Enter the brand details and save to create a new brand.'}
+            </DialogDescription>
           </DialogHeader>
           <form className="space-y-5" onSubmit={onSubmit}>
             <FormField label={t('brands:name')} error={form.formState.errors.name?.message} required>

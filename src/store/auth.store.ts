@@ -53,7 +53,7 @@ export const useAuthStore = create<AuthState>()(
     (set) => ({
       ...initialState,
       setSession: (session) =>
-        set({
+        set((state) => ({
           token: session.token,
           user: session.user,
           role: session.role,
@@ -61,10 +61,10 @@ export const useAuthStore = create<AuthState>()(
           activeOrganizationId: resolveActiveOrganizationId(
             session.activeOrganizationId,
             session.memberships,
-            undefined,
+            state.activeOrganizationId,
             session.role,
           ),
-        }),
+        })),
       syncProfile: (profile) =>
         set((state) => ({
           user: {

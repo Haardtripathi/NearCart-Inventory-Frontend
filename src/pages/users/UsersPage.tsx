@@ -26,7 +26,7 @@ import {
   StatusBadge,
 } from '@/components/common'
 import { CheckboxField, ControlledSelect, FormField } from '@/components/forms'
-import { Badge, Button, Dialog, DialogContent, DialogHeader, DialogTitle, Input } from '@/components/ui'
+import { Badge, Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Input } from '@/components/ui'
 import {
   BRANCH_ACCESS_SCOPES,
   LANGUAGE_CODES,
@@ -344,6 +344,7 @@ export function UsersPage() {
         <DialogContent className="max-w-3xl">
           <DialogHeader>
             <DialogTitle>Add organization user</DialogTitle>
+            <DialogDescription>Create a new organization user and define their language, role, and branch access.</DialogDescription>
           </DialogHeader>
           <form className="grid gap-4 md:grid-cols-2" onSubmit={onCreate}>
             <FormField label="Full name" error={createForm.formState.errors.fullName?.message}>
@@ -422,6 +423,7 @@ export function UsersPage() {
         <DialogContent className="max-w-3xl">
           <DialogHeader>
             <DialogTitle>Edit organization user</DialogTitle>
+            <DialogDescription>Update the user profile, membership status, and branch access settings.</DialogDescription>
           </DialogHeader>
           <form className="grid gap-4 md:grid-cols-2" onSubmit={onUpdate}>
             <FormField label="Full name" error={updateForm.formState.errors.fullName?.message}>

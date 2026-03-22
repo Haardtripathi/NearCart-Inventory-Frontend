@@ -11,7 +11,7 @@ import { usePermissions } from '@/hooks/usePermissions'
 import { useDebounce } from '@/hooks/useDebounce'
 import { ConfirmDialog, DataTable, EmptyState, FilterBar, LoadingState, PageHeader, PaginationControls, SearchInput, StatusBadge } from '@/components/common'
 import { CheckboxField, FormField } from '@/components/forms'
-import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, Input, Textarea } from '@/components/ui'
+import { Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Input, Textarea } from '@/components/ui'
 import type { Customer } from '@/types/common'
 import { getDisplayName } from '@/lib/utils'
 
@@ -121,6 +121,9 @@ export function CustomersPage() {
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>{editingCustomer ? t('customers:editCustomer') : t('customers:addCustomer')}</DialogTitle>
+            <DialogDescription>
+              {editingCustomer ? 'Update customer details and save your changes.' : 'Enter customer details and save to create a new customer.'}
+            </DialogDescription>
           </DialogHeader>
           <form className="space-y-5" onSubmit={onSubmit}>
             <FormField label={t('customers:name')} error={form.formState.errors.name?.message} required>

@@ -14,7 +14,7 @@ import type { MasterCatalogCategory } from '@/types/masterCatalog'
 import type { Industry, TranslationInput } from '@/types/common'
 import { ImageUploadField } from '@/components/forms/ImageUploadField'
 import { CheckboxField, ControlledSelect, FormField, TranslationFields } from '@/components/forms'
-import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, Input } from '@/components/ui'
+import { Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Input } from '@/components/ui'
 
 const categorySchema = z.object({
   industryId: z.string().trim().min(1, 'Select an industry'),
@@ -132,6 +132,9 @@ export function MasterCatalogCategoryDialog({
       <DialogContent className="max-h-[90vh] max-w-4xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{category ? 'Edit master category' : 'Add master category'}</DialogTitle>
+          <DialogDescription>
+            {category ? 'Update the master category details and save your changes.' : 'Enter the details for the new master category and save to continue.'}
+          </DialogDescription>
         </DialogHeader>
 
         <form className="space-y-4" onSubmit={onSubmit}>

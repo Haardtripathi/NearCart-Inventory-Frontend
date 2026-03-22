@@ -11,7 +11,7 @@ import { usePermissions } from '@/hooks/usePermissions'
 import { useDebounce } from '@/hooks/useDebounce'
 import { ConfirmDialog, DataTable, EmptyState, FilterBar, LoadingState, PageHeader, PaginationControls, SearchInput, StatusBadge } from '@/components/common'
 import { CheckboxField, ControlledSelect, FormField, TranslationFields } from '@/components/forms'
-import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, Input, Textarea } from '@/components/ui'
+import { Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Input, Textarea } from '@/components/ui'
 import { getDisplayName, parseApiError } from '@/lib/utils'
 import type { Category, TranslationInput } from '@/types/common'
 
@@ -214,6 +214,9 @@ export function CategoriesPage() {
         <DialogContent className="max-w-4xl">
           <DialogHeader>
             <DialogTitle>{editingCategory ? t('editCategory') : t('addCategory')}</DialogTitle>
+            <DialogDescription>
+              {editingCategory ? 'Update the category details and save your changes.' : 'Enter the category details and save to create a new category.'}
+            </DialogDescription>
           </DialogHeader>
           <form className="space-y-5" onSubmit={onSubmit}>
             <div className="grid gap-4 md:grid-cols-2">

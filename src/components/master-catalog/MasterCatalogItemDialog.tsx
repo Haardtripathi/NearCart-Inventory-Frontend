@@ -30,7 +30,7 @@ import {
 import { getLanguageLabel } from '@/lib/labels'
 import { ImageUploadField } from '@/components/forms/ImageUploadField'
 import { CheckboxField, ControlledSelect, FormField, KeyValueEditor, TranslationFields } from '@/components/forms'
-import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, Input, Textarea } from '@/components/ui'
+import { Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Input, Textarea } from '@/components/ui'
 
 const aliasSchema = z.object({
   language: z.enum(LANGUAGE_CODES),
@@ -552,6 +552,9 @@ export function MasterCatalogItemDialog({
       <DialogContent className="max-h-[90vh] max-w-6xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{item ? t('editMasterItem', { ns: 'masterCatalog' }) : t('addMasterItem', { ns: 'masterCatalog' })}</DialogTitle>
+          <DialogDescription>
+            {item ? 'Update the master item details, variants, and translations before saving.' : 'Enter the master item details, variants, and translations to create a new catalog item.'}
+          </DialogDescription>
         </DialogHeader>
 
         <form className="space-y-6" onSubmit={onSubmit}>

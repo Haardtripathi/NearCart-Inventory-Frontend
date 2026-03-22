@@ -7,7 +7,7 @@ import { toast } from 'react-hot-toast'
 
 import { useCreateIndustryMutation, useUpdateIndustryMutation } from '@/features/meta/meta.api'
 import { FormField, TranslationFields } from '@/components/forms'
-import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, Input, Textarea } from '@/components/ui'
+import { Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Input, Textarea } from '@/components/ui'
 import { parseApiError } from '@/lib/utils'
 import type { Industry, TranslationInput } from '@/types/common'
 
@@ -89,6 +89,9 @@ export function IndustryDialog({
           <DialogTitle>
             {industry?.id ? t('editIndustryDialogTitle', { ns: 'masterCatalog' }) : t('addIndustryDialogTitle', { ns: 'masterCatalog' })}
           </DialogTitle>
+          <DialogDescription>
+            {industry?.id ? 'Update the industry information and save your changes.' : 'Enter the industry information and save to add it to the master catalog.'}
+          </DialogDescription>
         </DialogHeader>
 
         <form className="space-y-4" onSubmit={onSubmit}>

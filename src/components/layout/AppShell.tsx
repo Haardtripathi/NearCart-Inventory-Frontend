@@ -491,13 +491,19 @@ function SidebarContent({
 
 export function ProtectedRoute() {
   const { t } = useTranslation('common')
-  const { isAuthenticated, activeOrganizationId, memberships } = useAuth()
+  const { isAuthenticated, activeOrganizationId, memberships, role } = useAuth()
   const pathname = useLocation().pathname
   const setActiveOrganizationId = useAuthStore((state) => state.setActiveOrganizationId)
-  const fallbackOrganizationId = useMemo(
+  const organizationsQuery = useMyOrganizationsQuery()
+  const membershipFallbackOrganizationId = useMemo(
     () => memberships.find((membership) => membership.isDefault)?.organizationId ?? memberships[0]?.organizationId ?? null,
     [memberships],
   )
+  const superAdminFallbackOrganizationId = useMemo(
+    () => organizationsQuery.data?.find((organization) => organization.isDefault)?.id ?? organizationsQuery.data?.[0]?.id ?? null,
+    [organizationsQuery.data],
+  )
+  const fallbackOrganizationId = role === 'SUPER_ADMIN' ? superAdminFallbackOrganizationId : membershipFallbackOrganizationId
 
   useEffect(() => {
     if (!activeOrganizationId && fallbackOrganizationId) {
@@ -507,6 +513,10 @@ export function ProtectedRoute() {
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />
+  }
+
+  if (role === 'SUPER_ADMIN' && !activeOrganizationId && organizationsQuery.isLoading) {
+    return <LoadingState label={t('loadingOrganizationContext')} variant="compact" />
   }
 
   if (!activeOrganizationId && fallbackOrganizationId) {

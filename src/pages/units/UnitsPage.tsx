@@ -11,7 +11,7 @@ import { usePermissions } from '@/hooks/usePermissions'
 import { useDebounce } from '@/hooks/useDebounce'
 import { DataTable, EmptyState, FilterBar, LoadingState, PageHeader, PaginationControls, SearchInput, StatusBadge } from '@/components/common'
 import { CheckboxField, FormField, TranslationFields } from '@/components/forms'
-import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, Input } from '@/components/ui'
+import { Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Input } from '@/components/ui'
 import { getDisplayName } from '@/lib/utils'
 import type { TranslationInput, Unit } from '@/types/common'
 
@@ -147,6 +147,9 @@ export function UnitsPage() {
         <DialogContent className="max-w-xl">
           <DialogHeader>
             <DialogTitle>{editingUnit ? t('units:editUnit') : t('units:addUnit')}</DialogTitle>
+            <DialogDescription>
+              {editingUnit ? 'Update the unit settings and save your changes.' : 'Enter the unit details and save to add a new unit.'}
+            </DialogDescription>
           </DialogHeader>
           <form className="space-y-5" onSubmit={onSubmit}>
             <div className="grid gap-4 md:grid-cols-2">

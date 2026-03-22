@@ -12,7 +12,7 @@ import { useDebounce } from '@/hooks/useDebounce'
 import { BRANCH_TYPES, type Branch, type BranchType } from '@/types/common'
 import { ConfirmDialog, DataTable, DisclosurePanel, EmptyState, FilterBar, LoadingState, PageHeader, PaginationControls, SearchInput, StatusBadge } from '@/components/common'
 import { CheckboxField, ControlledSelect, FormField } from '@/components/forms'
-import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, Input } from '@/components/ui'
+import { Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Input } from '@/components/ui'
 import { getBranchTypeLabel } from '@/lib/labels'
 import { getDisplayName } from '@/lib/utils'
 
@@ -177,6 +177,9 @@ export function BranchesPage() {
         <DialogContent className="max-w-3xl">
           <DialogHeader>
             <DialogTitle>{editingBranch ? t('branches:editBranch') : t('branches:addBranch')}</DialogTitle>
+            <DialogDescription>
+              {editingBranch ? 'Update the branch details and save your changes.' : 'Enter the branch details and save to create a new branch.'}
+            </DialogDescription>
           </DialogHeader>
           <form className="grid gap-4 md:grid-cols-2" onSubmit={onSubmit}>
             <FormField label={t('branches:code')} error={form.formState.errors.code?.message}>

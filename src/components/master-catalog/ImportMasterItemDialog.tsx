@@ -9,7 +9,7 @@ import { useTranslation } from 'react-i18next'
 import { useCategoriesQuery } from '@/features/categories/categories.api'
 import { useImportMasterItemMutation } from '@/features/master-catalog/master-catalog.api'
 import { CheckboxField, ControlledSelect, FormField } from '@/components/forms'
-import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, Input } from '@/components/ui'
+import { Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Input } from '@/components/ui'
 import { getDisplayName } from '@/lib/utils'
 import type { MasterCatalogItem } from '@/types/masterCatalog'
 
@@ -136,6 +136,7 @@ export function ImportMasterItemDialog({
       <DialogContent className="max-w-4xl">
         <DialogHeader>
           <DialogTitle>Import master item</DialogTitle>
+          <DialogDescription>Review the import options and choose how this master item should be created in your catalog.</DialogDescription>
         </DialogHeader>
         <form className="space-y-4" onSubmit={onSubmit}>
           <div className="grid gap-4 md:grid-cols-2">

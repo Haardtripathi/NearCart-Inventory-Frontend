@@ -11,7 +11,7 @@ import { usePermissions } from '@/hooks/usePermissions'
 import { useDebounce } from '@/hooks/useDebounce'
 import { ConfirmDialog, DataTable, EmptyState, FilterBar, LoadingState, PageHeader, PaginationControls, SearchInput, StatusBadge } from '@/components/common'
 import { CheckboxField, FormField, TranslationFields } from '@/components/forms'
-import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, Input, Textarea } from '@/components/ui'
+import { Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Input, Textarea } from '@/components/ui'
 import { getDisplayName } from '@/lib/utils'
 import type { Supplier, TranslationInput } from '@/types/common'
 
@@ -128,6 +128,9 @@ export function SuppliersPage() {
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>{editingSupplier ? t('suppliers:editSupplier') : t('suppliers:addSupplier')}</DialogTitle>
+            <DialogDescription>
+              {editingSupplier ? 'Update supplier details and save your changes.' : 'Enter supplier details and save to create a new supplier.'}
+            </DialogDescription>
           </DialogHeader>
           <form className="space-y-5" onSubmit={onSubmit}>
             <FormField label={t('suppliers:name')} error={form.formState.errors.name?.message} required>
