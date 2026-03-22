@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import {
   ArrowRightLeft,
   BookOpen,
@@ -27,7 +27,7 @@ import { Link, Navigate, Outlet, useLocation } from 'react-router-dom'
 
 import { LanguageSwitcher } from '@/components/language/LanguageSwitcher'
 import { BreadcrumbTrail, LoadingState } from '@/components/common'
-import { Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, OptionSelect, Sheet, SheetContent, SheetTrigger } from '@/components/ui'
+import { Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, OptionSelect, Sheet, SheetContent } from '@/components/ui'
 import { useAuth } from '@/hooks/useAuth'
 import { useAuthStore } from '@/store/auth.store'
 
@@ -297,6 +297,10 @@ function isRouteActive(pathname: string, route: string) {
   return pathname === route || pathname.startsWith(`${route}/`)
 }
 
+function canAccessNavigationItem(item: NavigationItem, currentUserRole?: string | null) {
+  return (!item.requiresRole || item.requiresRole === currentUserRole) && (!item.requiresAnyRole || item.requiresAnyRole.includes(currentUserRole ?? ''))
+}
+
 function getNavigationLabel(item: NavigationItem, translate: (key: string, options?: Record<string, unknown>) => string) {
   return item.translationKey
     ? translate(item.translationKey, { ns: 'navigation', defaultValue: item.label })
@@ -417,7 +421,7 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
             {isOpen ? (
               <div className="space-y-1">
                 {section.items
-                  .filter((item) => (!item.requiresRole || item.requiresRole === currentUserRole) && (!item.requiresAnyRole || item.requiresAnyRole.includes(currentUserRole ?? '')))
+                  .filter((item) => canAccessNavigationItem(item, currentUserRole))
                   .map((item) => {
                   const active = isRouteActive(pathname, item.to)
                   const Icon = item.icon
@@ -449,13 +453,15 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
 
 function SidebarContent({
   onNavigate,
+  footer,
 }: {
   onNavigate?: () => void
+  footer?: ReactNode
 }) {
   return (
     <div className="flex h-full flex-col bg-white">
-      <div className="flex h-14 items-center gap-3 border-b border-slate-200 px-4">
-        <div className="flex h-9 w-9 items-center justify-center rounded-md bg-emerald-50 text-emerald-700">
+      <div className="flex h-16 items-center gap-3 border-b border-slate-200 px-4">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700">
           <Package2 className="h-5 w-5" />
         </div>
         <div className="min-w-0">
@@ -467,6 +473,8 @@ function SidebarContent({
       <div className="flex-1 overflow-y-auto px-3 py-3">
         <SidebarNav onNavigate={onNavigate} />
       </div>
+
+      {footer ? <div className="border-t border-slate-200 px-3 py-3">{footer}</div> : null}
     </div>
   )
 }
@@ -505,7 +513,7 @@ export function ProtectedRoute() {
 export function AppShell() {
   const { t } = useTranslation()
   const pathname = useLocation().pathname
-  const { user, memberships, activeOrganizationId } = useAuth()
+  const { user, memberships, activeOrganizationId, role } = useAuth()
   const setActiveOrganizationId = useAuthStore((state) => state.setActiveOrganizationId)
   const clearSession = useAuthStore((state) => state.clearSession)
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
@@ -516,6 +524,28 @@ export function AppShell() {
   )
   const activeRouteMeta = useMemo(() => resolveRouteMeta(pathname), [pathname])
   const breadcrumbs = useMemo(() => buildBreadcrumbs(pathname, t), [pathname, t])
+  const activePageTitle = useMemo(() => {
+    if (activeRouteMeta) {
+      return activeRouteMeta.titleKey
+        ? t(activeRouteMeta.titleKey, { ns: activeRouteMeta.titleNs, defaultValue: activeRouteMeta.titleDefault })
+        : activeRouteMeta.titleDefault
+    }
+
+    return resolveBreadcrumbLabel(pathname, t)
+  }, [activeRouteMeta, pathname, t])
+  const mobilePrimaryNavigation = useMemo(
+    () =>
+      [
+        { to: '/dashboard', icon: LayoutDashboard, label: t('dashboard', { ns: 'common' }) },
+        { to: '/products', icon: Boxes, label: t('products', { ns: 'common' }) },
+        { to: '/inventory/balances', icon: Warehouse, label: t('inventory', { ns: 'common' }) },
+        { to: '/sales-orders', icon: ShoppingCart, label: t('salesOrders', { ns: 'navigation', defaultValue: 'Orders' }) },
+      ].filter((item) => {
+        const navigationItem = navigationSections.flatMap((section) => section.items).find((entry) => entry.to === item.to)
+        return navigationItem ? canAccessNavigationItem(navigationItem, role) : true
+      }),
+    [role, t],
+  )
 
   useEffect(() => {
     const title = activeRouteMeta
@@ -545,25 +575,108 @@ export function AppShell() {
   }, [activeRouteMeta, t])
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top,#f4fbf7_0%,#f8fafc_46%,#f2f5f9_100%)]">
       <div className="flex min-h-screen">
         <aside className="hidden h-screen w-[228px] shrink-0 border-r border-slate-200 bg-white lg:sticky lg:top-0 lg:block">
           <SidebarContent />
         </aside>
 
         <div className="min-w-0 flex-1">
-          <header className="sticky top-0 z-20 flex min-h-14 flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-white px-4 py-2 sm:px-5 lg:h-14 lg:py-0">
-            <div className="flex min-w-0 items-center gap-3">
-                <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
-                  <SheetTrigger asChild>
-                    <Button className="lg:hidden" size="icon" variant="outline">
-                      <Menu className="h-4 w-4" />
+          <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
+            <SheetContent side="left" className="w-[300px] max-w-[86vw] border-r border-slate-200 p-0">
+              <SidebarContent
+                onNavigate={() => setMobileNavOpen(false)}
+                footer={(
+                  <div className="space-y-3">
+                    <LanguageSwitcher className="w-full" triggerClassName="w-full" />
+                    <Button asChild className="w-full justify-start" variant="outline">
+                      <Link to="/settings" onClick={() => setMobileNavOpen(false)}>
+                        <Settings className="h-4 w-4" />
+                        {t('settings', { ns: 'navigation' })}
+                      </Link>
                     </Button>
-                  </SheetTrigger>
-                  <SheetContent side="left" className="w-[260px] border-r border-slate-200 p-0">
-                    <SidebarContent onNavigate={() => setMobileNavOpen(false)} />
-                  </SheetContent>
-                </Sheet>
+                    <Button className="w-full justify-start" variant="ghost" onClick={() => clearSession()}>
+                      <ShieldCheck className="h-4 w-4" />
+                      {t('logout', { ns: 'navigation' })}
+                    </Button>
+                  </div>
+                )}
+              />
+            </SheetContent>
+
+            <header className="sticky top-0 z-20 border-b border-slate-200/80 bg-white/90 backdrop-blur">
+              <div className="hidden min-h-16 items-center justify-between gap-4 px-5 lg:flex xl:px-6">
+                <div className="flex min-w-0 items-center gap-3">
+                  {memberships.length ? (
+                    <OptionSelect
+                      value={activeOrganizationId ?? ''}
+                      onValueChange={(value) => setActiveOrganizationId(value || null)}
+                      options={memberships.map((membership) => ({
+                        value: membership.organizationId,
+                        label: membership.organization.name,
+                      }))}
+                      placeholder={t('selectOrganization', { ns: 'common' })}
+                      className="min-w-[240px]"
+                    />
+                  ) : (
+                    <Button asChild variant="outline">
+                      <Link to="/organizations">
+                        <Building2 className="h-4 w-4" />
+                        {t('setUpOrganization', { ns: 'common' })}
+                      </Link>
+                    </Button>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <LanguageSwitcher />
+
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" className="min-w-[176px] justify-between rounded-full px-3">
+                        <span className="flex min-w-0 items-center gap-2">
+                          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-blue-700">
+                            <ShieldCheck className="h-4 w-4" />
+                          </span>
+                          <span className="min-w-0 text-left">
+                            <span className="block truncate text-sm font-semibold text-slate-900">{user?.fullName ?? t('account', { ns: 'common' })}</span>
+                            <span className="block truncate text-xs font-medium text-slate-500">
+                              {user?.platformRole ?? activeMembership?.role ?? t('platformUser', { ns: 'common' })}
+                            </span>
+                          </span>
+                        </span>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem asChild>
+                        <Link to="/settings">{t('settings', { ns: 'navigation' })}</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => clearSession()}>{t('logout', { ns: 'navigation' })}</DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </div>
+
+              <div className="space-y-3 px-4 py-3 lg:hidden">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-emerald-700">NearCart</p>
+                    <p className="truncate text-lg font-semibold text-slate-900">{activePageTitle}</p>
+                  </div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button className="shrink-0 rounded-full" size="icon" variant="outline">
+                        <ShieldCheck className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem asChild>
+                        <Link to="/settings">{t('settings', { ns: 'navigation' })}</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => clearSession()}>{t('logout', { ns: 'navigation' })}</DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
 
                 {memberships.length ? (
                   <OptionSelect
@@ -574,54 +687,73 @@ export function AppShell() {
                       label: membership.organization.name,
                     }))}
                     placeholder={t('selectOrganization', { ns: 'common' })}
-                    className="min-w-[190px] sm:min-w-[220px]"
+                    className="w-full"
                   />
                 ) : (
-                  <Button asChild variant="outline">
+                  <Button asChild className="w-full justify-center" variant="outline">
                     <Link to="/organizations">
                       <Building2 className="h-4 w-4" />
                       {t('setUpOrganization', { ns: 'common' })}
                     </Link>
                   </Button>
                 )}
-            </div>
 
-            <div className="flex items-center gap-2 self-start sm:self-auto">
-                <LanguageSwitcher />
+                <div className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50/80 px-3 py-2.5">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-slate-900">{user?.fullName ?? t('account', { ns: 'common' })}</p>
+                    <p className="truncate text-xs font-medium text-slate-500">
+                      {user?.platformRole ?? activeMembership?.role ?? t('platformUser', { ns: 'common' })}
+                    </p>
+                  </div>
+                  <Button className="shrink-0 rounded-full" size="sm" variant="ghost" onClick={() => setMobileNavOpen(true)}>
+                    <Menu className="h-4 w-4" />
+                    Menu
+                  </Button>
+                </div>
+              </div>
+            </header>
+          </Sheet>
 
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="min-w-[154px] justify-between">
-                      <span className="flex min-w-0 items-center gap-2">
-                        <span className="flex h-7 w-7 items-center justify-center rounded-md bg-blue-100 text-blue-700">
-                          <ShieldCheck className="h-4 w-4" />
-                        </span>
-                        <span className="min-w-0 text-left">
-                          <span className="block truncate text-sm font-semibold text-slate-900">{user?.fullName ?? t('account', { ns: 'common' })}</span>
-                          <span className="block truncate text-xs font-medium text-slate-500">
-                            {user?.platformRole ?? activeMembership?.role ?? t('platformUser', { ns: 'common' })}
-                          </span>
-                        </span>
-                      </span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem asChild>
-                      <Link to="/settings">{t('settings', { ns: 'navigation' })}</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => clearSession()}>{t('logout', { ns: 'navigation' })}</DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-            </div>
-          </header>
-
-          <main className="overflow-x-hidden px-4 py-4 sm:px-5 lg:px-6">
+          <main className="overflow-x-hidden px-4 py-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] sm:px-5 lg:px-6 lg:pb-6">
             <div className="space-y-4">
-              <BreadcrumbTrail items={breadcrumbs} />
+              <BreadcrumbTrail className="hidden sm:block" items={breadcrumbs} />
 
               <Outlet />
             </div>
           </main>
+
+          <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-slate-200/80 bg-white/95 px-2 pb-[calc(0.6rem+env(safe-area-inset-bottom))] pt-2 shadow-[0_-14px_30px_rgba(15,23,42,0.08)] backdrop-blur lg:hidden">
+            <div className="mx-auto grid max-w-md grid-cols-5 gap-1">
+              {mobilePrimaryNavigation.map((item) => {
+                const active = isRouteActive(pathname, item.to)
+                const Icon = item.icon
+
+                return (
+                  <Link
+                    key={item.to}
+                    to={item.to}
+                    className={
+                      active
+                        ? 'flex flex-col items-center gap-1 rounded-2xl bg-emerald-50 px-2 py-2 text-emerald-700'
+                        : 'flex flex-col items-center gap-1 rounded-2xl px-2 py-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-900'
+                    }
+                  >
+                    <Icon className="h-4 w-4" />
+                    <span className="text-[0.68rem] font-semibold">{item.label}</span>
+                  </Link>
+                )
+              })}
+
+              <button
+                type="button"
+                className="flex flex-col items-center gap-1 rounded-2xl px-2 py-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"
+                onClick={() => setMobileNavOpen(true)}
+              >
+                <Menu className="h-4 w-4" />
+                <span className="text-[0.68rem] font-semibold">Menu</span>
+              </button>
+            </div>
+          </nav>
         </div>
       </div>
     </div>

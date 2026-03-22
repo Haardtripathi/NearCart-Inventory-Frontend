@@ -30,7 +30,8 @@ export function PurchaseDetailPage() {
         actions={
           purchase.status === 'DRAFT' ? (
             <Button
-              disabled={postPurchaseMutation.isPending}
+              loading={postPurchaseMutation.isPending}
+              loadingText="Posting purchase..."
               onClick={async () => {
                 try {
                   await postPurchaseMutation.mutateAsync(purchase.id)

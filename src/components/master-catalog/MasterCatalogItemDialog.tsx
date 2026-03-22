@@ -629,7 +629,7 @@ export function MasterCatalogItemDialog({
             <FormField label="Default tax code">
               <Input placeholder={t('defaultTaxCodePlaceholder', { ns: 'masterCatalog' })} {...form.register('defaultTaxCode')} />
             </FormField>
-            <FormField label={t('imageUrl', { ns: 'products' })} className="md:col-span-2">
+            <FormField label={t('imageUrl', { ns: 'products' })} className="md:col-span-2 xl:col-span-4">
               <Controller
                 control={form.control}
                 name="defaultImageUrl"
@@ -643,7 +643,7 @@ export function MasterCatalogItemDialog({
                 )}
               />
             </FormField>
-            <FormField label={t('tags', { ns: 'products' })} className="md:col-span-2">
+            <FormField label={t('tags', { ns: 'products' })} className="md:col-span-2 xl:col-span-4">
               <Input placeholder={t('tagsPlaceholder', { ns: 'products' })} {...form.register('tags')} />
             </FormField>
           </div>
@@ -774,7 +774,7 @@ export function MasterCatalogItemDialog({
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               {t('cancel', { ns: 'common' })}
             </Button>
-            <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
+            <Button type="submit" loading={createMutation.isPending || updateMutation.isPending} loadingText={item ? t('save', { ns: 'common' }) : t('create', { ns: 'common' })}>
               {item ? t('save', { ns: 'common' }) : t('create', { ns: 'common' })}
             </Button>
           </div>

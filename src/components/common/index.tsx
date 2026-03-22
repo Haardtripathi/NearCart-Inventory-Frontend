@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { AlertTriangle, Search } from 'lucide-react'
+import { AlertTriangle, ChevronDown, Search } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
@@ -48,7 +48,7 @@ export function PageHeader({
   const resolvedEyebrow = eyebrow === 'Workspace view' ? t('workspaceView') : eyebrow
 
   return (
-    <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
       <div className="space-y-1.5">
         {resolvedEyebrow ? (
           <span className="inline-flex text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-400">
@@ -56,11 +56,11 @@ export function PageHeader({
           </span>
         ) : null}
         <div className="space-y-1">
-          <h1 className="text-[1.9rem] font-semibold tracking-tight text-slate-900 md:text-[2.2rem]">{title}</h1>
-          {description ? <p className="max-w-3xl text-sm leading-6 text-slate-500">{description}</p> : null}
+          <h1 className="text-[1.7rem] font-semibold tracking-tight text-slate-900 sm:text-[1.9rem] md:text-[2.2rem]">{title}</h1>
+          {description ? <p className="max-w-3xl text-sm leading-6 text-slate-500 sm:text-[0.95rem]">{description}</p> : null}
         </div>
       </div>
-      {actions ? <div className="flex flex-wrap items-center gap-2 lg:justify-end">{actions}</div> : null}
+      {actions ? <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto lg:justify-end">{actions}</div> : null}
     </div>
   )
 }
@@ -73,8 +73,8 @@ export function BreadcrumbTrail({
   className?: string
 }) {
   return (
-    <nav aria-label="Breadcrumb" className={className}>
-      <ol className="flex flex-wrap items-center gap-1.5 text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-slate-400">
+    <nav aria-label="Breadcrumb" className={cn('overflow-x-auto', className)}>
+      <ol className="flex min-w-max items-center gap-1.5 text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-slate-400">
         {items.map((item, index) => {
           const isCurrent = index === items.length - 1
 
@@ -118,7 +118,7 @@ export function SectionCard({
           <CardTitle>{title}</CardTitle>
           {description ? <CardDescription>{description}</CardDescription> : null}
         </div>
-        {action ? <div className="flex items-center gap-2">{action}</div> : null}
+        {action ? <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">{action}</div> : null}
       </CardHeader>
       <CardContent>{children}</CardContent>
     </Card>
@@ -163,7 +163,7 @@ export function DetailGrid({
   children: ReactNode
   className?: string
 }) {
-  return <div className={cn('grid gap-4 md:grid-cols-2 xl:grid-cols-4', className)}>{children}</div>
+  return <div className={cn('grid gap-4 sm:grid-cols-2 xl:grid-cols-4', className)}>{children}</div>
 }
 
 export function DetailItem({
@@ -213,6 +213,37 @@ export function InlineNotice({
     <div className={cn('rounded-md border p-4 text-sm leading-6', toneClasses[tone], className)}>
       {children}
     </div>
+  )
+}
+
+export function DisclosurePanel({
+  title,
+  description,
+  children,
+  defaultOpen = false,
+  className,
+}: {
+  title: string
+  description?: string
+  children: ReactNode
+  defaultOpen?: boolean
+  className?: string
+}) {
+  return (
+    <details className={cn('group rounded-md border border-slate-200 bg-slate-50/80', className)} open={defaultOpen}>
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3.5 text-left">
+        <div className="space-y-1">
+          <p className="text-sm font-semibold text-slate-900">{title}</p>
+          {description ? <p className="text-xs leading-5 text-slate-500">{description}</p> : null}
+        </div>
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-slate-500 shadow-sm transition group-open:rotate-180">
+          <ChevronDown className="h-4 w-4" />
+        </span>
+      </summary>
+      <div className="border-t border-slate-200 px-4 py-4">
+        {children}
+      </div>
+    </details>
   )
 }
 
@@ -321,7 +352,7 @@ export function SearchInput({
 
 export function FilterBar({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <div className="rounded-md border border-slate-200 bg-white p-3 shadow-[0_3px_12px_rgba(15,23,42,0.04)]">
+    <div className="rounded-md border border-slate-200 bg-white p-3.5 shadow-[0_3px_12px_rgba(15,23,42,0.04)]">
       <div className={cn('grid gap-3 [&>*]:min-w-0 [&>*]:w-full md:[&>*]:w-auto', className)}>
         {children}
       </div>
@@ -370,6 +401,7 @@ export function PaginationControls({
         {pages.map((page) => (
           <Button
             key={page}
+            className="hidden sm:inline-flex"
             variant={page === pagination.page ? 'default' : 'outline'}
             size="sm"
             onClick={() => onPageChange(page)}
@@ -416,16 +448,35 @@ export function DataTable<T>({
     <>
       <div className="grid gap-3 md:hidden">
         {items.map((item, index) => (
-          <Card key={rowKey?.(item, index) ?? index}>
+          <Card key={rowKey?.(item, index) ?? index} className={rowClassName?.(item)}>
             <CardContent className="space-y-3 p-4">
-              {columns.map((column) => (
-                <div key={column.key} className={cn('space-y-1', column.cellClassName)}>
-                  <p className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-slate-400">
-                    {column.header}
-                  </p>
-                  <div className="text-sm text-slate-600">{column.render(item)}</div>
+              <div className="space-y-3">
+                {columns
+                  .filter((column) => column.key !== 'actions')
+                  .map((column) => (
+                    <div key={column.key} className={cn('space-y-1', column.cellClassName)}>
+                      <p className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-slate-400">
+                        {column.header}
+                      </p>
+                      <div className="text-sm text-slate-600">{column.render(item)}</div>
+                    </div>
+                  ))}
+              </div>
+
+              {columns.some((column) => column.key === 'actions') ? (
+                <div className="border-t border-slate-200 pt-3">
+                  {columns
+                    .filter((column) => column.key === 'actions')
+                    .map((column) => (
+                      <div key={column.key} className={cn('space-y-1', column.cellClassName)}>
+                        <p className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-slate-400">
+                          {column.header}
+                        </p>
+                        <div className="text-sm text-slate-600">{column.render(item)}</div>
+                      </div>
+                    ))}
                 </div>
-              ))}
+              ) : null}
             </CardContent>
           </Card>
         ))}

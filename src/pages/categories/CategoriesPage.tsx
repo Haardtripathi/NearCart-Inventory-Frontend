@@ -261,7 +261,7 @@ export function CategoriesPage() {
             />
             <div className="flex justify-end gap-2">
               <Button variant="outline" type="button" onClick={() => setDialogOpen(false)}>{t('cancel', { ns: 'common' })}</Button>
-              <Button disabled={createCategoryMutation.isPending || updateCategoryMutation.isPending} type="submit">
+              <Button loading={createCategoryMutation.isPending || updateCategoryMutation.isPending} loadingText={editingCategory ? t('updateCategory') : t('createCategory')} type="submit">
                 {editingCategory ? t('updateCategory') : t('createCategory')}
               </Button>
             </div>

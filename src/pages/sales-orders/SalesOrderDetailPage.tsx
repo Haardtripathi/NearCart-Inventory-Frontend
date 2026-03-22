@@ -45,7 +45,7 @@ export function SalesOrderDetailPage() {
           <div className="flex flex-wrap gap-2">
             {(order.status === 'DRAFT' || order.status === 'PENDING') ? (
               <>
-                <Button disabled={confirmMutation.isPending} onClick={async () => {
+                <Button loading={confirmMutation.isPending} loadingText="Confirming..." onClick={async () => {
                   try {
                     await confirmMutation.mutateAsync(order.id)
                     toast.success('Order confirmed')
@@ -61,7 +61,7 @@ export function SalesOrderDetailPage() {
               </>
             ) : null}
             {order.status !== 'CANCELLED' && order.status !== 'REJECTED' && order.status !== 'DELIVERED' ? (
-              <Button variant="outline" disabled={cancelMutation.isPending} onClick={async () => {
+              <Button variant="outline" loading={cancelMutation.isPending} loadingText="Cancelling..." onClick={async () => {
                 try {
                   await cancelMutation.mutateAsync(order.id)
                   toast.success('Order cancelled')
@@ -73,7 +73,7 @@ export function SalesOrderDetailPage() {
               </Button>
             ) : null}
             {['CONFIRMED', 'READY', 'OUT_FOR_DELIVERY'].includes(order.status) ? (
-              <Button disabled={deliverMutation.isPending} onClick={async () => {
+              <Button loading={deliverMutation.isPending} loadingText="Delivering..." onClick={async () => {
                 try {
                   await deliverMutation.mutateAsync(order.id)
                   toast.success('Order delivered')

@@ -31,7 +31,7 @@ export function StockTransferDetailPage() {
         actions={
           transfer.status === 'DRAFT' ? (
             <div className="flex gap-2">
-              <Button disabled={approveMutation.isPending} onClick={async () => {
+              <Button loading={approveMutation.isPending} loadingText="Approving..." onClick={async () => {
                 try {
                   await approveMutation.mutateAsync(transfer.id)
                   toast.success('Transfer approved')
@@ -41,7 +41,7 @@ export function StockTransferDetailPage() {
               }}>
                 Approve
               </Button>
-              <Button variant="outline" disabled={cancelMutation.isPending} onClick={async () => {
+              <Button variant="outline" loading={cancelMutation.isPending} loadingText="Cancelling..." onClick={async () => {
                 try {
                   await cancelMutation.mutateAsync(transfer.id)
                   toast.success('Transfer cancelled')

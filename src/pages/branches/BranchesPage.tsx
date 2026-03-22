@@ -10,7 +10,7 @@ import { useBranchesQuery, useCreateBranchMutation, useDeleteBranchMutation, use
 import { usePermissions } from '@/hooks/usePermissions'
 import { useDebounce } from '@/hooks/useDebounce'
 import { BRANCH_TYPES, type Branch, type BranchType } from '@/types/common'
-import { ConfirmDialog, DataTable, EmptyState, FilterBar, LoadingState, PageHeader, PaginationControls, SearchInput, StatusBadge } from '@/components/common'
+import { ConfirmDialog, DataTable, DisclosurePanel, EmptyState, FilterBar, LoadingState, PageHeader, PaginationControls, SearchInput, StatusBadge } from '@/components/common'
 import { CheckboxField, ControlledSelect, FormField } from '@/components/forms'
 import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, Input } from '@/components/ui'
 import { getBranchTypeLabel } from '@/lib/labels'
@@ -195,30 +195,6 @@ export function BranchesPage() {
                 }))}
               />
             </FormField>
-            <FormField label={t('common:phone')}>
-              <Input placeholder={t('common:phonePlaceholder')} {...form.register('phone')} />
-            </FormField>
-            <FormField label={t('common:email')}>
-              <Input placeholder={t('common:emailPlaceholder')} {...form.register('email')} />
-            </FormField>
-            <FormField label={t('branches:addressLine1')}>
-              <Input placeholder={t('common:addressLine1Placeholder')} {...form.register('addressLine1')} />
-            </FormField>
-            <FormField label={t('branches:addressLine2')}>
-              <Input {...form.register('addressLine2')} />
-            </FormField>
-            <FormField label={t('common:city')}>
-              <Input placeholder={t('common:cityPlaceholder')} {...form.register('city')} />
-            </FormField>
-            <FormField label={t('common:state')}>
-              <Input placeholder={t('common:statePlaceholder')} {...form.register('state')} />
-            </FormField>
-            <FormField label={t('common:country')}>
-              <Input placeholder={t('common:countryPlaceholder')} {...form.register('country')} />
-            </FormField>
-            <FormField label={t('common:postalCode')}>
-              <Input placeholder={t('common:postalCodePlaceholder')} {...form.register('postalCode')} />
-            </FormField>
             <div className="md:col-span-2">
               <CheckboxField
                 checked={isActive}
@@ -227,11 +203,48 @@ export function BranchesPage() {
                 onCheckedChange={(checked) => form.setValue('isActive', checked, { shouldDirty: true })}
               />
             </div>
+            <div className="md:col-span-2">
+              <DisclosurePanel
+                title="Contact and address details"
+                description="Keep these optional fields hidden unless you need them while creating the branch."
+              >
+                <div className="grid gap-4 md:grid-cols-2">
+                  <FormField label={t('common:phone')}>
+                    <Input placeholder={t('common:phonePlaceholder')} {...form.register('phone')} />
+                  </FormField>
+                  <FormField label={t('common:email')}>
+                    <Input placeholder={t('common:emailPlaceholder')} {...form.register('email')} />
+                  </FormField>
+                  <FormField label={t('branches:addressLine1')}>
+                    <Input placeholder={t('common:addressLine1Placeholder')} {...form.register('addressLine1')} />
+                  </FormField>
+                  <FormField label={t('branches:addressLine2')}>
+                    <Input {...form.register('addressLine2')} />
+                  </FormField>
+                  <FormField label={t('common:city')}>
+                    <Input placeholder={t('common:cityPlaceholder')} {...form.register('city')} />
+                  </FormField>
+                  <FormField label={t('common:state')}>
+                    <Input placeholder={t('common:statePlaceholder')} {...form.register('state')} />
+                  </FormField>
+                  <FormField label={t('common:country')}>
+                    <Input placeholder={t('common:countryPlaceholder')} {...form.register('country')} />
+                  </FormField>
+                  <FormField label={t('common:postalCode')}>
+                    <Input placeholder={t('common:postalCodePlaceholder')} {...form.register('postalCode')} />
+                  </FormField>
+                </div>
+              </DisclosurePanel>
+            </div>
             <div className="md:col-span-2 flex justify-end gap-2">
               <Button variant="outline" type="button" onClick={() => setIsDialogOpen(false)}>
                 {t('common:cancel')}
               </Button>
-              <Button disabled={createBranchMutation.isPending || updateBranchMutation.isPending} type="submit">
+              <Button
+                loading={createBranchMutation.isPending || updateBranchMutation.isPending}
+                loadingText={editingBranch ? t('branches:updateBranch') : t('branches:createBranch')}
+                type="submit"
+              >
                 {editingBranch ? t('branches:updateBranch') : t('branches:createBranch')}
               </Button>
             </div>

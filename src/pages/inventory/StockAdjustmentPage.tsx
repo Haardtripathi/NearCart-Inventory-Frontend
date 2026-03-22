@@ -159,7 +159,7 @@ export function StockAdjustmentPage() {
             <Button type="button" variant="outline" onClick={() => navigate('/inventory/balances')}>
               Cancel
             </Button>
-            <Button disabled={createAdjustmentMutation.isPending} type="submit">
+            <Button loading={createAdjustmentMutation.isPending} loadingText="Creating adjustment..." type="submit">
               Create adjustment
             </Button>
           </div>

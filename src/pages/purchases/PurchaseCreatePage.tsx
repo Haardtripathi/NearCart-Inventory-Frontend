@@ -11,7 +11,7 @@ import { useCreatePurchaseMutation, usePostPurchaseMutation } from '@/features/p
 import { useSuppliersQuery } from '@/features/suppliers/suppliers.api'
 import { BranchSelector, ProductSelector, VariantSelector } from '@/components/inventory/selectors'
 import { ControlledSelect, DirtyStatePrompt, FormField } from '@/components/forms'
-import { PageHeader, SectionCard } from '@/components/common'
+import { DisclosurePanel, PageHeader, SectionCard } from '@/components/common'
 import { Button, DatePicker, Input, Textarea } from '@/components/ui'
 import { usePermissions } from '@/hooks/usePermissions'
 import { formatDateForInput, parseDateValue } from '@/lib/utils'
@@ -59,59 +59,72 @@ function PurchaseItemRow({
   })
 
   return (
-    <div className="grid gap-3 rounded-md border border-slate-200 bg-slate-50/80 p-4 md:grid-cols-2 xl:grid-cols-7">
-      <Controller control={control} name={`items.${index}.productId`} render={({ field }) => (
-        <FormField label="Product">
-          <ProductSelector value={field.value} onChange={(value) => {
-            field.onChange(value)
-            setValue(`items.${index}.variantId`, '', { shouldDirty: true })
-          }} addActionLabel={onAddProduct ? t('addProduct', { ns: 'products' }) : undefined} onAddAction={onAddProduct} />
-        </FormField>
-      )} />
-      <Controller control={control} name={`items.${index}.variantId`} render={({ field }) => (
-        <FormField label="Variant">
-          <VariantSelector productId={productId} value={field.value} onChange={field.onChange} />
-        </FormField>
-      )} />
-      <Controller control={control} name={`items.${index}.quantity`} render={({ field }) => (
-        <FormField label="Quantity">
-          <Input step="0.001" type="number" value={field.value == null ? '' : String(field.value)} onChange={field.onChange} onBlur={field.onBlur} name={field.name} ref={field.ref} />
-        </FormField>
-      )} />
-      <Controller control={control} name={`items.${index}.unitCost`} render={({ field }) => (
-        <FormField label="Unit cost">
-          <Input step="0.01" type="number" value={field.value == null ? '' : String(field.value)} onChange={field.onChange} onBlur={field.onBlur} name={field.name} ref={field.ref} />
-        </FormField>
-      )} />
-      <Controller control={control} name={`items.${index}.taxRate`} render={({ field }) => (
-        <FormField label="Tax %">
-          <Input step="0.01" type="number" value={field.value == null ? '' : String(field.value)} onChange={field.onChange} onBlur={field.onBlur} name={field.name} ref={field.ref} />
-        </FormField>
-      )} />
-      <Controller control={control} name={`items.${index}.discountAmount`} render={({ field }) => (
-        <FormField label="Discount">
-          <Input step="0.01" type="number" value={field.value == null ? '' : String(field.value)} onChange={field.onChange} onBlur={field.onBlur} name={field.name} ref={field.ref} />
-        </FormField>
-      )} />
-      <div className="flex items-end">
+    <div className="space-y-4 rounded-md border border-slate-200 bg-slate-50/80 p-4">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <p className="text-sm font-semibold text-slate-900">Line {index + 1}</p>
+          <p className="text-xs text-slate-500">Start with the product, variant, quantity, and cost. Batch details can stay optional.</p>
+        </div>
         <Button type="button" variant="ghost" onClick={onRemove}>
           <Trash2 className="h-4 w-4" />
         </Button>
       </div>
-      <Controller control={control} name={`items.${index}.batchNumber`} render={({ field }) => (
-        <FormField className="md:col-span-1 xl:col-span-3" label="Batch number">
-          <Input {...field} />
-        </FormField>
-      )} />
-      <Controller control={control} name={`items.${index}.expiryDate`} render={({ field }) => (
-        <FormField className="md:col-span-1 xl:col-span-3" label="Expiry date">
-          <DatePicker
-            value={parseDateValue(field.value)}
-            onChange={(date) => field.onChange(formatDateForInput(date))}
-            placeholder={t('pickExpiryDate')}
-          />
-        </FormField>
-      )} />
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <Controller control={control} name={`items.${index}.productId`} render={({ field }) => (
+          <FormField label="Product">
+            <ProductSelector value={field.value} onChange={(value) => {
+              field.onChange(value)
+              setValue(`items.${index}.variantId`, '', { shouldDirty: true })
+            }} addActionLabel={onAddProduct ? t('addProduct', { ns: 'products' }) : undefined} onAddAction={onAddProduct} />
+          </FormField>
+        )} />
+        <Controller control={control} name={`items.${index}.variantId`} render={({ field }) => (
+          <FormField label="Variant">
+            <VariantSelector productId={productId} value={field.value} onChange={field.onChange} />
+          </FormField>
+        )} />
+        <Controller control={control} name={`items.${index}.quantity`} render={({ field }) => (
+          <FormField label="Quantity">
+            <Input step="0.001" type="number" value={field.value == null ? '' : String(field.value)} onChange={field.onChange} onBlur={field.onBlur} name={field.name} ref={field.ref} />
+          </FormField>
+        )} />
+        <Controller control={control} name={`items.${index}.unitCost`} render={({ field }) => (
+          <FormField label="Unit cost">
+            <Input step="0.01" type="number" value={field.value == null ? '' : String(field.value)} onChange={field.onChange} onBlur={field.onBlur} name={field.name} ref={field.ref} />
+          </FormField>
+        )} />
+      </div>
+      <DisclosurePanel
+        title="More line details"
+        description="Use this only if you need tax, discounts, or batch tracking for the purchase line."
+      >
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <Controller control={control} name={`items.${index}.taxRate`} render={({ field }) => (
+            <FormField label="Tax %">
+              <Input step="0.01" type="number" value={field.value == null ? '' : String(field.value)} onChange={field.onChange} onBlur={field.onBlur} name={field.name} ref={field.ref} />
+            </FormField>
+          )} />
+          <Controller control={control} name={`items.${index}.discountAmount`} render={({ field }) => (
+            <FormField label="Discount">
+              <Input step="0.01" type="number" value={field.value == null ? '' : String(field.value)} onChange={field.onChange} onBlur={field.onBlur} name={field.name} ref={field.ref} />
+            </FormField>
+          )} />
+          <Controller control={control} name={`items.${index}.batchNumber`} render={({ field }) => (
+            <FormField label="Batch number">
+              <Input {...field} />
+            </FormField>
+          )} />
+          <Controller control={control} name={`items.${index}.expiryDate`} render={({ field }) => (
+            <FormField label="Expiry date">
+              <DatePicker
+                value={parseDateValue(field.value)}
+                onChange={(date) => field.onChange(formatDateForInput(date))}
+                placeholder={t('pickExpiryDate')}
+              />
+            </FormField>
+          )} />
+        </div>
+      </DisclosurePanel>
     </div>
   )
 }
@@ -165,7 +178,7 @@ export function PurchaseCreatePage() {
       />
       <SectionCard title="Purchase details" description="Receipt and supplier metadata.">
         <form className="space-y-4" onSubmit={onSubmit}>
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             <FormField label="Branch" error={form.formState.errors.branchId?.message}>
               <Controller
                 control={form.control}
@@ -194,29 +207,36 @@ export function PurchaseCreatePage() {
                 onAddAction={() => navigate('/suppliers')}
               />
             </FormField>
-            <FormField label="Receipt number">
-              <Input placeholder={t('receiptNumberPlaceholder', { ns: 'common' })} {...form.register('receiptNumber')} />
-            </FormField>
-            <Controller
-              control={form.control}
-              name="invoiceDate"
-              render={({ field }) => (
-                <FormField label="Invoice date">
-                  <DatePicker
-                    value={parseDateValue(field.value)}
-                    onChange={(date) => field.onChange(formatDateForInput(date))}
-                    placeholder={t('pickInvoiceDate', { ns: 'common' })}
-                  />
-                </FormField>
-              )}
-            />
-            <FormField label="Received at">
-              <Input type="datetime-local" {...form.register('receivedAt')} />
-            </FormField>
           </div>
-          <FormField label="Notes">
-            <Textarea placeholder={t('notesPlaceholder', { ns: 'purchases' })} {...form.register('notes')} />
-          </FormField>
+          <DisclosurePanel
+            title="Receipt and delivery details"
+            description="Keep this closed for quick entries, or open it when you need invoice, receiving, or note fields."
+          >
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              <FormField label="Receipt number">
+                <Input placeholder={t('receiptNumberPlaceholder', { ns: 'common' })} {...form.register('receiptNumber')} />
+              </FormField>
+              <Controller
+                control={form.control}
+                name="invoiceDate"
+                render={({ field }) => (
+                  <FormField label="Invoice date">
+                    <DatePicker
+                      value={parseDateValue(field.value)}
+                      onChange={(date) => field.onChange(formatDateForInput(date))}
+                      placeholder={t('pickInvoiceDate', { ns: 'common' })}
+                    />
+                  </FormField>
+                )}
+              />
+              <FormField label="Received at">
+                <Input type="datetime-local" {...form.register('receivedAt')} />
+              </FormField>
+            </div>
+            <FormField className="mt-4" label="Notes">
+              <Textarea placeholder={t('notesPlaceholder', { ns: 'purchases' })} {...form.register('notes')} />
+            </FormField>
+          </DisclosurePanel>
 
           <div className="space-y-3">
             <div className="flex items-center justify-between">
@@ -237,22 +257,24 @@ export function PurchaseCreatePage() {
             ))}
           </div>
 
-          <div className="flex justify-end gap-2">
+          <div className="sticky bottom-[calc(5.75rem+env(safe-area-inset-bottom))] z-10 flex flex-col gap-2 rounded-2xl border border-slate-200 bg-white/95 p-3 shadow-[0_14px_32px_rgba(15,23,42,0.08)] backdrop-blur sm:static sm:flex-row sm:justify-end sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none">
             <Button type="button" variant="outline" onClick={() => navigate('/purchases')}>
               Cancel
             </Button>
             <Button
               type="submit"
               variant="outline"
-              disabled={createPurchaseMutation.isPending || postPurchaseMutation.isPending}
               onClick={() => setSubmitMode('draft')}
+              loading={submitMode === 'draft' && (createPurchaseMutation.isPending || postPurchaseMutation.isPending)}
+              loadingText="Saving draft..."
             >
               Save draft
             </Button>
             <Button
               type="submit"
-              disabled={createPurchaseMutation.isPending || postPurchaseMutation.isPending}
               onClick={() => setSubmitMode('post')}
+              loading={submitMode === 'post' && (createPurchaseMutation.isPending || postPurchaseMutation.isPending)}
+              loadingText="Saving and posting..."
             >
               Save and post
             </Button>

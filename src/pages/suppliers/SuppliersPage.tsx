@@ -166,7 +166,7 @@ export function SuppliersPage() {
             </FormField>
             <div className="flex justify-end gap-2">
               <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>{t('common:cancel')}</Button>
-              <Button disabled={createSupplierMutation.isPending || updateSupplierMutation.isPending} type="submit">
+              <Button loading={createSupplierMutation.isPending || updateSupplierMutation.isPending} loadingText={editingSupplier ? t('suppliers:updateSupplier') : t('suppliers:createSupplier')} type="submit">
                 {editingSupplier ? t('suppliers:updateSupplier') : t('suppliers:createSupplier')}
               </Button>
             </div>

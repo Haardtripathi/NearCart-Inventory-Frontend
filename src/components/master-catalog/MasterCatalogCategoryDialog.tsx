@@ -129,7 +129,7 @@ export function MasterCatalogCategoryDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl">
+      <DialogContent className="max-h-[90vh] max-w-4xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{category ? 'Edit master category' : 'Add master category'}</DialogTitle>
         </DialogHeader>
@@ -179,7 +179,7 @@ export function MasterCatalogCategoryDialog({
               <Input placeholder={t('categoryIconPlaceholder', { ns: 'masterCatalog' })} {...form.register('iconKey')} />
             </FormField>
 
-            <FormField className="md:col-span-2" label="Image">
+            <FormField className="md:col-span-2 xl:col-span-4" label="Image">
               <Controller
                 control={form.control}
                 name="imageUrl"
@@ -216,7 +216,7 @@ export function MasterCatalogCategoryDialog({
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
+            <Button type="submit" loading={createMutation.isPending || updateMutation.isPending} loadingText={category ? 'Saving category...' : 'Creating category...'}>
               {category ? 'Save category' : 'Create category'}
             </Button>
           </div>

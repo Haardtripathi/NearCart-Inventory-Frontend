@@ -119,12 +119,12 @@ export function IndustryDialog({
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               {t('cancel', { ns: 'common' })}
             </Button>
-            <Button type="submit" disabled={createIndustryMutation.isPending || updateIndustryMutation.isPending}>
-              {createIndustryMutation.isPending || updateIndustryMutation.isPending
-                ? t('savingIndustry', { ns: 'masterCatalog' })
-                : industry?.id
-                  ? t('updateIndustry', { ns: 'masterCatalog' })
-                  : t('createIndustry', { ns: 'masterCatalog' })}
+            <Button
+              type="submit"
+              loading={createIndustryMutation.isPending || updateIndustryMutation.isPending}
+              loadingText={t('savingIndustry', { ns: 'masterCatalog' })}
+            >
+              {industry?.id ? t('updateIndustry', { ns: 'masterCatalog' }) : t('createIndustry', { ns: 'masterCatalog' })}
             </Button>
           </div>
         </form>

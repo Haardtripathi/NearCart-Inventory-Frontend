@@ -10,6 +10,7 @@ import { Badge, Button, Card, CardContent, Input, OptionSelect } from '@/compone
 import {
   DetailGrid,
   DetailItem,
+  DisclosurePanel,
   EmptyState,
   ErrorState,
   InlineNotice,
@@ -334,7 +335,9 @@ export function OrganizationsPage() {
               ) : null}
               <Button
                 type="button"
-                disabled={!selectedAdditionalIndustryId || !availableAdditionalIndustries.length || addIndustryMutation.isPending}
+                disabled={!selectedAdditionalIndustryId || !availableAdditionalIndustries.length}
+                loading={addIndustryMutation.isPending}
+                loadingText={t('enablingIndustry')}
                 onClick={async () => {
                   try {
                     await addIndustryMutation.mutateAsync({
@@ -350,7 +353,7 @@ export function OrganizationsPage() {
                   }
                 }}
               >
-                {addIndustryMutation.isPending ? t('enablingIndustry') : t('enableIndustry')}
+                {t('enableIndustry')}
               </Button>
             </div>
           </div>
@@ -371,15 +374,6 @@ export function OrganizationsPage() {
                 <div className="grid gap-4 md:grid-cols-2">
                   <FormField label={t('organizationName')} error={form.formState.errors.name?.message} required>
                     <Input placeholder={t('organizationNamePlaceholder', { ns: 'register' })} {...form.register('name')} />
-                  </FormField>
-                  <FormField label="Slug" error={form.formState.errors.slug?.message}>
-                    <Input placeholder={t('slugPlaceholder')} {...form.register('slug')} />
-                  </FormField>
-                  <FormField label={t('email', { ns: 'common' })} error={form.formState.errors.email?.message}>
-                    <Input placeholder={t('organizationEmailPlaceholder', { ns: 'register' })} {...form.register('email')} />
-                  </FormField>
-                  <FormField label={t('phone', { ns: 'common' })} error={form.formState.errors.phone?.message}>
-                    <Input placeholder={t('phonePlaceholder', { ns: 'register' })} {...form.register('phone')} />
                   </FormField>
                   <FormField label={t('primaryIndustry')} error={form.formState.errors.primaryIndustryId?.message} required>
                     <ControlledSelect
@@ -405,6 +399,23 @@ export function OrganizationsPage() {
                     />
                   </FormField>
                 </div>
+                <DisclosurePanel
+                  className="mt-4"
+                  title="Workspace contact details"
+                  description="Slug, organization email, and phone are optional so setup is faster on smaller screens."
+                >
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <FormField label="Slug" error={form.formState.errors.slug?.message}>
+                      <Input placeholder={t('slugPlaceholder')} {...form.register('slug')} />
+                    </FormField>
+                    <FormField label={t('email', { ns: 'common' })} error={form.formState.errors.email?.message}>
+                      <Input placeholder={t('organizationEmailPlaceholder', { ns: 'register' })} {...form.register('email')} />
+                    </FormField>
+                    <FormField label={t('phone', { ns: 'common' })} error={form.formState.errors.phone?.message}>
+                      <Input placeholder={t('phonePlaceholder', { ns: 'register' })} {...form.register('phone')} />
+                    </FormField>
+                  </div>
+                </DisclosurePanel>
 
                 {role === 'SUPER_ADMIN' ? (
                   <div className="mt-6 rounded-md border border-slate-200 bg-white p-4">
@@ -481,27 +492,35 @@ export function OrganizationsPage() {
                       options={BRANCH_TYPES.map((type) => ({ value: type, label: getBranchTypeLabel(t, type) }))}
                     />
                   </FormField>
-                  <FormField label={t('addressLine1')} error={form.formState.errors.addressLine1?.message}>
-                    <Input placeholder={t('addressLine1Placeholder', { ns: 'common' })} {...form.register('addressLine1')} />
-                  </FormField>
-                  <FormField label={t('city', { ns: 'common' })} error={form.formState.errors.city?.message}>
-                    <Input placeholder={t('cityPlaceholder', { ns: 'register' })} {...form.register('city')} />
-                  </FormField>
-                  <FormField label={t('state', { ns: 'common' })} error={form.formState.errors.state?.message}>
-                    <Input placeholder={t('statePlaceholder', { ns: 'register' })} {...form.register('state')} />
-                  </FormField>
-                  <FormField label={t('country', { ns: 'common' })} error={form.formState.errors.country?.message}>
-                    <Input placeholder={t('countryPlaceholder', { ns: 'register' })} {...form.register('country')} />
-                  </FormField>
-                  <FormField label={t('postalCode', { ns: 'common' })} error={form.formState.errors.postalCode?.message}>
-                    <Input placeholder={t('postalCodePlaceholder', { ns: 'register' })} {...form.register('postalCode')} />
-                  </FormField>
                 </div>
+                <DisclosurePanel
+                  className="mt-4"
+                  title="Branch address details"
+                  description="Location fields are optional while you create the workspace and can be added after setup."
+                >
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <FormField label={t('addressLine1')} error={form.formState.errors.addressLine1?.message}>
+                      <Input placeholder={t('addressLine1Placeholder', { ns: 'common' })} {...form.register('addressLine1')} />
+                    </FormField>
+                    <FormField label={t('city', { ns: 'common' })} error={form.formState.errors.city?.message}>
+                      <Input placeholder={t('cityPlaceholder', { ns: 'register' })} {...form.register('city')} />
+                    </FormField>
+                    <FormField label={t('state', { ns: 'common' })} error={form.formState.errors.state?.message}>
+                      <Input placeholder={t('statePlaceholder', { ns: 'register' })} {...form.register('state')} />
+                    </FormField>
+                    <FormField label={t('country', { ns: 'common' })} error={form.formState.errors.country?.message}>
+                      <Input placeholder={t('countryPlaceholder', { ns: 'register' })} {...form.register('country')} />
+                    </FormField>
+                    <FormField label={t('postalCode', { ns: 'common' })} error={form.formState.errors.postalCode?.message}>
+                      <Input placeholder={t('postalCodePlaceholder', { ns: 'register' })} {...form.register('postalCode')} />
+                    </FormField>
+                  </div>
+                </DisclosurePanel>
               </div>
             </div>
-            <div className="flex justify-end gap-2">
-              <Button type="submit" disabled={createOrganizationMutation.isPending || industriesQuery.isLoading}>
-                {createOrganizationMutation.isPending ? t('creatingOrganization') : t('createOrganization')}
+            <div className="sticky bottom-[calc(5.75rem+env(safe-area-inset-bottom))] z-10 flex justify-end gap-2 rounded-2xl border border-slate-200 bg-white/95 p-3 shadow-[0_14px_32px_rgba(15,23,42,0.08)] backdrop-blur sm:static sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none">
+              <Button type="submit" disabled={industriesQuery.isLoading} loading={createOrganizationMutation.isPending} loadingText={t('creatingOrganization')}>
+                {t('createOrganization')}
               </Button>
             </div>
           </form>

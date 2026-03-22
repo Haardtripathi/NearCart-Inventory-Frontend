@@ -145,7 +145,7 @@ export function CustomersPage() {
             />
             <div className="flex justify-end gap-2">
               <Button variant="outline" type="button" onClick={() => setDialogOpen(false)}>{t('common:cancel')}</Button>
-              <Button disabled={createCustomerMutation.isPending || updateCustomerMutation.isPending} type="submit">
+              <Button loading={createCustomerMutation.isPending || updateCustomerMutation.isPending} loadingText={editingCustomer ? t('customers:updateCustomer') : t('customers:createCustomer')} type="submit">
                 {editingCustomer ? t('customers:updateCustomer') : t('customers:createCustomer')}
               </Button>
             </div>

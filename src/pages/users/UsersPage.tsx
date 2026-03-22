@@ -410,7 +410,7 @@ export function UsersPage() {
               <Button variant="outline" type="button" onClick={() => setIsCreateOpen(false)}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={createUserMutation.isPending}>
+              <Button type="submit" loading={createUserMutation.isPending} loadingText="Saving user...">
                 Save user
               </Button>
             </div>
@@ -498,7 +498,7 @@ export function UsersPage() {
               <Button variant="outline" type="button" onClick={() => setEditingUser(null)}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={updateUserMutation.isPending}>
+              <Button type="submit" loading={updateUserMutation.isPending} loadingText="Updating user...">
                 Update user
               </Button>
             </div>

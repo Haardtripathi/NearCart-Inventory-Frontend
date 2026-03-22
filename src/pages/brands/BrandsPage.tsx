@@ -157,7 +157,7 @@ export function BrandsPage() {
               <Button variant="outline" type="button" onClick={() => setIsDialogOpen(false)}>
                 {t('common:cancel')}
               </Button>
-              <Button disabled={createBrandMutation.isPending || updateBrandMutation.isPending} type="submit">
+              <Button loading={createBrandMutation.isPending || updateBrandMutation.isPending} loadingText={editingBrand ? t('brands:updateBrand') : t('brands:createBrand')} type="submit">
                 {editingBrand ? t('brands:updateBrand') : t('brands:createBrand')}
               </Button>
             </div>

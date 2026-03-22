@@ -97,8 +97,8 @@ export function SettingsPage() {
               <Input type="password" placeholder={t('passwordPlaceholder', { ns: 'common' })} {...form.register('confirmPassword')} />
             </FormField>
             <div className="flex justify-end">
-              <Button type="submit" disabled={changePasswordMutation.isPending}>
-                {changePasswordMutation.isPending ? t('updatingPassword') : t('updatePassword')}
+              <Button type="submit" loading={changePasswordMutation.isPending} loadingText={t('updatingPassword')}>
+                {t('updatePassword')}
               </Button>
             </div>
           </form>

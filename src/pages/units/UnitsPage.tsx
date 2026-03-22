@@ -177,7 +177,7 @@ export function UnitsPage() {
               <Button variant="outline" type="button" onClick={() => setDialogOpen(false)}>
                 {t('common:cancel')}
               </Button>
-              <Button disabled={createUnitMutation.isPending || updateUnitMutation.isPending} type="submit">
+              <Button loading={createUnitMutation.isPending || updateUnitMutation.isPending} loadingText={editingUnit ? t('units:updateUnit') : t('units:createUnit')} type="submit">
                 {editingUnit ? t('units:updateUnit') : t('units:createUnit')}
               </Button>
             </div>

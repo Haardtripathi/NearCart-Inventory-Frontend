@@ -9,7 +9,7 @@ import { useTranslation } from 'react-i18next'
 import { useCreateStockTransferMutation } from '@/features/stock-transfers/stock-transfers.api'
 import { BranchSelector, ProductSelector, VariantSelector } from '@/components/inventory/selectors'
 import { DirtyStatePrompt, FormField } from '@/components/forms'
-import { PageHeader, SectionCard } from '@/components/common'
+import { DisclosurePanel, PageHeader, SectionCard } from '@/components/common'
 import { Button, Input, Textarea } from '@/components/ui'
 import { usePermissions } from '@/hooks/usePermissions'
 
@@ -53,35 +53,46 @@ function TransferItemRow({
   })
 
   return (
-    <div className="grid gap-3 rounded-md border border-slate-200 bg-slate-50/80 p-4 md:grid-cols-2 xl:grid-cols-5">
-      <Controller control={control} name={`items.${index}.productId`} render={({ field }) => (
-        <FormField label="Product">
-          <ProductSelector value={field.value} onChange={(value) => {
-            field.onChange(value)
-            setValue(`items.${index}.variantId`, '', { shouldDirty: true })
-          }} addActionLabel={onAddProduct ? t('addProduct', { ns: 'products' }) : undefined} onAddAction={onAddProduct} />
-        </FormField>
-      )} />
-      <Controller control={control} name={`items.${index}.variantId`} render={({ field }) => (
-        <FormField label="Variant">
-          <VariantSelector productId={productId} value={field.value} onChange={field.onChange} />
-        </FormField>
-      )} />
-      <Controller control={control} name={`items.${index}.quantity`} render={({ field }) => (
-        <FormField label="Quantity">
-          <Input step="0.001" type="number" value={field.value == null ? '' : String(field.value)} onChange={field.onChange} onBlur={field.onBlur} name={field.name} ref={field.ref} />
-        </FormField>
-      )} />
-      <Controller control={control} name={`items.${index}.unitCost`} render={({ field }) => (
-        <FormField label="Unit cost">
-          <Input step="0.01" type="number" value={field.value == null ? '' : String(field.value)} onChange={field.onChange} onBlur={field.onBlur} name={field.name} ref={field.ref} />
-        </FormField>
-      )} />
-      <div className="flex items-end">
+    <div className="space-y-4 rounded-md border border-slate-200 bg-slate-50/80 p-4">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <p className="text-sm font-semibold text-slate-900">Line {index + 1}</p>
+          <p className="text-xs text-slate-500">Capture the item and quantity first. Transfer costing can stay optional.</p>
+        </div>
         <Button type="button" variant="ghost" onClick={onRemove}>
           <Trash2 className="h-4 w-4" />
         </Button>
       </div>
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <Controller control={control} name={`items.${index}.productId`} render={({ field }) => (
+          <FormField label="Product">
+            <ProductSelector value={field.value} onChange={(value) => {
+              field.onChange(value)
+              setValue(`items.${index}.variantId`, '', { shouldDirty: true })
+            }} addActionLabel={onAddProduct ? t('addProduct', { ns: 'products' }) : undefined} onAddAction={onAddProduct} />
+          </FormField>
+        )} />
+        <Controller control={control} name={`items.${index}.variantId`} render={({ field }) => (
+          <FormField label="Variant">
+            <VariantSelector productId={productId} value={field.value} onChange={field.onChange} />
+          </FormField>
+        )} />
+        <Controller control={control} name={`items.${index}.quantity`} render={({ field }) => (
+          <FormField label="Quantity">
+            <Input step="0.001" type="number" value={field.value == null ? '' : String(field.value)} onChange={field.onChange} onBlur={field.onBlur} name={field.name} ref={field.ref} />
+          </FormField>
+        )} />
+      </div>
+      <DisclosurePanel
+        title="More line details"
+        description="Only open this when you need to record unit cost for the transferred stock."
+      >
+        <Controller control={control} name={`items.${index}.unitCost`} render={({ field }) => (
+          <FormField label="Unit cost">
+            <Input step="0.01" type="number" value={field.value == null ? '' : String(field.value)} onChange={field.onChange} onBlur={field.onBlur} name={field.name} ref={field.ref} />
+          </FormField>
+        )} />
+      </DisclosurePanel>
     </div>
   )
 }
@@ -122,7 +133,7 @@ export function StockTransferCreatePage() {
       />
       <SectionCard title="Transfer details" description="Choose source and destination branches, then add line items.">
         <form className="space-y-4" onSubmit={onSubmit}>
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2">
             <FormField label="From branch" error={form.formState.errors.fromBranchId?.message}>
               <Controller
                 control={form.control}
@@ -151,13 +162,20 @@ export function StockTransferCreatePage() {
                 )}
               />
             </FormField>
-            <FormField label="Transfer number">
-              <Input placeholder={t('transferNumberPlaceholder')} {...form.register('transferNumber')} />
-            </FormField>
           </div>
-          <FormField label="Notes">
-            <Textarea placeholder={t('transferNotesPlaceholder')} {...form.register('notes')} />
-          </FormField>
+          <DisclosurePanel
+            title="Reference details"
+            description="Use this only when you want a manual transfer number or internal notes."
+          >
+            <div className="grid gap-4 sm:grid-cols-2">
+              <FormField label="Transfer number">
+                <Input placeholder={t('transferNumberPlaceholder')} {...form.register('transferNumber')} />
+              </FormField>
+            </div>
+            <FormField className="mt-4" label="Notes">
+              <Textarea placeholder={t('transferNotesPlaceholder')} {...form.register('notes')} />
+            </FormField>
+          </DisclosurePanel>
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <h3 className="text-base font-semibold text-slate-900">Items</h3>
@@ -176,11 +194,11 @@ export function StockTransferCreatePage() {
               />
             ))}
           </div>
-          <div className="flex justify-end gap-2">
+          <div className="sticky bottom-[calc(5.75rem+env(safe-area-inset-bottom))] z-10 flex flex-col gap-2 rounded-2xl border border-slate-200 bg-white/95 p-3 shadow-[0_14px_32px_rgba(15,23,42,0.08)] backdrop-blur sm:static sm:flex-row sm:justify-end sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none">
             <Button type="button" variant="outline" onClick={() => navigate('/stock-transfers')}>
               Cancel
             </Button>
-            <Button type="submit">Create draft transfer</Button>
+            <Button type="submit" loading={createTransferMutation.isPending} loadingText="Creating transfer...">Create draft transfer</Button>
           </div>
         </form>
       </SectionCard>

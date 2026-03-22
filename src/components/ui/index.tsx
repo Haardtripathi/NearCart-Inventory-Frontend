@@ -8,7 +8,7 @@ import * as SeparatorPrimitive from '@radix-ui/react-separator'
 import * as ScrollAreaPrimitive from '@radix-ui/react-scroll-area'
 import * as TooltipPrimitive from '@radix-ui/react-tooltip'
 import { Slot } from '@radix-ui/react-slot'
-import { Plus, X } from 'lucide-react'
+import { Loader2, Plus, X } from 'lucide-react'
 import { cva, type VariantProps } from 'class-variance-authority'
 import { useTranslation } from 'react-i18next'
 
@@ -53,12 +53,29 @@ export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
   asChild?: boolean
+  loading?: boolean
+  loadingText?: React.ReactNode
 }
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
+  ({ children, className, variant, size, asChild = false, loading = false, loadingText, disabled, ...props }, ref) => {
     const Comp = asChild ? Slot : 'button'
-    return <Comp className={cn(buttonVariants({ variant, size, className }))} ref={ref} {...props} />
+    return (
+      <Comp
+        aria-busy={loading || undefined}
+        className={cn(buttonVariants({ variant, size, className }))}
+        disabled={disabled || loading}
+        ref={ref}
+        {...props}
+      >
+        {loading ? (
+          <>
+            <Loader2 className="h-4 w-4 animate-spin" />
+            {loadingText ?? children}
+          </>
+        ) : children}
+      </Comp>
+    )
   },
 )
 Button.displayName = 'Button'

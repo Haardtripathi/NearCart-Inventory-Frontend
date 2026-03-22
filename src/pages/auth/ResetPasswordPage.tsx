@@ -88,8 +88,8 @@ export function ResetPasswordPage() {
             <FormField label={t('confirmPassword')} error={form.formState.errors.confirmPassword?.message}>
               <Input type="password" placeholder={t('passwordPlaceholder')} {...form.register('confirmPassword')} />
             </FormField>
-            <Button className="w-full" type="submit" disabled={resetMutation.isPending}>
-              {resetMutation.isPending ? t('resettingPassword') : t('resetPassword')}
+            <Button className="w-full" type="submit" loading={resetMutation.isPending} loadingText={t('resettingPassword')}>
+              {t('resetPassword')}
             </Button>
             <p className="text-center text-sm text-slate-500">
               <Link className="font-semibold text-emerald-700" to="/login">{t('backToSignIn')}</Link>

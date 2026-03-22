@@ -240,7 +240,7 @@ export function ImportMasterItemDialog({
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button disabled={importMutation.isPending} type="submit">
+            <Button loading={importMutation.isPending} loadingText="Importing item..." type="submit">
               Import item
             </Button>
           </div>
