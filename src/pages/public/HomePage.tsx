@@ -1,13 +1,11 @@
-import { useEffect, useState, type ElementType } from 'react'
+import { useEffect, type ElementType } from 'react'
 import {
   ArrowRight,
   BellRing,
   Boxes,
-  ChevronRight,
   FileSpreadsheet,
   Hammer,
   Layers3,
-  Menu,
   Package2,
   PackagePlus,
   Pill,
@@ -19,15 +17,9 @@ import {
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
-import { Button, Card, Sheet, SheetContent, SheetTrigger } from '@/components/ui'
+import { PublicNavbar } from '@/components/layout/PublicNavbar'
+import { Button, Card } from '@/components/ui'
 import { cn } from '@/lib/utils'
-
-const navigationLinks = [
-  { label: 'Features', href: '#features' },
-  { label: "Who It's For", href: '#who-its-for' },
-  { label: 'How It Works', href: '#how-it-works' },
-  { label: 'Demo', href: '#demo' },
-] as const
 
 const featureCards = [
   {
@@ -318,8 +310,6 @@ function FooterLink({
 }
 
 export function HomePage() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-
   useEffect(() => {
     document.title = 'NearCart Inventory | Inventory management for local shops'
 
@@ -338,90 +328,7 @@ export function HomePage() {
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,#eefbf2_0%,#f8fafc_48%,#f3f6fb_100%)] text-slate-900">
-      <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/88 backdrop-blur">
-        <nav className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8" aria-label="Primary">
-          <Link className="flex items-center gap-3" to="/">
-            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700 shadow-sm">
-              <Package2 className="h-5 w-5" />
-            </span>
-            <div className="min-w-0">
-              <p className="text-sm font-semibold text-slate-900">NearCart</p>
-              <p className="text-xs text-slate-500">Inventory</p>
-            </div>
-          </Link>
-
-          <div className="hidden items-center gap-7 lg:flex">
-            {navigationLinks.map((item) => (
-              <a key={item.label} className="text-sm font-medium text-slate-600 transition hover:text-slate-900" href={item.href}>
-                {item.label}
-              </a>
-            ))}
-          </div>
-
-          <div className="hidden items-center gap-3 lg:flex">
-            <Button asChild variant="ghost">
-              <Link to="/login">Login</Link>
-            </Button>
-            <Button asChild>
-              <Link to="/register">
-                Get Started
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
-
-          <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-            <SheetTrigger asChild>
-              <Button aria-label="Open navigation menu" className="lg:hidden" size="icon" variant="outline">
-                <Menu className="h-4 w-4" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="right" className="w-[320px] max-w-[92vw] border-l border-slate-200 bg-white p-0">
-              <div className="flex h-full flex-col">
-                <div className="border-b border-slate-200 px-5 py-5">
-                  <Link className="flex items-center gap-3" to="/" onClick={() => setMobileMenuOpen(false)}>
-                    <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700">
-                      <Package2 className="h-5 w-5" />
-                    </span>
-                    <div>
-                      <p className="text-sm font-semibold text-slate-900">NearCart</p>
-                      <p className="text-xs text-slate-500">Inventory</p>
-                    </div>
-                  </Link>
-                </div>
-
-                <div className="flex-1 space-y-2 px-5 py-5">
-                  {navigationLinks.map((item) => (
-                    <a
-                      key={item.label}
-                      className="flex items-center justify-between rounded-2xl border border-slate-200/80 bg-slate-50/80 px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-emerald-200 hover:bg-emerald-50/60 hover:text-slate-900"
-                      href={item.href}
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      <span>{item.label}</span>
-                      <ChevronRight className="h-4 w-4 text-slate-400" />
-                    </a>
-                  ))}
-                </div>
-
-                <div className="space-y-3 border-t border-slate-200 px-5 py-5">
-                  <Button asChild className="w-full">
-                    <Link to="/register" onClick={() => setMobileMenuOpen(false)}>
-                      Get Started
-                      <ArrowRight className="h-4 w-4" />
-                    </Link>
-                  </Button>
-                  <Button asChild className="w-full" variant="outline">
-                    <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
-                      Login
-                    </Link>
-                  </Button>
-                </div>
-              </div>
-            </SheetContent>
-          </Sheet>
-        </nav>
-      </header>
+      <PublicNavbar />
 
       <main>
         <section className="relative overflow-hidden">
