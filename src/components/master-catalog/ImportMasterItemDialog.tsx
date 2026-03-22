@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
+import { useTranslation } from 'react-i18next'
 
 import { useCategoriesQuery } from '@/features/categories/categories.api'
 import { useImportMasterItemMutation } from '@/features/master-catalog/master-catalog.api'
@@ -38,6 +39,7 @@ export function ImportMasterItemDialog({
   open: boolean
   onOpenChange: (open: boolean) => void
 }) {
+  const { t } = useTranslation('masterCatalog')
   const navigate = useNavigate()
   const importMutation = useImportMasterItemMutation()
   const categoriesQuery = useCategoriesQuery({ page: 1, limit: 100 })
@@ -149,18 +151,20 @@ export function ImportMasterItemDialog({
             </FormField>
             {categoryMode === 'USE_EXISTING' ? (
               <FormField label="Existing category">
-                <ControlledSelect
-                  control={form.control}
-                  name="existingCategoryId"
-                  placeholder="Select a category"
-                  emptyOptionLabel="Select a category"
-                  options={(categoriesQuery.data?.items ?? []).map((category) => ({
-                    value: category.id,
-                    label: getDisplayName(category),
-                  }))}
-                />
-              </FormField>
-            ) : null}
+              <ControlledSelect
+                control={form.control}
+                name="existingCategoryId"
+                placeholder={t('selectCategory')}
+                emptyOptionLabel={t('selectCategory')}
+                options={(categoriesQuery.data?.items ?? []).map((category) => ({
+                  value: category.id,
+                  label: getDisplayName(category),
+                }))}
+                addActionLabel={t('addCategory', { ns: 'categories' })}
+                onAddAction={() => navigate('/categories')}
+              />
+            </FormField>
+          ) : null}
           </div>
           <FormField label="Naming override">
             <Input {...form.register('namingOverride')} />
@@ -205,8 +209,8 @@ export function ImportMasterItemDialog({
                     <ControlledSelect
                       control={form.control}
                       name={`variantPrices.${index}.masterVariantTemplateId` as const}
-                      placeholder="Default / no template"
-                      emptyOptionLabel="Default / no template"
+                      placeholder={t('defaultNoTemplate')}
+                      emptyOptionLabel={t('defaultNoTemplate')}
                       options={(item?.variantTemplates ?? []).map((variant) => ({
                         value: variant.id,
                         label: variant.displayName ?? variant.name ?? 'Unnamed template',

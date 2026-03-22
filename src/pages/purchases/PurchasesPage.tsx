@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { Plus } from 'lucide-react'
 
@@ -9,6 +10,7 @@ import { Button } from '@/components/ui'
 import { formatDate } from '@/lib/utils'
 
 export function PurchasesPage() {
+  const { t } = useTranslation('common')
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
   const [branchId, setBranchId] = useState('')
@@ -42,7 +44,7 @@ export function PurchasesPage() {
         <SearchInput value={search} onChange={(event) => {
           setPage(1)
           setSearch(event.target.value)
-        }} placeholder="Search receipt or supplier..." />
+        }} placeholder={t('searchPurchasesPlaceholder')} />
         <BranchSelector includeAll value={branchId} onChange={(value) => {
           setPage(1)
           setBranchId(value)

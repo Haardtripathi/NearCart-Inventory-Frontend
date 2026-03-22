@@ -50,7 +50,7 @@ export function SalesOrdersPage() {
         <SearchInput value={search} onChange={(event) => {
           setPage(1)
           setSearch(event.target.value)
-        }} placeholder="Search order or customer..." />
+        }} placeholder={t('searchOrdersPlaceholder', { ns: 'common' })} />
         <BranchSelector includeAll value={branchId} onChange={(value) => {
           setPage(1)
           setBranchId(value)

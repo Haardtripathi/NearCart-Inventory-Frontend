@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
 
@@ -15,6 +16,7 @@ import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, Input } from 
 import { formatDateTime } from '@/lib/utils'
 
 export function SalesOrderDetailPage() {
+  const { t } = useTranslation('orders')
   const { id } = useParams()
   const [rejectOpen, setRejectOpen] = useState(false)
   const [rejectReason, setRejectReason] = useState('')
@@ -116,7 +118,7 @@ export function SalesOrderDetailPage() {
             <DialogTitle>Reject sales order</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <Input value={rejectReason} onChange={(event) => setRejectReason(event.target.value)} placeholder="Rejection reason" />
+            <Input value={rejectReason} onChange={(event) => setRejectReason(event.target.value)} placeholder={t('rejectionReasonPlaceholder')} />
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setRejectOpen(false)}>Cancel</Button>
               <Button onClick={async () => {

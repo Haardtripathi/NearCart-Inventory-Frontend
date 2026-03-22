@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
 import { Trash2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 import { useCreatePurchaseMutation, usePostPurchaseMutation } from '@/features/purchases/purchases.api'
 import { useSuppliersQuery } from '@/features/suppliers/suppliers.api'
@@ -12,6 +13,7 @@ import { BranchSelector, ProductSelector, VariantSelector } from '@/components/i
 import { ControlledSelect, DirtyStatePrompt, FormField } from '@/components/forms'
 import { PageHeader, SectionCard } from '@/components/common'
 import { Button, DatePicker, Input, Textarea } from '@/components/ui'
+import { usePermissions } from '@/hooks/usePermissions'
 import { formatDateForInput, parseDateValue } from '@/lib/utils'
 
 const purchaseItemSchema = z.object({
@@ -42,12 +44,15 @@ function PurchaseItemRow({
   setValue,
   index,
   onRemove,
+  onAddProduct,
 }: {
   control: Control<PurchaseFormValues>
   setValue: UseFormSetValue<PurchaseFormValues>
   index: number
   onRemove: () => void
+  onAddProduct?: () => void
 }) {
+  const { t } = useTranslation(['common', 'products'])
   const productId = useWatch({
     control,
     name: `items.${index}.productId`,
@@ -60,7 +65,7 @@ function PurchaseItemRow({
           <ProductSelector value={field.value} onChange={(value) => {
             field.onChange(value)
             setValue(`items.${index}.variantId`, '', { shouldDirty: true })
-          }} />
+          }} addActionLabel={onAddProduct ? t('addProduct', { ns: 'products' }) : undefined} onAddAction={onAddProduct} />
         </FormField>
       )} />
       <Controller control={control} name={`items.${index}.variantId`} render={({ field }) => (
@@ -103,7 +108,7 @@ function PurchaseItemRow({
           <DatePicker
             value={parseDateValue(field.value)}
             onChange={(date) => field.onChange(formatDateForInput(date))}
-            placeholder="Pick expiry date"
+            placeholder={t('pickExpiryDate')}
           />
         </FormField>
       )} />
@@ -112,7 +117,9 @@ function PurchaseItemRow({
 }
 
 export function PurchaseCreatePage() {
+  const { t } = useTranslation(['common', 'purchases', 'suppliers', 'products', 'branches'])
   const navigate = useNavigate()
+  const permissions = usePermissions()
   const [submitMode, setSubmitMode] = useState<'draft' | 'post'>('draft')
   const createPurchaseMutation = useCreatePurchaseMutation()
   const postPurchaseMutation = usePostPurchaseMutation()
@@ -160,24 +167,35 @@ export function PurchaseCreatePage() {
         <form className="space-y-4" onSubmit={onSubmit}>
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             <FormField label="Branch" error={form.formState.errors.branchId?.message}>
-              <Controller control={form.control} name="branchId" render={({ field }) => <BranchSelector value={field.value} onChange={field.onChange} />} />
+              <Controller
+                control={form.control}
+                name="branchId"
+                render={({ field }) => (
+                  <BranchSelector
+                    value={field.value}
+                    onChange={field.onChange}
+                    addActionLabel={permissions.canManageCatalog ? t('addBranch', { ns: 'branches' }) : undefined}
+                    onAddAction={permissions.canManageCatalog ? () => navigate('/branches') : undefined}
+                  />
+                )}
+              />
             </FormField>
             <FormField label="Supplier">
               <ControlledSelect
                 control={form.control}
                 name="supplierId"
-                placeholder="No supplier"
-                emptyOptionLabel="No supplier"
+                placeholder={t('noSupplier', { ns: 'common' })}
+                emptyOptionLabel={t('noSupplier', { ns: 'common' })}
                 options={suppliersQuery.data?.items.map((supplier) => ({
                   value: supplier.id,
                   label: supplier.name,
                 })) ?? []}
-                addActionLabel="Add supplier"
+                addActionLabel={t('addSupplier', { ns: 'suppliers' })}
                 onAddAction={() => navigate('/suppliers')}
               />
             </FormField>
             <FormField label="Receipt number">
-              <Input placeholder="PO-2026-001" {...form.register('receiptNumber')} />
+              <Input placeholder={t('receiptNumberPlaceholder', { ns: 'common' })} {...form.register('receiptNumber')} />
             </FormField>
             <Controller
               control={form.control}
@@ -187,7 +205,7 @@ export function PurchaseCreatePage() {
                   <DatePicker
                     value={parseDateValue(field.value)}
                     onChange={(date) => field.onChange(formatDateForInput(date))}
-                    placeholder="Pick invoice date"
+                    placeholder={t('pickInvoiceDate', { ns: 'common' })}
                   />
                 </FormField>
               )}
@@ -197,7 +215,7 @@ export function PurchaseCreatePage() {
             </FormField>
           </div>
           <FormField label="Notes">
-            <Textarea placeholder="Delivery condition, invoice remarks, or receiving notes." {...form.register('notes')} />
+            <Textarea placeholder={t('notesPlaceholder', { ns: 'purchases' })} {...form.register('notes')} />
           </FormField>
 
           <div className="space-y-3">
@@ -213,6 +231,7 @@ export function PurchaseCreatePage() {
                 control={form.control}
                 setValue={form.setValue}
                 index={index}
+                onAddProduct={permissions.canManageCatalog ? () => navigate('/products/new') : undefined}
                 onRemove={() => itemsFieldArray.remove(index)}
               />
             ))}

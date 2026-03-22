@@ -48,11 +48,11 @@ export function AuditLogsPage() {
         <SearchInput value={actor} onChange={(event) => {
           setPage(1)
           setActor(event.target.value)
-        }} placeholder="Actor name or email..." />
+        }} placeholder={t('searchActorPlaceholder')} />
         <Input value={entityType} onChange={(event) => {
           setPage(1)
           setEntityType(event.target.value)
-        }} placeholder="Entity type..." />
+        }} placeholder={t('entityTypePlaceholder')} />
         <OptionSelect
           value={action}
           onValueChange={(value) => {

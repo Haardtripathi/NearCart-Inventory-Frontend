@@ -4,12 +4,14 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
 import { Trash2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 import { useCreateStockTransferMutation } from '@/features/stock-transfers/stock-transfers.api'
 import { BranchSelector, ProductSelector, VariantSelector } from '@/components/inventory/selectors'
 import { DirtyStatePrompt, FormField } from '@/components/forms'
 import { PageHeader, SectionCard } from '@/components/common'
 import { Button, Input, Textarea } from '@/components/ui'
+import { usePermissions } from '@/hooks/usePermissions'
 
 const transferItemSchema = z.object({
   productId: z.string().trim().min(1),
@@ -36,12 +38,15 @@ function TransferItemRow({
   setValue,
   index,
   onRemove,
+  onAddProduct,
 }: {
   control: Control<StockTransferFormValues>
   setValue: UseFormSetValue<StockTransferFormValues>
   index: number
   onRemove: () => void
+  onAddProduct?: () => void
 }) {
+  const { t } = useTranslation(['common', 'products'])
   const productId = useWatch({
     control,
     name: `items.${index}.productId`,
@@ -54,7 +59,7 @@ function TransferItemRow({
           <ProductSelector value={field.value} onChange={(value) => {
             field.onChange(value)
             setValue(`items.${index}.variantId`, '', { shouldDirty: true })
-          }} />
+          }} addActionLabel={onAddProduct ? t('addProduct', { ns: 'products' }) : undefined} onAddAction={onAddProduct} />
         </FormField>
       )} />
       <Controller control={control} name={`items.${index}.variantId`} render={({ field }) => (
@@ -82,7 +87,9 @@ function TransferItemRow({
 }
 
 export function StockTransferCreatePage() {
+  const { t } = useTranslation(['common', 'branches'])
   const navigate = useNavigate()
+  const permissions = usePermissions()
   const createTransferMutation = useCreateStockTransferMutation()
   const form = useForm({
     resolver: zodResolver(stockTransferSchema),
@@ -117,17 +124,39 @@ export function StockTransferCreatePage() {
         <form className="space-y-4" onSubmit={onSubmit}>
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             <FormField label="From branch" error={form.formState.errors.fromBranchId?.message}>
-              <Controller control={form.control} name="fromBranchId" render={({ field }) => <BranchSelector value={field.value} onChange={field.onChange} />} />
+              <Controller
+                control={form.control}
+                name="fromBranchId"
+                render={({ field }) => (
+                  <BranchSelector
+                    value={field.value}
+                    onChange={field.onChange}
+                    addActionLabel={permissions.canManageCatalog ? t('addBranch', { ns: 'branches' }) : undefined}
+                    onAddAction={permissions.canManageCatalog ? () => navigate('/branches') : undefined}
+                  />
+                )}
+              />
             </FormField>
             <FormField label="To branch" error={form.formState.errors.toBranchId?.message}>
-              <Controller control={form.control} name="toBranchId" render={({ field }) => <BranchSelector value={field.value} onChange={field.onChange} />} />
+              <Controller
+                control={form.control}
+                name="toBranchId"
+                render={({ field }) => (
+                  <BranchSelector
+                    value={field.value}
+                    onChange={field.onChange}
+                    addActionLabel={permissions.canManageCatalog ? t('addBranch', { ns: 'branches' }) : undefined}
+                    onAddAction={permissions.canManageCatalog ? () => navigate('/branches') : undefined}
+                  />
+                )}
+              />
             </FormField>
             <FormField label="Transfer number">
-              <Input placeholder="TR-2026-001" {...form.register('transferNumber')} />
+              <Input placeholder={t('transferNumberPlaceholder')} {...form.register('transferNumber')} />
             </FormField>
           </div>
           <FormField label="Notes">
-            <Textarea placeholder="Reason for transfer, courier details, or handling instructions." {...form.register('notes')} />
+            <Textarea placeholder={t('transferNotesPlaceholder')} {...form.register('notes')} />
           </FormField>
           <div className="space-y-3">
             <div className="flex items-center justify-between">
@@ -137,7 +166,14 @@ export function StockTransferCreatePage() {
               </Button>
             </div>
             {itemsFieldArray.fields.map((field, index) => (
-              <TransferItemRow key={field.id} control={form.control} setValue={form.setValue} index={index} onRemove={() => itemsFieldArray.remove(index)} />
+              <TransferItemRow
+                key={field.id}
+                control={form.control}
+                setValue={form.setValue}
+                index={index}
+                onAddProduct={permissions.canManageCatalog ? () => navigate('/products/new') : undefined}
+                onRemove={() => itemsFieldArray.remove(index)}
+              />
             ))}
           </div>
           <div className="flex justify-end gap-2">

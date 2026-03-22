@@ -143,14 +143,14 @@ export function SuppliersPage() {
             </div>
             <div className="grid gap-4 md:grid-cols-2">
               <FormField label={t('common:phone')}>
-                <Input placeholder="+91 9876543210" {...form.register('phone')} />
+                <Input placeholder={t('common:phonePlaceholder')} {...form.register('phone')} />
               </FormField>
               <FormField label={t('common:email')}>
-                <Input placeholder="ops@supplier.com" {...form.register('email')} />
+                <Input placeholder={t('common:emailPlaceholder')} {...form.register('email')} />
               </FormField>
             </div>
             <FormField label={t('common:notes')}>
-              <Textarea placeholder="" {...form.register('notes')} />
+              <Textarea placeholder={t('common:notesPlaceholder')} {...form.register('notes')} />
             </FormField>
             <CheckboxField
               checked={isActive}

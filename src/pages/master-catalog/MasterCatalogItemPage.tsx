@@ -1,11 +1,12 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 
 import { useIndustriesQuery, useUnitsQuery } from '@/features/meta/meta.api'
 import { useMasterCatalogCategoryTreeQuery, useMasterCatalogItemQuery } from '@/features/master-catalog/master-catalog.api'
 import { usePermissions } from '@/hooks/usePermissions'
 import { ImportMasterItemDialog } from '@/components/master-catalog/ImportMasterItemDialog'
+import { MasterCatalogCategoryDialog } from '@/components/master-catalog/MasterCatalogCategoryDialog'
 import { MasterCatalogItemDialog } from '@/components/master-catalog/MasterCatalogItemDialog'
 import { IndustryDialog } from '@/components/platform/IndustryDialog'
 import { DataTable, DetailGrid, DetailItem, EmptyState, InlineNotice, LoadingState, PageHeader, SectionCard, StatusBadge } from '@/components/common'
@@ -21,31 +22,29 @@ function flattenCategories(items: MasterCatalogCategory[]): MasterCatalogCategor
 
 export function MasterCatalogItemPage() {
   const { t } = useTranslation(['masterCatalog', 'common', 'products'])
+  const navigate = useNavigate()
   const { id } = useParams()
   const permissions = usePermissions()
   const [importOpen, setImportOpen] = useState(false)
   const [editOpen, setEditOpen] = useState(false)
+  const [categoryDialogOpen, setCategoryDialogOpen] = useState(false)
   const [industryDialogOpen, setIndustryDialogOpen] = useState(false)
   const itemQuery = useMasterCatalogItemQuery(id)
   const industriesQuery = useIndustriesQuery()
   const unitsQuery = useUnitsQuery()
   const categoryTreeQuery = useMasterCatalogCategoryTreeQuery(itemQuery.data?.industryId)
-
-  if (itemQuery.isLoading) {
-    return <LoadingState label={t('loadingData', { ns: 'common' })} />
-  }
-
-  if (!itemQuery.data) {
-    return <EmptyState title={t('noMasterItemsTitle')} />
-  }
-
-  const item = itemQuery.data
+  const item = itemQuery.data ?? null
+  const allCategories = useMemo(
+    () => flattenCategories(categoryTreeQuery.data ?? []),
+    [categoryTreeQuery.data],
+  )
   const industryName = useMemo(
-    () =>
-      industriesQuery.data?.find((industry) => industry.id === item.industryId)?.displayName
-      ?? industriesQuery.data?.find((industry) => industry.id === item.industryId)?.name
-      ?? item.industryId,
-    [industriesQuery.data, item.industryId],
+    () => item
+      ? industriesQuery.data?.find((industry) => industry.id === item.industryId)?.displayName
+        ?? industriesQuery.data?.find((industry) => industry.id === item.industryId)?.name
+        ?? item.industryId
+      : '—',
+    [industriesQuery.data, item],
   )
   const unitLabelByCode = useMemo(
     () =>
@@ -57,6 +56,14 @@ export function MasterCatalogItemPage() {
       ),
     [unitsQuery.data?.items],
   )
+
+  if (itemQuery.isLoading) {
+    return <LoadingState label={t('loadingData', { ns: 'common' })} />
+  }
+
+  if (!item) {
+    return <EmptyState title={t('noMasterItemsTitle')} />
+  }
   const defaultUnitLabel = item.defaultUnitCode?.trim()
     ? unitLabelByCode.get(item.defaultUnitCode.trim().toUpperCase()) ?? item.defaultUnitCode
     : '—'
@@ -143,10 +150,20 @@ export function MasterCatalogItemPage() {
         open={editOpen}
         onOpenChange={setEditOpen}
         onAddIndustry={permissions.canManageMasterPlatform ? () => setIndustryDialogOpen(true) : undefined}
+        onAddCategory={permissions.canManageMasterPlatform ? () => setCategoryDialogOpen(true) : undefined}
+        onAddUnit={() => navigate('/units')}
         industries={industriesQuery.data ?? []}
-        categories={flattenCategories(categoryTreeQuery.data ?? [])}
+        categories={allCategories}
         initialIndustryId={item.industryId}
         item={item}
+      />
+      <MasterCatalogCategoryDialog
+        open={categoryDialogOpen}
+        onOpenChange={setCategoryDialogOpen}
+        onAddIndustry={() => setIndustryDialogOpen(true)}
+        industries={industriesQuery.data ?? []}
+        categories={allCategories}
+        initialIndustryId={item.industryId}
       />
       <IndustryDialog open={industryDialogOpen} onOpenChange={setIndustryDialogOpen} />
     </div>

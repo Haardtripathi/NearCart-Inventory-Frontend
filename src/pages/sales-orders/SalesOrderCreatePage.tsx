@@ -13,6 +13,7 @@ import { BranchSelector, ProductSelector, VariantSelector } from '@/components/i
 import { ControlledSelect, DirtyStatePrompt, FormField } from '@/components/forms'
 import { PageHeader, SectionCard } from '@/components/common'
 import { Button, Input, Textarea } from '@/components/ui'
+import { usePermissions } from '@/hooks/usePermissions'
 import { ORDER_SOURCES, PAYMENT_STATUSES } from '@/types/common'
 import { getDisplayName } from '@/lib/utils'
 import { getOrderSourceLabel, getPaymentStatusLabel } from '@/lib/labels'
@@ -44,12 +45,15 @@ function SalesOrderItemRow({
   setValue,
   index,
   onRemove,
+  onAddProduct,
 }: {
   control: Control<SalesOrderFormValues>
   setValue: UseFormSetValue<SalesOrderFormValues>
   index: number
   onRemove: () => void
+  onAddProduct?: () => void
 }) {
+  const { t } = useTranslation(['common', 'products'])
   const productId = useWatch({
     control,
     name: `items.${index}.productId`,
@@ -62,7 +66,7 @@ function SalesOrderItemRow({
           <ProductSelector value={field.value} onChange={(value) => {
             field.onChange(value)
             setValue(`items.${index}.variantId`, '', { shouldDirty: true })
-          }} />
+          }} addActionLabel={onAddProduct ? t('addProduct', { ns: 'products' }) : undefined} onAddAction={onAddProduct} />
         </FormField>
       )} />
       <Controller control={control} name={`items.${index}.variantId`} render={({ field }) => (
@@ -100,8 +104,9 @@ function SalesOrderItemRow({
 }
 
 export function SalesOrderCreatePage() {
-  const { t } = useTranslation(['common', 'orders'])
+  const { t } = useTranslation(['common', 'orders', 'branches', 'customers'])
   const navigate = useNavigate()
+  const permissions = usePermissions()
   const [submitStatus, setSubmitStatus] = useState<'DRAFT' | 'PENDING'>('PENDING')
   const createSalesOrderMutation = useCreateSalesOrderMutation()
   const customersQuery = useCustomersQuery({ page: 1, limit: 100 })
@@ -147,7 +152,18 @@ export function SalesOrderCreatePage() {
         <form className="space-y-4" onSubmit={onSubmit}>
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             <FormField label="Branch" error={form.formState.errors.branchId?.message}>
-              <Controller control={form.control} name="branchId" render={({ field }) => <BranchSelector value={field.value} onChange={field.onChange} />} />
+              <Controller
+                control={form.control}
+                name="branchId"
+                render={({ field }) => (
+                  <BranchSelector
+                    value={field.value}
+                    onChange={field.onChange}
+                    addActionLabel={permissions.canManageCatalog ? t('addBranch', { ns: 'branches' }) : undefined}
+                    onAddAction={permissions.canManageCatalog ? () => navigate('/branches') : undefined}
+                  />
+                )}
+              />
             </FormField>
             <FormField label="Customer">
               <ControlledSelect
@@ -159,7 +175,7 @@ export function SalesOrderCreatePage() {
                   value: customer.id,
                   label: getDisplayName(customer),
                 })) ?? []}
-                addActionLabel="Add customer"
+                addActionLabel={t('addCustomer', { ns: 'customers' })}
                 onAddAction={() => navigate('/customers')}
               />
             </FormField>
@@ -178,11 +194,11 @@ export function SalesOrderCreatePage() {
               />
             </FormField>
             <FormField label="Order number">
-              <Input placeholder="SO-2026-001" {...form.register('orderNumber')} />
+              <Input placeholder={t('orderNumberPlaceholder', { ns: 'common' })} {...form.register('orderNumber')} />
             </FormField>
           </div>
           <FormField label="Notes">
-            <Textarea placeholder="Delivery note, special handling, or internal order remarks." {...form.register('notes')} />
+            <Textarea placeholder={t('notesPlaceholder')} {...form.register('notes')} />
           </FormField>
           <div className="space-y-3">
             <div className="flex items-center justify-between">
@@ -192,7 +208,14 @@ export function SalesOrderCreatePage() {
               </Button>
             </div>
             {itemsFieldArray.fields.map((field, index) => (
-              <SalesOrderItemRow key={field.id} control={form.control} setValue={form.setValue} index={index} onRemove={() => itemsFieldArray.remove(index)} />
+              <SalesOrderItemRow
+                key={field.id}
+                control={form.control}
+                setValue={form.setValue}
+                index={index}
+                onAddProduct={permissions.canManageCatalog ? () => navigate('/products/new') : undefined}
+                onRemove={() => itemsFieldArray.remove(index)}
+              />
             ))}
           </div>
           <div className="flex justify-end gap-2">

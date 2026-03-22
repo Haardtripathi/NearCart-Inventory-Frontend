@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Controller, useForm, useWatch } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -44,6 +45,7 @@ export function MasterCatalogCategoryDialog({
   category?: MasterCatalogCategory | null
   onAddIndustry?: () => void
 }) {
+  const { t } = useTranslation(['masterCatalog', 'categories'])
   const createMutation = useCreateMasterCatalogCategoryMutation()
   const updateMutation = useUpdateMasterCatalogCategoryMutation()
   const form = useForm({
@@ -138,7 +140,7 @@ export function MasterCatalogCategoryDialog({
               <ControlledSelect
                 control={form.control}
                 name="industryId"
-                placeholder="Select industry"
+                placeholder={t('selectIndustry', { ns: 'masterCatalog' })}
                 options={industries.map((industry) => ({
                   value: industry.id,
                   label: industry.displayName ?? industry.name ?? 'Unnamed industry',
@@ -152,8 +154,8 @@ export function MasterCatalogCategoryDialog({
               <ControlledSelect
                 control={form.control}
                 name="parentId"
-                placeholder="No parent"
-                emptyOptionLabel="No parent"
+                placeholder={t('noParent', { ns: 'categories' })}
+                emptyOptionLabel={t('noParent', { ns: 'categories' })}
                 options={parentOptions.map((item) => ({
                   value: item.id,
                   label: item.displayName ?? item.name ?? item.code,
@@ -162,11 +164,11 @@ export function MasterCatalogCategoryDialog({
             </FormField>
 
             <FormField label="Code" error={form.formState.errors.code?.message} required>
-              <Input placeholder="dairy" {...form.register('code')} />
+              <Input placeholder={t('categoryCodePlaceholder', { ns: 'masterCatalog' })} {...form.register('code')} />
             </FormField>
 
             <FormField label="Slug">
-              <Input placeholder="dairy" {...form.register('slug')} />
+              <Input placeholder={t('categorySlugPlaceholder', { ns: 'masterCatalog' })} {...form.register('slug')} />
             </FormField>
 
             <FormField label="Sort order">
@@ -174,14 +176,21 @@ export function MasterCatalogCategoryDialog({
             </FormField>
 
             <FormField label="Icon key">
-              <Input placeholder="milk" {...form.register('iconKey')} />
+              <Input placeholder={t('categoryIconPlaceholder', { ns: 'masterCatalog' })} {...form.register('iconKey')} />
             </FormField>
 
             <FormField className="md:col-span-2" label="Image">
               <Controller
                 control={form.control}
                 name="imageUrl"
-                render={({ field }) => <ImageUploadField label="Category image" value={field.value} onChange={field.onChange} />}
+                render={({ field }) => (
+                  <ImageUploadField
+                    label="Category image"
+                    value={field.value}
+                    onChange={field.onChange}
+                    scope="master-catalog-category"
+                  />
+                )}
               />
             </FormField>
           </div>

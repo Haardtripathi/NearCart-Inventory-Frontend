@@ -10,6 +10,7 @@ import { useRegisterOrganizationOwnerMutation } from '@/features/auth/auth.api'
 import { useIndustriesQuery } from '@/features/meta/meta.api'
 import { useAuth } from '@/hooks/useAuth'
 import { useLocale } from '@/hooks/useLocale'
+import { BreadcrumbTrail } from '@/components/common'
 import { ControlledSelect, FormField } from '@/components/forms'
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input } from '@/components/ui'
 import { APP_LANGUAGES, BRANCH_TYPES, LANGUAGE_CODES } from '@/types/common'
@@ -112,8 +113,11 @@ export function RegisterOrganizationOwnerPage() {
   })
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-8">
-      <Card className="w-full max-w-5xl rounded-[2rem]">
+    <div className="min-h-screen bg-slate-50 px-4 py-8">
+      <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
+        <BreadcrumbTrail items={[{ label: 'Sign in', to: '/login' }, { label: 'Create workspace' }]} />
+
+        <Card className="w-full rounded-[2rem]">
         <CardHeader className="flex flex-row items-start justify-between p-7 sm:p-8">
           <div className="flex-1">
             <CardTitle>{t('register:title')}</CardTitle>
@@ -261,7 +265,8 @@ export function RegisterOrganizationOwnerPage() {
             </div>
           </form>
         </CardContent>
-      </Card>
+        </Card>
+      </div>
     </div>
   )
 }

@@ -32,6 +32,10 @@ api.interceptors.request.use((config) => {
     config.headers['x-organization-id'] = activeOrganizationId
   }
 
+  if (config.data instanceof FormData) {
+    delete config.headers['Content-Type']
+  }
+
   config.headers['Accept-Language'] = toBackendLanguage(language).toLowerCase()
   return config
 })

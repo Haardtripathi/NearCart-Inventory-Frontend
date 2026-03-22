@@ -1,6 +1,7 @@
 import * as React from 'react'
-import { AlertTriangle, Loader2, Search } from 'lucide-react'
+import { AlertTriangle, Search } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 
 import { cn } from '@/lib/utils'
 import { usePagination } from '@/hooks/usePagination'
@@ -23,6 +24,7 @@ import {
   CardHeader,
   CardTitle,
   Input,
+  Skeleton,
   Table,
   TableBody,
   TableCell,
@@ -60,6 +62,39 @@ export function PageHeader({
       </div>
       {actions ? <div className="flex flex-wrap items-center gap-2 lg:justify-end">{actions}</div> : null}
     </div>
+  )
+}
+
+export function BreadcrumbTrail({
+  items,
+  className,
+}: {
+  items: Array<{ label: string; to?: string }>
+  className?: string
+}) {
+  return (
+    <nav aria-label="Breadcrumb" className={className}>
+      <ol className="flex flex-wrap items-center gap-1.5 text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-slate-400">
+        {items.map((item, index) => {
+          const isCurrent = index === items.length - 1
+
+          return (
+            <li key={`${item.label}-${index}`} className="flex items-center gap-1.5">
+              {item.to && !isCurrent ? (
+                <Link className="transition hover:text-slate-600" to={item.to}>
+                  {item.label}
+                </Link>
+              ) : (
+                <span aria-current={isCurrent ? 'page' : undefined} className={isCurrent ? 'text-slate-600' : undefined}>
+                  {item.label}
+                </span>
+              )}
+              {!isCurrent ? <span aria-hidden="true" className="text-slate-300">/</span> : null}
+            </li>
+          )
+        })}
+      </ol>
+    </nav>
   )
 }
 
@@ -229,11 +264,45 @@ export function LoadingState({ label = 'Loading data...' }: { label?: string }) 
   const resolvedLabel = label === 'Loading data...' ? t('loadingData') : label
 
   return (
-    <div className="flex min-h-[220px] flex-col items-center justify-center gap-3 rounded-md border border-slate-200 bg-white px-6 shadow-[0_3px_12px_rgba(15,23,42,0.04)]">
-      <div className="rounded-md border border-emerald-100 bg-emerald-50 p-3 text-emerald-700 shadow-sm">
-        <Loader2 className="h-5 w-5 animate-spin" />
+    <div aria-busy="true" aria-live="polite" className="space-y-6">
+      <span className="sr-only">{resolvedLabel}</span>
+
+      <div className="space-y-3">
+        <Skeleton className="h-3 w-28" />
+        <Skeleton className="h-10 w-full max-w-sm" />
+        <Skeleton className="h-4 w-full max-w-3xl" />
       </div>
-      <p className="text-sm text-slate-500">{resolvedLabel}</p>
+
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, index) => (
+          <div key={index} className="rounded-md border border-slate-200 bg-white p-4 shadow-[0_3px_12px_rgba(15,23,42,0.04)]">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="mt-4 h-8 w-20" />
+            <Skeleton className="mt-6 h-3 w-28" />
+          </div>
+        ))}
+      </div>
+
+      <div className="space-y-4 rounded-md border border-slate-200 bg-white p-4 shadow-[0_3px_12px_rgba(15,23,42,0.04)]">
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <Skeleton key={index} className="h-10 w-full" />
+          ))}
+        </div>
+
+        <div className="space-y-3">
+          {Array.from({ length: 5 }).map((_, index) => (
+            <div key={index} className="rounded-md border border-slate-200/80 p-4">
+              <div className="grid gap-3 md:grid-cols-4">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-20" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   )
 }

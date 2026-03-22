@@ -4,10 +4,11 @@ import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
+import { useTranslation } from 'react-i18next'
 
 import { useResetPasswordMutation } from '@/features/auth/auth.api'
 import { useAuth } from '@/hooks/useAuth'
-import { EmptyState } from '@/components/common'
+import { BreadcrumbTrail, EmptyState } from '@/components/common'
 import { FormField } from '@/components/forms'
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input } from '@/components/ui'
 import { parseApiError } from '@/lib/utils'
@@ -25,6 +26,7 @@ const resetPasswordSchema = z
 type ResetPasswordFormValues = z.infer<typeof resetPasswordSchema>
 
 export function ResetPasswordPage() {
+  const { t } = useTranslation('auth')
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const { isAuthenticated } = useAuth()
@@ -45,7 +47,14 @@ export function ResetPasswordPage() {
   }, [isAuthenticated, navigate])
 
   if (!token) {
-    return <EmptyState title="Reset link is missing" description="Open this page from the password reset link shared by your admin." />
+    return (
+      <div className="min-h-screen bg-slate-50 px-4 py-8">
+        <div className="mx-auto flex w-full max-w-5xl flex-col gap-8">
+          <BreadcrumbTrail items={[{ label: 'Sign in', to: '/login' }, { label: 'Reset password' }]} />
+          <EmptyState title={t('resetMissingTitle')} description={t('resetMissingDescription')} />
+        </div>
+      </div>
+    )
   }
 
   const onSubmit = form.handleSubmit(async (values) => {
@@ -62,29 +71,33 @@ export function ResetPasswordPage() {
   })
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-8">
-      <Card className="w-full max-w-lg rounded-[2rem]">
+    <div className="min-h-screen bg-slate-50 px-4 py-8">
+      <div className="mx-auto flex w-full max-w-lg flex-col gap-6">
+        <BreadcrumbTrail items={[{ label: 'Sign in', to: '/login' }, { label: 'Reset password' }]} />
+
+        <Card className="w-full rounded-[2rem]">
         <CardHeader className="p-7 sm:p-8">
-          <CardTitle>Reset Your Password</CardTitle>
-          <CardDescription>Create a new password for your inventory account.</CardDescription>
+          <CardTitle>{t('resetTitle')}</CardTitle>
+          <CardDescription>{t('resetDescription')}</CardDescription>
         </CardHeader>
         <CardContent className="p-7 pt-0 sm:p-8 sm:pt-0">
           <form className="space-y-5" onSubmit={onSubmit}>
-            <FormField label="New password" error={form.formState.errors.password?.message}>
-              <Input type="password" placeholder="••••••••" {...form.register('password')} />
+            <FormField label={t('newPassword')} error={form.formState.errors.password?.message}>
+              <Input type="password" placeholder={t('passwordPlaceholder')} {...form.register('password')} />
             </FormField>
-            <FormField label="Confirm password" error={form.formState.errors.confirmPassword?.message}>
-              <Input type="password" placeholder="••••••••" {...form.register('confirmPassword')} />
+            <FormField label={t('confirmPassword')} error={form.formState.errors.confirmPassword?.message}>
+              <Input type="password" placeholder={t('passwordPlaceholder')} {...form.register('confirmPassword')} />
             </FormField>
             <Button className="w-full" type="submit" disabled={resetMutation.isPending}>
-              {resetMutation.isPending ? 'Resetting password...' : 'Reset password'}
+              {resetMutation.isPending ? t('resettingPassword') : t('resetPassword')}
             </Button>
             <p className="text-center text-sm text-slate-500">
-              Back to <Link className="font-semibold text-emerald-700" to="/login">sign in</Link>
+              <Link className="font-semibold text-emerald-700" to="/login">{t('backToSignIn')}</Link>
             </p>
           </form>
         </CardContent>
-      </Card>
+        </Card>
+      </div>
     </div>
   )
 }

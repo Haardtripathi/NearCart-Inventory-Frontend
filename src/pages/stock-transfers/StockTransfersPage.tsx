@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { Plus } from 'lucide-react'
 
@@ -9,6 +10,7 @@ import { Button } from '@/components/ui'
 import { formatDateTime } from '@/lib/utils'
 
 export function StockTransfersPage() {
+  const { t } = useTranslation('common')
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
   const [fromBranchId, setFromBranchId] = useState('')
@@ -44,7 +46,7 @@ export function StockTransfersPage() {
         <SearchInput value={search} onChange={(event) => {
           setPage(1)
           setSearch(event.target.value)
-        }} placeholder="Search transfer number..." />
+        }} placeholder={t('searchTransfersPlaceholder')} />
         <BranchSelector includeAll value={fromBranchId} onChange={(value) => {
           setPage(1)
           setFromBranchId(value)

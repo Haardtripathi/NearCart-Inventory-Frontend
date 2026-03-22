@@ -26,7 +26,7 @@ import { useTranslation } from 'react-i18next'
 import { Link, Navigate, Outlet, useLocation } from 'react-router-dom'
 
 import { LanguageSwitcher } from '@/components/language/LanguageSwitcher'
-import { LoadingState } from '@/components/common'
+import { BreadcrumbTrail, LoadingState } from '@/components/common'
 import { Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, OptionSelect, Sheet, SheetContent, SheetTrigger } from '@/components/ui'
 import { useAuth } from '@/hooks/useAuth'
 import { useAuthStore } from '@/store/auth.store'
@@ -55,6 +55,11 @@ interface RouteMeta {
   descriptionDefault: string
   descriptionNs?: string
   descriptionKey?: string
+}
+
+interface BreadcrumbItem {
+  to?: string
+  label: string
 }
 
 const navigationSections: NavigationSection[] = [
@@ -128,6 +133,11 @@ const routeMeta: RouteMeta[] = [
     descriptionKey: 'description',
   },
   {
+    match: /^\/master-catalog\/items\/[^/]+$/,
+    titleDefault: 'Master Catalog Item',
+    descriptionDefault: 'Review platform catalog metadata, variant templates, and import readiness.',
+  },
+  {
     match: /^\/master-catalog(\/.*)?$/,
     titleDefault: 'Master Catalog',
     titleNs: 'masterCatalog',
@@ -135,6 +145,11 @@ const routeMeta: RouteMeta[] = [
     descriptionDefault: 'Browse reusable catalog templates, maintain platform categories, and import clean product records into an organization.',
     descriptionNs: 'masterCatalog',
     descriptionKey: 'description',
+  },
+  {
+    match: /^\/products\/[^/]+\/variants\/[^/]+\/edit/,
+    titleDefault: 'Edit Product Variant',
+    descriptionDefault: 'Update variant-level pricing, inventory settings, and language overrides.',
   },
   {
     match: /^\/products\/new/,
@@ -292,6 +307,79 @@ function resolveRouteMeta(pathname: string) {
   return routeMeta.find((meta) => meta.match.test(pathname)) ?? null
 }
 
+function translateRouteTitle(meta: RouteMeta, translate: (key: string, options?: Record<string, unknown>) => string) {
+  return meta.titleKey
+    ? translate(meta.titleKey, { ns: meta.titleNs, defaultValue: meta.titleDefault })
+    : meta.titleDefault
+}
+
+function resolveBreadcrumbLabel(pathname: string, translate: (key: string, options?: Record<string, unknown>) => string) {
+  const matchingNavigationItem = navigationSections
+    .flatMap((section) => section.items)
+    .find((item) => item.to === pathname)
+
+  if (matchingNavigationItem) {
+    return getNavigationLabel(matchingNavigationItem, translate)
+  }
+
+  if (pathname === '/inventory') {
+    return translate('inventory', { ns: 'common' })
+  }
+
+  if (pathname === '/master-catalog/items') {
+    return translate('items', { ns: 'common' })
+  }
+
+  const meta = resolveRouteMeta(pathname)
+  if (meta) {
+    return translateRouteTitle(meta, translate)
+  }
+
+  const lastSegment = pathname.split('/').filter(Boolean).at(-1)
+  if (!lastSegment) {
+    return translate('dashboard', { ns: 'common' })
+  }
+
+  return lastSegment
+    .replace(/-/g, ' ')
+    .replace(/\b\w/g, (char) => char.toUpperCase())
+}
+
+function buildBreadcrumbs(pathname: string, translate: (key: string, options?: Record<string, unknown>) => string) {
+  const dashboardLabel = translate('dashboard', {
+    ns: 'navigation',
+    defaultValue: translate('dashboard', { ns: 'common' }),
+  })
+
+  if (pathname === '/dashboard') {
+    return [{ label: dashboardLabel }]
+  }
+
+  const breadcrumbs: BreadcrumbItem[] = [{ to: '/dashboard', label: dashboardLabel }]
+  const segments = pathname.split('/').filter(Boolean)
+  let currentPath = ''
+
+  segments.forEach((segment, index) => {
+    currentPath += `/${segment}`
+
+    if (currentPath === '/dashboard') {
+      return
+    }
+
+    const label = resolveBreadcrumbLabel(currentPath, translate)
+    if (!label || breadcrumbs[breadcrumbs.length - 1]?.label === label) {
+      return
+    }
+
+    breadcrumbs.push({
+      to: index === segments.length - 1 ? undefined : currentPath,
+      label,
+    })
+  })
+
+  return breadcrumbs
+}
+
 function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = useLocation().pathname
   const { t } = useTranslation()
@@ -427,6 +515,7 @@ export function AppShell() {
     [activeOrganizationId, memberships],
   )
   const activeRouteMeta = useMemo(() => resolveRouteMeta(pathname), [pathname])
+  const breadcrumbs = useMemo(() => buildBreadcrumbs(pathname, t), [pathname, t])
 
   useEffect(() => {
     const title = activeRouteMeta
@@ -527,7 +616,11 @@ export function AppShell() {
           </header>
 
           <main className="overflow-x-hidden px-4 py-4 sm:px-5 lg:px-6">
-            <Outlet />
+            <div className="space-y-4">
+              <BreadcrumbTrail items={breadcrumbs} />
+
+              <Outlet />
+            </div>
           </main>
         </div>
       </div>

@@ -9,6 +9,7 @@ import { ArrowRight, Globe2, ShieldCheck, Warehouse } from 'lucide-react'
 
 import { useLoginMutation } from '@/features/auth/auth.api'
 import { useAuth } from '@/hooks/useAuth'
+import { BreadcrumbTrail } from '@/components/common'
 import { FormField } from '@/components/forms'
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input } from '@/components/ui'
 import { parseApiError } from '@/lib/utils'
@@ -51,8 +52,11 @@ export function LoginPage() {
   })
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4 py-8 sm:px-6 lg:px-8">
-      <div className="grid w-full max-w-7xl gap-6 lg:grid-cols-[1.08fr_0.92fr]">
+    <div className="min-h-screen px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
+        <BreadcrumbTrail items={[{ label: 'Sign in' }]} />
+
+        <div className="grid w-full gap-6 lg:grid-cols-[1.08fr_0.92fr]">
         <div className="relative overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-7 shadow-[0_24px_55px_rgba(15,23,42,0.08)] sm:p-10 lg:p-12">
           <div className="absolute inset-y-0 right-0 w-56 bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.18),transparent_58%)] blur-2xl" />
           <div className="relative">
@@ -105,10 +109,10 @@ export function LoginPage() {
           <CardContent className="p-7 pt-2 sm:p-8 sm:pt-2">
             <form className="space-y-5" onSubmit={onSubmit}>
               <FormField label={t('auth:email')} error={form.formState.errors.email?.message} required>
-                <Input type="email" placeholder="merchant@example.com" {...form.register('email')} />
+                <Input type="email" placeholder={t('auth:emailPlaceholder')} {...form.register('email')} />
               </FormField>
               <FormField label={t('auth:password')} error={form.formState.errors.password?.message} required>
-                <Input type="password" placeholder="••••••••" {...form.register('password')} />
+                <Input type="password" placeholder={t('auth:passwordPlaceholder')} {...form.register('password')} />
               </FormField>
               <Button className="w-full" disabled={loginMutation.isPending} type="submit">
                 {loginMutation.isPending ? t('auth:loggingIn') : t('auth:submit')}
@@ -123,6 +127,7 @@ export function LoginPage() {
             </form>
           </CardContent>
         </Card>
+        </div>
       </div>
     </div>
   )

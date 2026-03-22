@@ -127,14 +127,16 @@ function VariantTemplateEditor({
   onRemove,
   unitOptions,
   showTranslations,
+  onAddUnit,
 }: {
   control: Control<ItemDialogValues>
   index: number
   onRemove: () => void
   unitOptions: Array<{ value: string; label: string }>
   showTranslations: boolean
+  onAddUnit?: () => void
 }) {
-  const { t } = useTranslation(['products', 'common', 'masterCatalog'])
+  const { t } = useTranslation(['products', 'common', 'masterCatalog', 'units'])
 
   return (
     <div className="space-y-4 rounded-md border border-slate-200 bg-slate-50/80 p-4">
@@ -151,7 +153,7 @@ function VariantTemplateEditor({
           name={`variantTemplates.${index}.code`}
           render={({ field, fieldState }) => (
             <FormField label="Code" error={fieldState.error?.message}>
-              <Input placeholder="500ml" {...field} />
+              <Input placeholder={t('variantTemplateCodePlaceholder', { ns: 'masterCatalog' })} {...field} />
             </FormField>
           )}
         />
@@ -160,7 +162,7 @@ function VariantTemplateEditor({
           name={`variantTemplates.${index}.name`}
           render={({ field, fieldState }) => (
             <FormField label="Name" error={fieldState.error?.message}>
-              <Input placeholder="500 ml pack" {...field} />
+              <Input placeholder={t('variantTemplateNamePlaceholder', { ns: 'masterCatalog' })} {...field} />
             </FormField>
           )}
         />
@@ -169,7 +171,7 @@ function VariantTemplateEditor({
           name={`variantTemplates.${index}.skuSuffix`}
           render={({ field }) => (
             <FormField label="SKU suffix">
-              <Input placeholder="500" {...field} />
+              <Input placeholder={t('variantTemplateSkuSuffixPlaceholder', { ns: 'masterCatalog' })} {...field} />
             </FormField>
           )}
         />
@@ -184,6 +186,8 @@ function VariantTemplateEditor({
                 placeholder={t('defaultUnit', { ns: 'masterCatalog' })}
                 emptyOptionLabel={t('noPrimaryUnit', { ns: 'products' })}
                 options={unitOptions}
+                addActionLabel={onAddUnit ? t('addUnit', { ns: 'units' }) : undefined}
+                onAddAction={onAddUnit}
               />
             </FormField>
           )}
@@ -322,6 +326,8 @@ export function MasterCatalogItemDialog({
   initialIndustryId,
   item,
   onAddIndustry,
+  onAddCategory,
+  onAddUnit,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -330,8 +336,10 @@ export function MasterCatalogItemDialog({
   initialIndustryId?: string
   item?: MasterCatalogItem | null
   onAddIndustry?: () => void
+  onAddCategory?: () => void
+  onAddUnit?: () => void
 }) {
-  const { t } = useTranslation(['products', 'common', 'masterCatalog'])
+  const { t } = useTranslation(['products', 'common', 'masterCatalog', 'units'])
   const createMutation = useCreateMasterCatalogItemMutation()
   const updateMutation = useUpdateMasterCatalogItemMutation()
   const unitsQuery = useUnitsQuery()
@@ -571,16 +579,18 @@ export function MasterCatalogItemDialog({
                   value: category.id,
                   label: category.displayName ?? category.name ?? category.code ?? 'Uncategorized',
                 }))}
+                addActionLabel={onAddCategory ? t('addCategory', { ns: 'masterCatalog' }) : undefined}
+                onAddAction={onAddCategory}
               />
             </FormField>
             <FormField label="Code" error={form.formState.errors.code?.message} required>
-              <Input placeholder="amul_milk" {...form.register('code')} />
+              <Input placeholder={t('itemCodePlaceholder', { ns: 'masterCatalog' })} {...form.register('code')} />
             </FormField>
             <FormField label="Slug">
-              <Input placeholder="amul-milk" {...form.register('slug')} />
+              <Input placeholder={t('itemSlugPlaceholder', { ns: 'masterCatalog' })} {...form.register('slug')} />
             </FormField>
             <FormField label={t('name', { ns: 'common' })} error={form.formState.errors.canonicalName?.message} required>
-              <Input placeholder="Milk" {...form.register('canonicalName')} />
+              <Input placeholder={t('canonicalNamePlaceholder', { ns: 'masterCatalog' })} {...form.register('canonicalName')} />
             </FormField>
             <FormField label={t('productType', { ns: 'products' })} required>
               <ControlledSelect
@@ -609,19 +619,28 @@ export function MasterCatalogItemDialog({
                 placeholder={t('defaultUnit', { ns: 'masterCatalog' })}
                 emptyOptionLabel={t('noPrimaryUnit', { ns: 'products' })}
                 options={unitOptions}
+                addActionLabel={onAddUnit ? t('addUnit', { ns: 'units' }) : undefined}
+                onAddAction={onAddUnit}
               />
             </FormField>
             <FormField label={t('brand', { ns: 'products' })}>
-              <Input placeholder="NearCart" {...form.register('defaultBrandName')} />
+              <Input placeholder={t('defaultBrandPlaceholder', { ns: 'masterCatalog' })} {...form.register('defaultBrandName')} />
             </FormField>
             <FormField label="Default tax code">
-              <Input placeholder="GST_5" {...form.register('defaultTaxCode')} />
+              <Input placeholder={t('defaultTaxCodePlaceholder', { ns: 'masterCatalog' })} {...form.register('defaultTaxCode')} />
             </FormField>
             <FormField label={t('imageUrl', { ns: 'products' })} className="md:col-span-2">
               <Controller
                 control={form.control}
                 name="defaultImageUrl"
-                render={({ field }) => <ImageUploadField label={t('productImage', { ns: 'products' })} value={field.value} onChange={field.onChange} />}
+                render={({ field }) => (
+                  <ImageUploadField
+                    label={t('productImage', { ns: 'products' })}
+                    value={field.value}
+                    onChange={field.onChange}
+                    scope="master-catalog-item"
+                  />
+                )}
               />
             </FormField>
             <FormField label={t('tags', { ns: 'products' })} className="md:col-span-2">
@@ -708,7 +727,7 @@ export function MasterCatalogItemDialog({
                       name={`aliases.${index}.value`}
                       render={({ field, fieldState }) => (
                         <FormField label={index === 0 ? 'Alias value' : ''} error={fieldState.error?.message}>
-                          <Input placeholder="दूध" {...field} />
+                          <Input placeholder={t('aliasPlaceholder', { ns: 'masterCatalog' })} {...field} />
                         </FormField>
                       )}
                     />
@@ -743,6 +762,7 @@ export function MasterCatalogItemDialog({
                     index={index}
                     unitOptions={unitOptions}
                     showTranslations={Boolean(item)}
+                    onAddUnit={onAddUnit}
                     onRemove={() => templatesFieldArray.remove(index)}
                   />
                 ))}

@@ -52,7 +52,7 @@ export function InventoryLedgerPage() {
         <SearchInput value={search} onChange={(event) => {
           setPage(1)
           setSearch(event.target.value)
-        }} placeholder="Search reference or SKU..." />
+        }} placeholder={t('searchReferenceOrSkuPlaceholder')} />
         <BranchSelector includeAll value={branchId} onChange={(value) => {
           setPage(1)
           setBranchId(value)

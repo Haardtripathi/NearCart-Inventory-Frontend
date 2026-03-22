@@ -58,7 +58,7 @@ const organizationSchema = z.object({
 type OrganizationFormValues = z.output<typeof organizationSchema>
 
 export function OrganizationsPage() {
-  const { t } = useTranslation(['organizations', 'common'])
+  const { t } = useTranslation(['organizations', 'common', 'register'])
   const permissions = usePermissions()
   const navigate = useNavigate()
   const { activeOrganizationId, memberships, role } = useAuth()
@@ -370,22 +370,22 @@ export function OrganizationsPage() {
                 </div>
                 <div className="grid gap-4 md:grid-cols-2">
                   <FormField label={t('organizationName')} error={form.formState.errors.name?.message} required>
-                    <Input placeholder="NearCart Grocery" {...form.register('name')} />
+                    <Input placeholder={t('organizationNamePlaceholder', { ns: 'register' })} {...form.register('name')} />
                   </FormField>
                   <FormField label="Slug" error={form.formState.errors.slug?.message}>
-                    <Input placeholder="nearcart-grocery" {...form.register('slug')} />
+                    <Input placeholder={t('slugPlaceholder')} {...form.register('slug')} />
                   </FormField>
                   <FormField label={t('email', { ns: 'common' })} error={form.formState.errors.email?.message}>
-                    <Input placeholder="ops@example.com" {...form.register('email')} />
+                    <Input placeholder={t('organizationEmailPlaceholder', { ns: 'register' })} {...form.register('email')} />
                   </FormField>
                   <FormField label={t('phone', { ns: 'common' })} error={form.formState.errors.phone?.message}>
-                    <Input placeholder="+91 9876543210" {...form.register('phone')} />
+                    <Input placeholder={t('phonePlaceholder', { ns: 'register' })} {...form.register('phone')} />
                   </FormField>
                   <FormField label={t('primaryIndustry')} error={form.formState.errors.primaryIndustryId?.message} required>
                     <ControlledSelect
                       control={form.control as never}
                       name="primaryIndustryId"
-                      placeholder={industriesQuery.isLoading ? 'Loading industries…' : 'Select industry'}
+                      placeholder={industriesQuery.isLoading ? t('loadingIndustries', { ns: 'common' }) : t('selectIndustry', { ns: 'common' })}
                       disabled={industriesQuery.isLoading}
                       addActionLabel={permissions.canManageMasterPlatform ? 'Add industry' : undefined}
                       onAddAction={() => setIndustryDialogOpen(true)}
@@ -429,7 +429,7 @@ export function OrganizationsPage() {
                           <ControlledSelect
                             control={form.control as never}
                             name="ownerUserId"
-                            placeholder={directoryQuery.isLoading ? 'Loading users…' : 'Select owner'}
+                            placeholder={directoryQuery.isLoading ? t('loadingUsers', { ns: 'common' }) : t('selectOwner', { ns: 'common' })}
                             options={(directoryQuery.data ?? []).map((user) => ({
                               value: user.id,
                               label: `${user.fullName} (${user.email})`,
@@ -440,10 +440,10 @@ export function OrganizationsPage() {
                       {ownerMode === 'new' ? (
                         <>
                           <FormField label="Owner full name">
-                            <Input placeholder="Riya Shah" {...form.register('ownerFullName')} />
+                            <Input placeholder={t('fullNamePlaceholder', { ns: 'register' })} {...form.register('ownerFullName')} />
                           </FormField>
                           <FormField label="Owner email">
-                            <Input placeholder="riya@example.com" {...form.register('ownerEmail')} />
+                            <Input placeholder={t('emailPlaceholder', { ns: 'register' })} {...form.register('ownerEmail')} />
                           </FormField>
                           <FormField label="Owner language">
                             <ControlledSelect
@@ -469,10 +469,10 @@ export function OrganizationsPage() {
                 </div>
                 <div className="grid gap-4 md:grid-cols-2">
                   <FormField label={t('firstBranchName')} error={form.formState.errors.firstBranchName?.message} required>
-                    <Input placeholder="Main Store" {...form.register('firstBranchName')} />
+                    <Input placeholder={t('branchNamePlaceholder', { ns: 'register' })} {...form.register('firstBranchName')} />
                   </FormField>
                   <FormField label={t('firstBranchCode')} error={form.formState.errors.firstBranchCode?.message}>
-                    <Input placeholder="MAIN" {...form.register('firstBranchCode')} />
+                    <Input placeholder={t('branchCodePlaceholder', { ns: 'register' })} {...form.register('firstBranchCode')} />
                   </FormField>
                   <FormField label={t('branchType')} error={form.formState.errors.firstBranchType?.message}>
                     <ControlledSelect
@@ -482,19 +482,19 @@ export function OrganizationsPage() {
                     />
                   </FormField>
                   <FormField label={t('addressLine1')} error={form.formState.errors.addressLine1?.message}>
-                    <Input placeholder="123 Market Road" {...form.register('addressLine1')} />
+                    <Input placeholder={t('addressLine1Placeholder', { ns: 'common' })} {...form.register('addressLine1')} />
                   </FormField>
                   <FormField label={t('city', { ns: 'common' })} error={form.formState.errors.city?.message}>
-                    <Input placeholder="Ahmedabad" {...form.register('city')} />
+                    <Input placeholder={t('cityPlaceholder', { ns: 'register' })} {...form.register('city')} />
                   </FormField>
                   <FormField label={t('state', { ns: 'common' })} error={form.formState.errors.state?.message}>
-                    <Input placeholder="Gujarat" {...form.register('state')} />
+                    <Input placeholder={t('statePlaceholder', { ns: 'register' })} {...form.register('state')} />
                   </FormField>
                   <FormField label={t('country', { ns: 'common' })} error={form.formState.errors.country?.message}>
-                    <Input placeholder="India" {...form.register('country')} />
+                    <Input placeholder={t('countryPlaceholder', { ns: 'register' })} {...form.register('country')} />
                   </FormField>
                   <FormField label={t('postalCode', { ns: 'common' })} error={form.formState.errors.postalCode?.message}>
-                    <Input placeholder="380001" {...form.register('postalCode')} />
+                    <Input placeholder={t('postalCodePlaceholder', { ns: 'register' })} {...form.register('postalCode')} />
                   </FormField>
                 </div>
               </div>

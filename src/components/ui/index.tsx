@@ -8,8 +8,9 @@ import * as SeparatorPrimitive from '@radix-ui/react-separator'
 import * as ScrollAreaPrimitive from '@radix-ui/react-scroll-area'
 import * as TooltipPrimitive from '@radix-ui/react-tooltip'
 import { Slot } from '@radix-ui/react-slot'
-import { X } from 'lucide-react'
+import { Plus, X } from 'lucide-react'
 import { cva, type VariantProps } from 'class-variance-authority'
+import { useTranslation } from 'react-i18next'
 
 import { cn } from '@/lib/utils'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select'
@@ -113,6 +114,7 @@ export const NativeSelect = React.forwardRef<HTMLSelectElement, React.SelectHTML
 NativeSelect.displayName = 'NativeSelect'
 
 const EMPTY_SELECT_VALUE = '__OPTION_SELECT_EMPTY__'
+const ADD_ACTION_SELECT_VALUE = '__OPTION_SELECT_ADD_ACTION__'
 
 export interface OptionSelectOption {
   value: string
@@ -124,8 +126,10 @@ export function OptionSelect({
   value,
   onValueChange,
   options,
-  placeholder = 'Select an option',
+  placeholder,
   emptyLabel,
+  addActionLabel,
+  onAddAction,
   className,
   contentClassName,
   disabled,
@@ -135,21 +139,32 @@ export function OptionSelect({
   options: OptionSelectOption[]
   placeholder?: string
   emptyLabel?: string
+  addActionLabel?: React.ReactNode
+  onAddAction?: () => void
   className?: string
   contentClassName?: string
   disabled?: boolean
 }) {
+  const { t } = useTranslation('common')
   const hasValue = Boolean(value && options.some((option) => option.value === value))
   const resolvedValue = hasValue ? value : emptyLabel ? EMPTY_SELECT_VALUE : undefined
+  const resolvedPlaceholder = placeholder ?? t('selectOption')
 
   return (
     <Select
       value={resolvedValue}
-      onValueChange={(nextValue) => onValueChange(nextValue === EMPTY_SELECT_VALUE ? '' : nextValue)}
+      onValueChange={(nextValue) => {
+        if (nextValue === ADD_ACTION_SELECT_VALUE) {
+          onAddAction?.()
+          return
+        }
+
+        onValueChange(nextValue === EMPTY_SELECT_VALUE ? '' : nextValue)
+      }}
       disabled={disabled}
     >
       <SelectTrigger className={className}>
-        <SelectValue placeholder={placeholder} />
+        <SelectValue placeholder={resolvedPlaceholder} />
       </SelectTrigger>
       <SelectContent className={contentClassName}>
         {emptyLabel ? <SelectItem value={EMPTY_SELECT_VALUE}>{emptyLabel}</SelectItem> : null}
@@ -158,6 +173,14 @@ export function OptionSelect({
             {option.label}
           </SelectItem>
         ))}
+        {addActionLabel ? (
+          <SelectItem value={ADD_ACTION_SELECT_VALUE}>
+            <span className="inline-flex items-center gap-2 font-medium text-primary">
+              <Plus className="h-4 w-4" />
+              {addActionLabel}
+            </span>
+          </SelectItem>
+        ) : null}
       </SelectContent>
     </Select>
   )

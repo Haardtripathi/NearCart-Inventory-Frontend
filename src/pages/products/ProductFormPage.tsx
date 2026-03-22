@@ -20,9 +20,10 @@ import {
 } from '@/features/products/products.api'
 import { CheckboxField, ControlledSelect, DirtyStatePrompt, FormField, KeyValueEditor, TranslationFields } from '@/components/forms'
 import { ImageUploadField } from '@/components/forms/ImageUploadField'
-import { PageHeader, SectionCard } from '@/components/common'
+import { LoadingState, PageHeader, SectionCard } from '@/components/common'
 import { Button, Input, Tabs, TabsContent, TabsList, TabsTrigger, Textarea } from '@/components/ui'
 import { IndustryDialog } from '@/components/platform/IndustryDialog'
+import { useActiveOrganizationContext } from '@/hooks/useActiveOrganizationContext'
 import { usePermissions } from '@/hooks/usePermissions'
 import { getDisplayName } from '@/lib/utils'
 import { PRODUCT_STATUSES, PRODUCT_TYPES, TRACK_METHODS, type TranslationInput, type VariantTranslationInput } from '@/types/common'
@@ -77,6 +78,7 @@ function VariantEditor({
   units,
   canRemove,
   isEdit,
+  onAddUnit,
 }: {
   control: Control<ProductFormValues>
   index: number
@@ -84,8 +86,9 @@ function VariantEditor({
   units: Array<{ id: string; name: string }>
   canRemove: boolean
   isEdit: boolean
+  onAddUnit?: () => void
 }) {
-  const { t } = useTranslation(['products', 'common'])
+  const { t } = useTranslation(['products', 'common', 'units'])
   const variantTranslations = useWatch({
     control,
     name: `variants.${index}.translations`,
@@ -129,6 +132,8 @@ function VariantEditor({
               value: unit.id,
               label: unit.name,
             }))}
+            addActionLabel={onAddUnit ? t('addUnit', { ns: 'units' }) : undefined}
+            onAddAction={onAddUnit}
           />
         </FormField>
         <Controller control={control} name={`variants.${index}.costPrice`} render={({ field, fieldState }) => (
@@ -168,7 +173,7 @@ function VariantEditor({
         )} />
         <Controller control={control} name={`variants.${index}.imageUrl`} render={({ field }) => (
           <FormField label={t('imageUrl')}>
-            <ImageUploadField label={t('productImage')} value={field.value} onChange={field.onChange} />
+            <ImageUploadField label={t('productImage')} value={field.value} onChange={field.onChange} scope="product" />
           </FormField>
         )} />
       </div>
@@ -302,8 +307,9 @@ function generateVariantSku(productName: string, variantName: string | undefined
 }
 
 export function ProductFormPage() {
-  const { t } = useTranslation(['products', 'common'])
+  const { t } = useTranslation(['products', 'common', 'units'])
   const permissions = usePermissions()
+  const { defaultIndustryId } = useActiveOrganizationContext()
   const navigate = useNavigate()
   const { id } = useParams()
   const isEdit = Boolean(id)
@@ -414,6 +420,20 @@ export function ProductFormPage() {
   }, [form, productQuery.data])
 
   useEffect(() => {
+    if (isEdit || form.formState.isDirty || form.getValues('industryId')) {
+      return
+    }
+
+    const resolvedDefaultIndustryId = defaultIndustryId && industriesQuery.data?.some((industry) => industry.id === defaultIndustryId)
+      ? defaultIndustryId
+      : industriesQuery.data?.[0]?.id
+
+    if (resolvedDefaultIndustryId) {
+      form.setValue('industryId', resolvedDefaultIndustryId, { shouldDirty: false })
+    }
+  }, [defaultIndustryId, form, form.formState.isDirty, industriesQuery.data, isEdit])
+
+  useEffect(() => {
     if (productType === 'SIMPLE' && variantsFieldArray.fields.length > 1) {
       form.setValue('variants', [form.getValues('variants.0')], { shouldDirty: true })
     }
@@ -502,7 +522,7 @@ export function ProductFormPage() {
   })
 
   if (isEdit && productQuery.isLoading) {
-    return <SectionCard description={t('loadingProductDescription')} title={t('loading', { ns: 'common' })}><div className="h-20" /></SectionCard>
+    return <LoadingState label={t('loadingData', { ns: 'common' })} />
   }
 
   return (
@@ -607,13 +627,15 @@ export function ProductFormPage() {
                   value: unit.id,
                   label: getDisplayName(unit, unit.name),
                 })) ?? []}
+                addActionLabel={t('addUnit', { ns: 'units' })}
+                onAddAction={() => navigate('/units')}
               />
             </FormField>
             <FormField label={t('imageUrl')}>
               <Controller
                 control={form.control}
                 name="imageUrl"
-                render={({ field }) => <ImageUploadField label={t('productImage')} value={field.value} onChange={field.onChange} />}
+                render={({ field }) => <ImageUploadField label={t('productImage')} value={field.value} onChange={field.onChange} scope="product" />}
               />
             </FormField>
             <FormField label={t('tags')}>
@@ -736,6 +758,7 @@ export function ProductFormPage() {
                   units={units}
                   canRemove={variantsFieldArray.fields.length > 1}
                   isEdit={isEdit}
+                  onAddUnit={() => navigate('/units')}
                   onRemove={() => {
                     const variantId = form.getValues(`variants.${index}.id`)
                     if (variantId) {

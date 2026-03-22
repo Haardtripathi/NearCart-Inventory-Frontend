@@ -79,7 +79,7 @@ function toBranchAccess(scope: BranchAccessState['scope'], branchIds: string[]):
 }
 
 export function UsersPage() {
-  const { t } = useTranslation('common')
+  const { t } = useTranslation(['common', 'register'])
   const permissions = usePermissions()
   const { role } = useAuth()
   const usersQuery = useOrganizationUsersQuery()
@@ -260,7 +260,7 @@ export function UsersPage() {
       ) : null}
 
       <FilterBar>
-        <SearchInput value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search users by name, email, role, or status" />
+        <SearchInput value={search} onChange={(event) => setSearch(event.target.value)} placeholder={t('searchUsersPlaceholder', { ns: 'common' })} />
       </FilterBar>
 
       <DataTable
@@ -347,10 +347,10 @@ export function UsersPage() {
           </DialogHeader>
           <form className="grid gap-4 md:grid-cols-2" onSubmit={onCreate}>
             <FormField label="Full name" error={createForm.formState.errors.fullName?.message}>
-              <Input placeholder="Asha Patel" {...createForm.register('fullName')} />
+              <Input placeholder={t('fullNamePlaceholder', { ns: 'register' })} {...createForm.register('fullName')} />
             </FormField>
             <FormField label="Email" error={createForm.formState.errors.email?.message}>
-              <Input type="email" placeholder="asha@example.com" {...createForm.register('email')} />
+              <Input type="email" placeholder={t('emailPlaceholder', { ns: 'register' })} {...createForm.register('email')} />
             </FormField>
             <FormField label="Role">
               <ControlledSelect control={createForm.control as never} name="role" options={roleOptions} />
@@ -425,7 +425,7 @@ export function UsersPage() {
           </DialogHeader>
           <form className="grid gap-4 md:grid-cols-2" onSubmit={onUpdate}>
             <FormField label="Full name" error={updateForm.formState.errors.fullName?.message}>
-              <Input placeholder="Asha Patel" {...updateForm.register('fullName')} />
+              <Input placeholder={t('fullNamePlaceholder', { ns: 'register' })} {...updateForm.register('fullName')} />
             </FormField>
             <FormField label="Email">
               <Input disabled {...updateForm.register('email')} />

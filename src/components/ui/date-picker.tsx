@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { format } from 'date-fns'
 import { CalendarIcon } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/index'
@@ -20,12 +21,15 @@ interface DatePickerProps {
 export function DatePicker({
   value,
   onChange,
-  placeholder = 'Pick a date',
+  placeholder,
   className,
   disabled,
   fromDate,
   toDate,
 }: DatePickerProps) {
+  const { t } = useTranslation('common')
+  const resolvedPlaceholder = placeholder ?? t('pickDate')
+
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -40,7 +44,7 @@ export function DatePicker({
         >
           <span className="flex items-center gap-2">
             <CalendarIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
-            <span>{value ? format(value, 'dd MMM yyyy') : placeholder}</span>
+            <span>{value ? format(value, 'dd MMM yyyy') : resolvedPlaceholder}</span>
           </span>
         </Button>
       </PopoverTrigger>

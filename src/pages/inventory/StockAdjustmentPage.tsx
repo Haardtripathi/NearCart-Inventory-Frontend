@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
+import { useTranslation } from 'react-i18next'
 
 import { useCreateAdjustmentMutation, useInventoryBalancesQuery } from '@/features/inventory/inventory.api'
 import { ControlledSelect, DirtyStatePrompt, FormField } from '@/components/forms'
@@ -26,6 +27,7 @@ const adjustmentSchema = z.object({
 })
 
 export function StockAdjustmentPage() {
+  const { t } = useTranslation('common')
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const createAdjustmentMutation = useCreateAdjustmentMutation()
@@ -127,14 +129,14 @@ export function StockAdjustmentPage() {
               <DatePicker
                 value={parseDateValue(expiryDate)}
                 onChange={(date) => form.setValue('expiryDate', formatDateForInput(date), { shouldDirty: true })}
-                placeholder="Pick expiry date"
+                placeholder={t('pickExpiryDate')}
               />
             </FormField>
             <FormField label="Manufacture date">
               <DatePicker
                 value={parseDateValue(manufactureDate)}
                 onChange={(date) => form.setValue('manufactureDate', formatDateForInput(date), { shouldDirty: true })}
-                placeholder="Pick manufacture date"
+                placeholder={t('pickManufactureDate')}
               />
             </FormField>
           </div>

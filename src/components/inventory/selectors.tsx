@@ -10,10 +10,14 @@ export function BranchSelector({
   value,
   onChange,
   includeAll = false,
+  addActionLabel,
+  onAddAction,
 }: {
   value?: string
   onChange: (value: string) => void
   includeAll?: boolean
+  addActionLabel?: string
+  onAddAction?: () => void
 }) {
   const { t } = useTranslation('common')
   const { data } = useBranchesQuery({ page: 1, limit: 100 })
@@ -24,6 +28,8 @@ export function BranchSelector({
       onValueChange={onChange}
       placeholder={t('selectBranch')}
       emptyLabel={includeAll ? t('allBranches') : undefined}
+      addActionLabel={addActionLabel}
+      onAddAction={onAddAction}
       options={(data?.items ?? []).map((branch) => ({
         value: branch.id,
         label: getDisplayName(branch),
@@ -36,10 +42,14 @@ export function ProductSelector({
   value,
   onChange,
   includeAll = false,
+  addActionLabel,
+  onAddAction,
 }: {
   value?: string
   onChange: (value: string) => void
   includeAll?: boolean
+  addActionLabel?: string
+  onAddAction?: () => void
 }) {
   const { t } = useTranslation('common')
   const { data } = useProductsQuery({ page: 1, limit: 100 })
@@ -50,6 +60,8 @@ export function ProductSelector({
       onValueChange={onChange}
       placeholder={t('selectProduct')}
       emptyLabel={includeAll ? t('allProducts') : undefined}
+      addActionLabel={addActionLabel}
+      onAddAction={onAddAction}
       options={(data?.items ?? []).map((product) => ({
         value: product.id,
         label: getDisplayName(product),

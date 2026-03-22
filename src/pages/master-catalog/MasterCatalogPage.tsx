@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Pencil, Plus } from 'lucide-react'
 
 import { useIndustriesQuery, useUnitsQuery } from '@/features/meta/meta.api'
@@ -9,6 +9,7 @@ import {
   useMasterCatalogCategoryTreeQuery,
   useMasterCatalogItemsQuery,
 } from '@/features/master-catalog/master-catalog.api'
+import { useActiveOrganizationContext } from '@/hooks/useActiveOrganizationContext'
 import { usePermissions } from '@/hooks/usePermissions'
 import { useDebounce } from '@/hooks/useDebounce'
 import { ImportMasterItemDialog } from '@/components/master-catalog/ImportMasterItemDialog'
@@ -114,7 +115,9 @@ function getImportState(item: MasterCatalogItem) {
 
 export function MasterCatalogPage() {
   const { t } = useTranslation(['masterCatalog', 'common'])
+  const navigate = useNavigate()
   const permissions = usePermissions()
+  const { defaultIndustryId } = useActiveOrganizationContext()
   const industriesQuery = useIndustriesQuery()
   const unitsQuery = useUnitsQuery()
   const [industryId, setIndustryId] = useState('')
@@ -134,7 +137,14 @@ export function MasterCatalogPage() {
   const [editingIndustry, setEditingIndustry] = useState(false)
   const debouncedSearch = useDebounce(search)
   const debouncedAdminCategorySearch = useDebounce(adminCategorySearch)
-  const resolvedIndustryId = industryId || industriesQuery.data?.[0]?.id || ''
+  const fallbackIndustryId = useMemo(
+    () => defaultIndustryId && industriesQuery.data?.some((industry) => industry.id === defaultIndustryId)
+      ? defaultIndustryId
+      : industriesQuery.data?.[0]?.id ?? '',
+    [defaultIndustryId, industriesQuery.data],
+  )
+  const selectedIndustryId = industriesQuery.data?.some((industry) => industry.id === industryId) ? industryId : ''
+  const resolvedIndustryId = selectedIndustryId || fallbackIndustryId
 
   const categoryTreeQuery = useMasterCatalogCategoryTreeQuery(resolvedIndustryId)
   const categoriesQuery = useMasterCatalogCategoriesQuery({
@@ -143,22 +153,25 @@ export function MasterCatalogPage() {
     limit: 100,
     search: debouncedAdminCategorySearch || undefined,
   })
+  const allCategories = useMemo(() => flattenCategories(categoryTreeQuery.data ?? []), [categoryTreeQuery.data])
+  const topLevelCategories = useMemo(() => categoryTreeQuery.data ?? [], [categoryTreeQuery.data])
+  const resolvedCategoryId = useMemo(
+    () => allCategories.some((category) => category.id === categoryId) ? categoryId : '',
+    [allCategories, categoryId],
+  )
   const itemsQuery = useMasterCatalogItemsQuery({
     industryId: resolvedIndustryId,
     page,
     limit: 12,
-    categoryId: categoryId || undefined,
+    categoryId: resolvedCategoryId || undefined,
     q: debouncedSearch || undefined,
     hasVariants: hasVariants ? hasVariants === 'true' : undefined,
     isActive: isActive ? isActive === 'true' : undefined,
   })
-
   const items = useMemo(() => itemsQuery.data?.items ?? [], [itemsQuery.data?.items])
-  const allCategories = useMemo(() => flattenCategories(categoryTreeQuery.data ?? []), [categoryTreeQuery.data])
-  const topLevelCategories = useMemo(() => categoryTreeQuery.data ?? [], [categoryTreeQuery.data])
   const activeCategory = useMemo(
-    () => allCategories.find((category) => category.id === categoryId) ?? null,
-    [allCategories, categoryId],
+    () => allCategories.find((category) => category.id === resolvedCategoryId) ?? null,
+    [allCategories, resolvedCategoryId],
   )
   const visibleCategoryTree = useMemo(
     () => filterCategoryTree(categoryTreeQuery.data ?? [], categorySearch),
@@ -268,7 +281,7 @@ export function MasterCatalogPage() {
         <button
           type="button"
           className={
-            categoryId
+            resolvedCategoryId
               ? 'rounded-md px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900'
               : 'rounded-md bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700'
           }
@@ -284,7 +297,7 @@ export function MasterCatalogPage() {
             key={category.id}
             type="button"
             className={
-              categoryId === category.id
+              resolvedCategoryId === category.id
                 ? 'rounded-md bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700'
                 : 'rounded-md px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900'
             }
@@ -386,7 +399,7 @@ export function MasterCatalogPage() {
               {visibleCategoryTree.length ? (
                 <CategoryTree
                   items={visibleCategoryTree}
-                  selectedCategoryId={categoryId}
+                  selectedCategoryId={resolvedCategoryId}
                   onSelect={(nextCategoryId) => {
                     setPage(1)
                     setCategoryId(nextCategoryId)
@@ -688,6 +701,11 @@ export function MasterCatalogPage() {
         open={itemDialogOpen}
         onOpenChange={setItemDialogOpen}
         onAddIndustry={() => setIndustryDialogOpen(true)}
+        onAddCategory={() => {
+          setEditingCategory(null)
+          setCategoryDialogOpen(true)
+        }}
+        onAddUnit={() => navigate('/units')}
         industries={industriesQuery.data ?? []}
         categories={allCategories}
         initialIndustryId={resolvedIndustryId}

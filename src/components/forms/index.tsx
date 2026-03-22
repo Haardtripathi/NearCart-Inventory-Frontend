@@ -258,7 +258,7 @@ export function ControlledSelect<
   control,
   name,
   options,
-  placeholder = 'Select…',
+  placeholder,
   disabled,
   className,
   addActionLabel,
@@ -275,6 +275,9 @@ export function ControlledSelect<
   onAddAction?: () => void
   emptyOptionLabel?: string
 }) {
+  const { t } = useTranslation('common')
+  const resolvedPlaceholder = placeholder ?? t('selectOption')
+
   return (
     <Controller
       control={control}
@@ -298,7 +301,7 @@ export function ControlledSelect<
           disabled={disabled}
         >
           <SelectTrigger className={cn('w-full', className)} ref={field.ref}>
-            <SelectValue placeholder={placeholder} />
+            <SelectValue placeholder={resolvedPlaceholder} />
           </SelectTrigger>
           <SelectContent>
             {emptyOptionLabel ? <SelectItem value={EMPTY_OPTION_VALUE}>{emptyOptionLabel}</SelectItem> : null}

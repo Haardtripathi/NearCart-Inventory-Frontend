@@ -85,20 +85,20 @@ export function SettingsPage() {
           </InlineNotice>
         </SectionCard>
 
-        <SectionCard title="Password" description="Change your password directly from the authenticated session.">
+        <SectionCard title={t('passwordTitle')} description={t('passwordDescription')}>
           <form className="space-y-4" onSubmit={onSubmit}>
-            <FormField label="Current password" error={form.formState.errors.currentPassword?.message}>
-              <Input type="password" placeholder="••••••••" {...form.register('currentPassword')} />
+            <FormField label={t('currentPassword')} error={form.formState.errors.currentPassword?.message}>
+              <Input type="password" placeholder={t('passwordPlaceholder', { ns: 'common' })} {...form.register('currentPassword')} />
             </FormField>
-            <FormField label="New password" error={form.formState.errors.newPassword?.message}>
-              <Input type="password" placeholder="••••••••" {...form.register('newPassword')} />
+            <FormField label={t('newPassword')} error={form.formState.errors.newPassword?.message}>
+              <Input type="password" placeholder={t('passwordPlaceholder', { ns: 'common' })} {...form.register('newPassword')} />
             </FormField>
-            <FormField label="Confirm new password" error={form.formState.errors.confirmPassword?.message}>
-              <Input type="password" placeholder="••••••••" {...form.register('confirmPassword')} />
+            <FormField label={t('confirmNewPassword')} error={form.formState.errors.confirmPassword?.message}>
+              <Input type="password" placeholder={t('passwordPlaceholder', { ns: 'common' })} {...form.register('confirmPassword')} />
             </FormField>
             <div className="flex justify-end">
               <Button type="submit" disabled={changePasswordMutation.isPending}>
-                {changePasswordMutation.isPending ? 'Updating password...' : 'Update password'}
+                {changePasswordMutation.isPending ? t('updatingPassword') : t('updatePassword')}
               </Button>
             </div>
           </form>

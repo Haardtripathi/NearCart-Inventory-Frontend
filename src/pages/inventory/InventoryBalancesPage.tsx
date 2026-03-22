@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
 import { useInventoryBalancesQuery } from '@/features/inventory/inventory.api'
@@ -11,6 +12,7 @@ import { Button } from '@/components/ui'
 import { getDisplayName } from '@/lib/utils'
 
 export function InventoryBalancesPage() {
+  const { t } = useTranslation(['common', 'inventory'])
   const defaultBranchId = useOrgStore((state) => state.activeBranchId)
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
@@ -46,7 +48,7 @@ export function InventoryBalancesPage() {
         <SearchInput value={search} onChange={(event) => {
           setPage(1)
           setSearch(event.target.value)
-        }} placeholder="Search product or SKU..." />
+        }} placeholder={t('searchProductOrSkuPlaceholder', { ns: 'common' })} />
         <BranchSelector includeAll value={branchId} onChange={(value) => {
           setPage(1)
           setBranchId(value)
@@ -63,8 +65,8 @@ export function InventoryBalancesPage() {
         <CheckboxField
           checked={lowStockOnly}
           className="h-full"
-          label="Low stock only"
-          description="Focus on variants at or below their reorder or minimum threshold."
+          label={t('lowStockOnly', { ns: 'inventory' })}
+          description={t('lowStockOnlyDescription', { ns: 'inventory' })}
           onCheckedChange={(checked) => {
             setPage(1)
             setLowStockOnly(checked)

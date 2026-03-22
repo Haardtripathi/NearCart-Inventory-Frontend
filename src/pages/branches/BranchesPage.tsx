@@ -196,28 +196,28 @@ export function BranchesPage() {
               />
             </FormField>
             <FormField label={t('common:phone')}>
-              <Input placeholder="+91 9876543210" {...form.register('phone')} />
+              <Input placeholder={t('common:phonePlaceholder')} {...form.register('phone')} />
             </FormField>
             <FormField label={t('common:email')}>
-              <Input placeholder="branch@example.com" {...form.register('email')} />
+              <Input placeholder={t('common:emailPlaceholder')} {...form.register('email')} />
             </FormField>
             <FormField label={t('branches:addressLine1')}>
-              <Input placeholder="123 Market Road" {...form.register('addressLine1')} />
+              <Input placeholder={t('common:addressLine1Placeholder')} {...form.register('addressLine1')} />
             </FormField>
             <FormField label={t('branches:addressLine2')}>
               <Input {...form.register('addressLine2')} />
             </FormField>
             <FormField label={t('common:city')}>
-              <Input placeholder="Ahmedabad" {...form.register('city')} />
+              <Input placeholder={t('common:cityPlaceholder')} {...form.register('city')} />
             </FormField>
             <FormField label={t('common:state')}>
-              <Input placeholder="Gujarat" {...form.register('state')} />
+              <Input placeholder={t('common:statePlaceholder')} {...form.register('state')} />
             </FormField>
             <FormField label={t('common:country')}>
-              <Input placeholder="India" {...form.register('country')} />
+              <Input placeholder={t('common:countryPlaceholder')} {...form.register('country')} />
             </FormField>
             <FormField label={t('common:postalCode')}>
-              <Input placeholder="380001" {...form.register('postalCode')} />
+              <Input placeholder={t('common:postalCodePlaceholder')} {...form.register('postalCode')} />
             </FormField>
             <div className="md:col-span-2">
               <CheckboxField
