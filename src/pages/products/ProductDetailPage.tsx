@@ -7,8 +7,48 @@ import { useProductQuery } from '@/features/products/products.api'
 import { CurrencyText, QuantityText } from '@/components/inventory/selectors'
 import { DataTable, DetailGrid, DetailItem, EmptyState, InlineNotice, LoadingState, PageHeader, SectionCard, StatusBadge } from '@/components/common'
 import { Button } from '@/components/ui'
-import { formatDateTime, getDisplayName } from '@/lib/utils'
-import { LANGUAGE_CODES } from '@/types/common'
+import { formatDateTime, formatNumber, getDisplayName } from '@/lib/utils'
+import { LANGUAGE_CODES, type Category } from '@/types/common'
+import type { ProductVariant } from '@/types/product'
+
+function formatAttributeLabel(key: string) {
+  return key
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+    .replace(/[_-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/\b\w/g, (value) => value.toUpperCase())
+}
+
+function buildCategoryPath(category?: Category | null) {
+  const segments: string[] = []
+  let currentCategory: Category | null | undefined = category
+
+  while (currentCategory) {
+    segments.unshift(getDisplayName(currentCategory))
+    currentCategory = currentCategory.parent ?? null
+  }
+
+  return segments.join(' / ')
+}
+
+function buildVariantFacts(variant: ProductVariant, t: (key: string, options?: Record<string, unknown>) => string) {
+  const attributeEntries = Object.entries(variant.attributes ?? {})
+    .filter(([, value]) => value != null && String(value).trim())
+    .map(([key, value]) => [key.toLowerCase(), `${formatAttributeLabel(key)}: ${String(value)}`] as const)
+  const attributeKeys = new Set(attributeEntries.map(([key]) => key))
+  const facts = attributeEntries.map(([, value]) => value)
+
+  if (variant.weight && !attributeKeys.has('weight') && !attributeKeys.has('size')) {
+    facts.push(`${t('weight')}: ${formatNumber(variant.weight, 3)}`)
+  }
+
+  if (variant.unit && !attributeKeys.has('unit')) {
+    facts.push(`${t('unit')}: ${getDisplayName(variant.unit, variant.unit.code)}`)
+  }
+
+  return facts
+}
 
 export function ProductDetailPage() {
   const { t } = useTranslation(['products', 'common'])
@@ -28,6 +68,7 @@ export function ProductDetailPage() {
   }
 
   const product = productQuery.data
+  const categoryPath = buildCategoryPath(product.category)
   const visibleTranslations = (product.translations ?? []).filter((translation) =>
     LANGUAGE_CODES.includes(translation.language as (typeof LANGUAGE_CODES)[number]),
   )
@@ -60,7 +101,8 @@ export function ProductDetailPage() {
           <DetailGrid className="xl:grid-cols-3">
             <DetailItem label={t('sourceType')} value={<StatusBadge value={product.sourceType} />} />
             <DetailItem label={t('status', { ns: 'common' })} value={<StatusBadge value={product.status} />} />
-            <DetailItem label={t('category', { ns: 'common' })} value={product.category ? getDisplayName(product.category) : '—'} />
+            <DetailItem label={t('industry', { ns: 'common' })} value={product.industry ? getDisplayName(product.industry) : '—'} />
+            <DetailItem label={t('category', { ns: 'common' })} value={categoryPath || '—'} />
             <DetailItem label={t('brand')} value={product.brand ? getDisplayName(product.brand, product.brand.name) : '—'} />
             <DetailItem label={t('primaryUnit')} value={product.primaryUnit ? getDisplayName(product.primaryUnit, product.primaryUnit.code) : '—'} />
             <DetailItem label={t('productType')} value={t(`typeValues.${product.productType}`, { defaultValue: product.productType })} />
@@ -89,9 +131,42 @@ export function ProductDetailPage() {
       <SectionCard title={t('variants')} description={t('variantsSectionDescription')}>
         <DataTable
           columns={[
-            { key: 'name', header: t('variant'), render: (variant) => <div><p className="font-medium text-slate-900">{getDisplayName(variant)}</p><p className="text-xs text-slate-500">{variant.sku}</p></div> },
-            { key: 'prices', header: t('prices'), render: (variant) => <div className="text-sm text-slate-600">{t('sell')}: <CurrencyText value={variant.sellingPrice} /> · {t('cost')}: <CurrencyText value={variant.costPrice} /></div> },
-            { key: 'levels', header: t('levels'), render: (variant) => <div className="text-sm text-slate-600">{t('reorderLevel')} <QuantityText value={variant.reorderLevel} /></div> },
+            {
+              key: 'name',
+              header: t('variant'),
+              render: (variant) => {
+                const facts = buildVariantFacts(variant, t)
+
+                return (
+                  <div>
+                    <p className="font-medium text-slate-900">{getDisplayName(variant)}</p>
+                    <p className="text-xs text-slate-500">{variant.sku}</p>
+                    {facts.length ? <p className="mt-1 text-xs text-slate-500">{facts.join(' · ')}</p> : null}
+                  </div>
+                )
+              },
+            },
+            {
+              key: 'prices',
+              header: t('prices'),
+              render: (variant) => (
+                <div className="text-sm text-slate-600">
+                  {t('sell')}: <CurrencyText value={variant.sellingPrice} /> · {t('cost')}: <CurrencyText value={variant.costPrice} />
+                  {variant.mrp ? <span> · {t('mrp')}: <CurrencyText value={variant.mrp} /></span> : null}
+                </div>
+              ),
+            },
+            {
+              key: 'levels',
+              header: t('levels'),
+              render: (variant) => (
+                <div className="text-sm text-slate-600">
+                  {t('reorderLevel')} <QuantityText value={variant.reorderLevel} />
+                  <span> · {t('minStock')} <QuantityText value={variant.minStockLevel} /></span>
+                  {variant.maxStockLevel ? <span> · {t('maxStock')} <QuantityText value={variant.maxStockLevel} /></span> : null}
+                </div>
+              ),
+            },
             { key: 'status', header: t('status', { ns: 'common' }), render: (variant) => <StatusBadge value={variant.isActive ? 'ACTIVE' : 'INACTIVE'} /> },
             { key: 'actions', header: t('actions', { ns: 'common' }), render: (variant) => <Button asChild size="sm" variant="ghost"><Link to={`/products/${product.id}/variants/${variant.id}/edit`}>{t('edit', { ns: 'common' })}</Link></Button> },
           ]}

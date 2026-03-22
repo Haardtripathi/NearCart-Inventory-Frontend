@@ -11,13 +11,52 @@ import { MasterCatalogItemDialog } from '@/components/master-catalog/MasterCatal
 import { IndustryDialog } from '@/components/platform/IndustryDialog'
 import { DataTable, DetailGrid, DetailItem, EmptyState, InlineNotice, LoadingState, PageHeader, SectionCard, StatusBadge } from '@/components/common'
 import { Button } from '@/components/ui'
-import { getDisplayName } from '@/lib/utils'
+import { formatNumber, getDisplayName } from '@/lib/utils'
 import { getLanguageLabel } from '@/lib/labels'
 import { LANGUAGE_CODES } from '@/types/common'
-import type { MasterCatalogCategory } from '@/types/masterCatalog'
+import type { MasterCatalogCategory, MasterCatalogVariantTemplate } from '@/types/masterCatalog'
 
 function flattenCategories(items: MasterCatalogCategory[]): MasterCatalogCategory[] {
   return items.flatMap((category) => [category, ...flattenCategories(category.children ?? [])])
+}
+
+function formatAttributeLabel(key: string) {
+  return key
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+    .replace(/[_-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/\b\w/g, (value) => value.toUpperCase())
+}
+
+function buildCategoryPath(category?: MasterCatalogCategory | null) {
+  const segments: string[] = []
+  let currentCategory: MasterCatalogCategory | null | undefined = category
+
+  while (currentCategory) {
+    segments.unshift(getDisplayName(currentCategory))
+    currentCategory = currentCategory.parent ?? null
+  }
+
+  return segments.join(' / ')
+}
+
+function buildVariantTemplateFacts(template: MasterCatalogVariantTemplate) {
+  const attributeEntries = Object.entries(template.attributes ?? {})
+    .filter(([, value]) => value != null && String(value).trim())
+    .map(([key, value]) => [key.toLowerCase(), `${formatAttributeLabel(key)}: ${String(value)}`] as const)
+  const attributeKeys = new Set(attributeEntries.map(([key]) => key))
+  const facts = attributeEntries.map(([, value]) => value)
+
+  if (template.weight && !attributeKeys.has('weight') && !attributeKeys.has('size')) {
+    facts.push(`Weight: ${formatNumber(template.weight, 3)}`)
+  }
+
+  if (template.unitCode && !attributeKeys.has('unit')) {
+    facts.push(`Unit: ${template.unitCode}`)
+  }
+
+  return facts
 }
 
 export function MasterCatalogItemPage() {
@@ -67,6 +106,7 @@ export function MasterCatalogItemPage() {
   const defaultUnitLabel = item.defaultUnitCode?.trim()
     ? unitLabelByCode.get(item.defaultUnitCode.trim().toUpperCase()) ?? item.defaultUnitCode
     : '—'
+  const categoryPath = buildCategoryPath(item.category)
   const visibleTranslations = (item.translations ?? []).filter((translation) =>
     LANGUAGE_CODES.includes(translation.language as (typeof LANGUAGE_CODES)[number]),
   )
@@ -99,7 +139,8 @@ export function MasterCatalogItemPage() {
         <SectionCard title={t('itemSummaryTitle')} description={t('itemSummaryDescription')}>
           <DetailGrid className="xl:grid-cols-3">
             <DetailItem label={t('industry')} value={industryName} />
-            <DetailItem label={t('category', { ns: 'common' })} value={item.category ? getDisplayName(item.category) : '—'} />
+            <DetailItem label={t('category', { ns: 'common' })} value={categoryPath || '—'} />
+            <DetailItem label={t('brand', { ns: 'products' })} value={item.defaultBrandName ?? '—'} />
             <DetailItem label={t('defaultUnit')} value={defaultUnitLabel} />
             <DetailItem label={t('trackMethod', { ns: 'products' })} value={t(`trackMethodValues.${item.defaultTrackMethod}`, { ns: 'products', defaultValue: item.defaultTrackMethod })} />
             <DetailItem label={t('productType', { ns: 'products' })} value={t(`typeValues.${item.productType}`, { ns: 'products', defaultValue: item.productType })} />
@@ -133,9 +174,31 @@ export function MasterCatalogItemPage() {
       <SectionCard title={t('variantTemplatesTitle')} description={t('variantTemplatesDescription')}>
         <DataTable
           columns={[
-            { key: 'name', header: 'Template', render: (variant) => getDisplayName(variant) },
+            {
+              key: 'name',
+              header: 'Template',
+              render: (variant) => {
+                const facts = buildVariantTemplateFacts(variant)
+
+                return (
+                  <div>
+                    <p className="font-medium text-slate-900">{getDisplayName(variant)}</p>
+                    {facts.length ? <p className="mt-1 text-xs text-slate-500">{facts.join(' · ')}</p> : null}
+                  </div>
+                )
+              },
+            },
             { key: 'code', header: 'Code', render: (variant) => variant.code },
-            { key: 'prices', header: 'Defaults', render: (variant) => <span>{variant.defaultSellingPrice ?? '—'} / {variant.defaultCostPrice ?? '—'}</span> },
+            {
+              key: 'prices',
+              header: 'Defaults',
+              render: (variant) => (
+                <span>
+                  {variant.defaultSellingPrice ?? '—'} / {variant.defaultCostPrice ?? '—'}
+                  {variant.defaultMrp ? ` / ${variant.defaultMrp}` : ''}
+                </span>
+              ),
+            },
             { key: 'levels', header: 'Levels', render: (variant) => <span>{variant.reorderLevel} / {variant.minStockLevel}</span> },
             { key: 'status', header: 'Status', render: (variant) => <StatusBadge value={variant.isActive ? 'ACTIVE' : 'INACTIVE'} /> },
           ]}

@@ -1,6 +1,7 @@
 import type {
   Brand,
   Category,
+  Industry,
   LocalizedRecord,
   Nullable,
   ProductStatus,
@@ -63,6 +64,7 @@ export interface Product extends LocalizedRecord {
   category?: Nullable<Category>
   brand?: Nullable<Brand>
   taxRate?: Nullable<TaxRate>
+  industry?: Nullable<Industry>
   masterCatalogItem?: Nullable<{
     id: string
     code: string
