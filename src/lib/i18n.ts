@@ -3,13 +3,11 @@ import LanguageDetector from 'i18next-browser-languagedetector'
 import { initReactI18next } from 'react-i18next'
 
 import { en } from '@/i18n/locales/en'
-import { gu } from '@/i18n/locales/gu'
 import { hi } from '@/i18n/locales/hi'
 
 export const resources = {
   en,
   hi,
-  gu,
 } as const
 
 void i18n
@@ -18,7 +16,7 @@ void i18n
   .init({
     resources,
     fallbackLng: 'en',
-    supportedLngs: ['en', 'hi', 'gu'],
+    supportedLngs: ['en', 'hi'],
     defaultNS: 'common',
     ns: [
       'common',

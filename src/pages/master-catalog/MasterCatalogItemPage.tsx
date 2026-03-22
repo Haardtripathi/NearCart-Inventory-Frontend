@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router-dom'
 
-import { useIndustriesQuery } from '@/features/meta/meta.api'
+import { useIndustriesQuery, useUnitsQuery } from '@/features/meta/meta.api'
 import { useMasterCatalogCategoryTreeQuery, useMasterCatalogItemQuery } from '@/features/master-catalog/master-catalog.api'
 import { usePermissions } from '@/hooks/usePermissions'
 import { ImportMasterItemDialog } from '@/components/master-catalog/ImportMasterItemDialog'
@@ -10,6 +11,7 @@ import { IndustryDialog } from '@/components/platform/IndustryDialog'
 import { DataTable, DetailGrid, DetailItem, EmptyState, InlineNotice, LoadingState, PageHeader, SectionCard, StatusBadge } from '@/components/common'
 import { Button } from '@/components/ui'
 import { getDisplayName } from '@/lib/utils'
+import { getLanguageLabel } from '@/lib/labels'
 import { LANGUAGE_CODES } from '@/types/common'
 import type { MasterCatalogCategory } from '@/types/masterCatalog'
 
@@ -18,6 +20,7 @@ function flattenCategories(items: MasterCatalogCategory[]): MasterCatalogCategor
 }
 
 export function MasterCatalogItemPage() {
+  const { t } = useTranslation(['masterCatalog', 'common', 'products'])
   const { id } = useParams()
   const permissions = usePermissions()
   const [importOpen, setImportOpen] = useState(false)
@@ -25,17 +28,38 @@ export function MasterCatalogItemPage() {
   const [industryDialogOpen, setIndustryDialogOpen] = useState(false)
   const itemQuery = useMasterCatalogItemQuery(id)
   const industriesQuery = useIndustriesQuery()
+  const unitsQuery = useUnitsQuery()
   const categoryTreeQuery = useMasterCatalogCategoryTreeQuery(itemQuery.data?.industryId)
 
   if (itemQuery.isLoading) {
-    return <LoadingState label="Loading master item..." />
+    return <LoadingState label={t('loadingData', { ns: 'common' })} />
   }
 
   if (!itemQuery.data) {
-    return <EmptyState title="Master item not found" />
+    return <EmptyState title={t('noMasterItemsTitle')} />
   }
 
   const item = itemQuery.data
+  const industryName = useMemo(
+    () =>
+      industriesQuery.data?.find((industry) => industry.id === item.industryId)?.displayName
+      ?? industriesQuery.data?.find((industry) => industry.id === item.industryId)?.name
+      ?? item.industryId,
+    [industriesQuery.data, item.industryId],
+  )
+  const unitLabelByCode = useMemo(
+    () =>
+      new Map(
+        (unitsQuery.data?.items ?? []).map((unit) => [
+          unit.code.trim().toUpperCase(),
+          getDisplayName(unit, unit.name),
+        ]),
+      ),
+    [unitsQuery.data?.items],
+  )
+  const defaultUnitLabel = item.defaultUnitCode?.trim()
+    ? unitLabelByCode.get(item.defaultUnitCode.trim().toUpperCase()) ?? item.defaultUnitCode
+    : '—'
   const visibleTranslations = (item.translations ?? []).filter((translation) =>
     LANGUAGE_CODES.includes(translation.language as (typeof LANGUAGE_CODES)[number]),
   )
@@ -52,12 +76,12 @@ export function MasterCatalogItemPage() {
           <div className="flex flex-wrap gap-2">
             {permissions.canManageMasterPlatform ? (
               <Button variant="outline" onClick={() => setEditOpen(true)}>
-                Edit master item
+                {t('editMasterItem')}
               </Button>
             ) : null}
             {permissions.canManageMasterImports ? (
               <Button disabled={!item.importable && !item.alreadyImportedProductId} onClick={() => setImportOpen(true)}>
-                {item.alreadyImportedProductId ? 'Import again' : 'Import item'}
+                {item.alreadyImportedProductId ? t('importAgain') : t('importItem')}
               </Button>
             ) : null}
           </div>
@@ -65,14 +89,14 @@ export function MasterCatalogItemPage() {
       />
 
       <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-        <SectionCard title="Master item summary" description="Canonical and localized metadata from the platform catalog.">
+        <SectionCard title={t('itemSummaryTitle')} description={t('itemSummaryDescription')}>
           <DetailGrid className="xl:grid-cols-3">
-            <DetailItem label="Industry" value={item.industryId} />
-            <DetailItem label="Category" value={item.category ? getDisplayName(item.category) : '—'} />
-            <DetailItem label="Default unit" value={item.defaultUnitCode ?? '—'} />
-            <DetailItem label="Track method" value={item.defaultTrackMethod} />
-            <DetailItem label="Product type" value={item.productType} />
-            <DetailItem label="Import status" value={<StatusBadge value={item.alreadyImportedProductId ? 'ALREADY_IMPORTED' : 'NOT_IMPORTED'} />} />
+            <DetailItem label={t('industry')} value={industryName} />
+            <DetailItem label={t('category', { ns: 'common' })} value={item.category ? getDisplayName(item.category) : '—'} />
+            <DetailItem label={t('defaultUnit')} value={defaultUnitLabel} />
+            <DetailItem label={t('trackMethod', { ns: 'products' })} value={t(`trackMethodValues.${item.defaultTrackMethod}`, { ns: 'products', defaultValue: item.defaultTrackMethod })} />
+            <DetailItem label={t('productType', { ns: 'products' })} value={t(`typeValues.${item.productType}`, { ns: 'products', defaultValue: item.productType })} />
+            <DetailItem label={t('importStatus')} value={<StatusBadge value={item.alreadyImportedProductId ? 'ALREADY_IMPORTED' : 'NOT_IMPORTED'} />} />
           </DetailGrid>
           {item.alreadyImportedProductId ? (
             <InlineNotice className="mt-4" tone="success">
@@ -81,11 +105,11 @@ export function MasterCatalogItemPage() {
           ) : null}
         </SectionCard>
 
-        <SectionCard title="Translations and aliases" description="Localized names and search aliases.">
+        <SectionCard title={t('translationsAndAliases')} description={t('translationsAndAliasesDescription')}>
           <div className="space-y-3">
             {visibleTranslations.map((translation) => (
               <div key={translation.language} className="rounded-md border border-slate-200 bg-slate-50/80 p-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{translation.language}</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{getLanguageLabel(t, translation.language)}</p>
                 <p className="mt-2 font-medium text-slate-900">{translation.name}</p>
                 {translation.description ? <p className="mt-1 text-sm text-slate-600">{translation.description}</p> : null}
               </div>
@@ -99,7 +123,7 @@ export function MasterCatalogItemPage() {
         </SectionCard>
       </div>
 
-      <SectionCard title="Variant templates" description="Default variant scaffolding copied into imported products.">
+      <SectionCard title={t('variantTemplatesTitle')} description={t('variantTemplatesDescription')}>
         <DataTable
           columns={[
             { key: 'name', header: 'Template', render: (variant) => getDisplayName(variant) },
@@ -109,7 +133,7 @@ export function MasterCatalogItemPage() {
             { key: 'status', header: 'Status', render: (variant) => <StatusBadge value={variant.isActive ? 'ACTIVE' : 'INACTIVE'} /> },
           ]}
           items={item.variantTemplates}
-          empty={<EmptyState title="No variant templates" description="This master item imports as a single-variant product by default." />}
+          empty={<EmptyState title={t('noVariantTemplatesTitle')} description={t('noVariantTemplatesDescription')} />}
           rowKey={(variant) => variant.id}
         />
       </SectionCard>

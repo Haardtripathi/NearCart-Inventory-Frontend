@@ -62,6 +62,7 @@ export function ProductDetailPage() {
             <DetailItem label={t('status', { ns: 'common' })} value={<StatusBadge value={product.status} />} />
             <DetailItem label={t('category', { ns: 'common' })} value={product.category ? getDisplayName(product.category) : '—'} />
             <DetailItem label={t('brand')} value={product.brand ? getDisplayName(product.brand, product.brand.name) : '—'} />
+            <DetailItem label={t('primaryUnit')} value={product.primaryUnit ? getDisplayName(product.primaryUnit, product.primaryUnit.code) : '—'} />
             <DetailItem label={t('productType')} value={t(`typeValues.${product.productType}`, { defaultValue: product.productType })} />
             <DetailItem label={t('trackMethod')} value={t(`trackMethodValues.${product.trackMethod}`, { defaultValue: product.trackMethod })} />
           </DetailGrid>

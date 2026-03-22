@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { Pencil, Plus } from 'lucide-react'
 
-import { useIndustriesQuery } from '@/features/meta/meta.api'
+import { useIndustriesQuery, useUnitsQuery } from '@/features/meta/meta.api'
 import {
   useMasterCatalogCategoriesQuery,
   useMasterCatalogCategoryTreeQuery,
@@ -116,6 +116,7 @@ export function MasterCatalogPage() {
   const { t } = useTranslation(['masterCatalog', 'common'])
   const permissions = usePermissions()
   const industriesQuery = useIndustriesQuery()
+  const unitsQuery = useUnitsQuery()
   const [industryId, setIndustryId] = useState('')
   const [categoryId, setCategoryId] = useState('')
   const [page, setPage] = useState(1)
@@ -172,6 +173,16 @@ export function MasterCatalogPage() {
   const selectedIndustry = useMemo(
     () => industriesQuery.data?.find((industry) => industry.id === resolvedIndustryId) ?? null,
     [industriesQuery.data, resolvedIndustryId],
+  )
+  const unitLabelByCode = useMemo(
+    () =>
+      new Map(
+        (unitsQuery.data?.items ?? []).map((unit) => [
+          unit.code.trim().toUpperCase(),
+          getDisplayName(unit, unit.name),
+        ]),
+      ),
+    [unitsQuery.data?.items],
   )
   const blockedImportCount = useMemo(
     () => items.filter((item) => !item.importable && !item.alreadyImportedProductId).length,
@@ -294,7 +305,7 @@ export function MasterCatalogPage() {
             setPage(1)
             setSearch(event.target.value)
           }}
-          placeholder='Search "milk", "दूध", "દૂધ"...'
+          placeholder={t('searchItemsPlaceholder')}
         />
         <OptionSelect
           value={hasVariants}
@@ -422,7 +433,14 @@ export function MasterCatalogPage() {
                 {
                   key: 'unit',
                   header: t('unit', { ns: 'common' }),
-                  render: (item) => item.defaultUnitCode ?? '—',
+                  render: (item) => {
+                    const unitCode = item.defaultUnitCode?.trim()
+                    if (!unitCode) {
+                      return '—'
+                    }
+
+                    return unitLabelByCode.get(unitCode.toUpperCase()) ?? unitCode
+                  },
                 },
                 {
                   key: 'variants',

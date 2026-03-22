@@ -76,12 +76,14 @@ function VariantEditor({
   onRemove,
   units,
   canRemove,
+  isEdit,
 }: {
   control: Control<ProductFormValues>
   index: number
   onRemove: () => void
   units: Array<{ id: string; name: string }>
   canRemove: boolean
+  isEdit: boolean
 }) {
   const { t } = useTranslation(['products', 'common'])
   const variantTranslations = useWatch({
@@ -130,12 +132,12 @@ function VariantEditor({
           />
         </FormField>
         <Controller control={control} name={`variants.${index}.costPrice`} render={({ field, fieldState }) => (
-          <FormField label={t('costPrice')} error={fieldState.error?.message}>
+          <FormField label={t('costPrice')} error={fieldState.error?.message} required>
             <Input step="0.01" type="number" value={field.value == null ? '' : String(field.value)} onChange={field.onChange} onBlur={field.onBlur} name={field.name} ref={field.ref} />
           </FormField>
         )} />
         <Controller control={control} name={`variants.${index}.sellingPrice`} render={({ field, fieldState }) => (
-          <FormField label={t('sellingPrice')} error={fieldState.error?.message}>
+          <FormField label={t('sellingPrice')} error={fieldState.error?.message} required>
             <Input step="0.01" type="number" value={field.value == null ? '' : String(field.value)} onChange={field.onChange} onBlur={field.onBlur} name={field.name} ref={field.ref} />
           </FormField>
         )} />
@@ -166,7 +168,7 @@ function VariantEditor({
         )} />
         <Controller control={control} name={`variants.${index}.imageUrl`} render={({ field }) => (
           <FormField label={t('imageUrl')}>
-            <Input {...field} />
+            <ImageUploadField label={t('productImage')} value={field.value} onChange={field.onChange} />
           </FormField>
         )} />
       </div>
@@ -203,42 +205,44 @@ function VariantEditor({
           </FormField>
         )}
       />
-      <div className="rounded-md border border-dashed border-slate-200 bg-white p-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="space-y-1">
-            <p className="text-sm font-semibold text-slate-900">{t('variantLanguageOverrides')}</p>
-            <p className="text-xs leading-5 text-slate-500">{t('autoLanguageFallback')}</p>
-          </div>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              if (variantTranslationsOpen) {
-                setShowTranslations(false)
-                setTranslationsDismissed(true)
-                return
-              }
+      {isEdit ? (
+        <div className="rounded-md border border-dashed border-slate-200 bg-white p-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="space-y-1">
+              <p className="text-sm font-semibold text-slate-900">{t('variantLanguageOverrides')}</p>
+              <p className="text-xs leading-5 text-slate-500">{t('autoLanguageFallback')}</p>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                if (variantTranslationsOpen) {
+                  setShowTranslations(false)
+                  setTranslationsDismissed(true)
+                  return
+                }
 
-              setShowTranslations(true)
-              setTranslationsDismissed(false)
-            }}
-          >
-            {variantTranslationsOpen ? t('hideLanguageOverrides') : t('showLanguageOverrides')}
-          </Button>
+                setShowTranslations(true)
+                setTranslationsDismissed(false)
+              }}
+            >
+              {variantTranslationsOpen ? t('hideLanguageOverrides') : t('showLanguageOverrides')}
+            </Button>
+          </div>
+          {variantTranslationsOpen ? (
+            <Controller
+              control={control}
+              name={`variants.${index}.translations`}
+              render={({ field }) => (
+                <FormField className="mt-4" label={t('languageOverrides')}>
+                  <TranslationFields value={field.value} onChange={field.onChange} withDescription={false} />
+                </FormField>
+              )}
+            />
+          ) : null}
         </div>
-        {variantTranslationsOpen ? (
-          <Controller
-            control={control}
-            name={`variants.${index}.translations`}
-            render={({ field }) => (
-              <FormField className="mt-4" label={t('languageOverrides')}>
-                <TranslationFields value={field.value} onChange={field.onChange} withDescription={false} />
-              </FormField>
-            )}
-          />
-        ) : null}
-      </div>
+      ) : null}
     </div>
   )
 }
@@ -518,14 +522,14 @@ export function ProductFormPage() {
             <FormField label={t('slug')}>
               <Input {...form.register('slug')} />
             </FormField>
-            <FormField label={t('productType')}>
+            <FormField label={t('productType')} required>
               <ControlledSelect
                 control={form.control}
                 name="productType"
                 options={PRODUCT_TYPES.map((type) => ({ value: type, label: t(`typeValues.${type}`, { defaultValue: type }) }))}
               />
             </FormField>
-            <FormField label={t('status', { ns: 'common' })}>
+            <FormField label={t('status', { ns: 'common' })} required>
               <ControlledSelect
                 control={form.control}
                 name="status"
@@ -586,7 +590,7 @@ export function ProductFormPage() {
                 onAddAction={() => setIndustryDialogOpen(true)}
               />
             </FormField>
-            <FormField label={t('trackMethod')}>
+            <FormField label={t('trackMethod')} required>
               <ControlledSelect
                 control={form.control}
                 name="trackMethod"
@@ -657,54 +661,56 @@ export function ProductFormPage() {
               )}
             />
           </div>
-          <div className="mt-5 rounded-md border border-dashed border-slate-200 bg-slate-50/70 p-4">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div className="space-y-1">
-                <p className="text-sm font-semibold text-slate-900">{t('languageOverrides')}</p>
-                <p className="text-xs leading-5 text-slate-500">{t('autoLanguageFallback')}</p>
-              </div>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  if (productTranslationsOpen) {
+          {isEdit ? (
+            <div className="mt-5 rounded-md border border-dashed border-slate-200 bg-slate-50/70 p-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="space-y-1">
+                  <p className="text-sm font-semibold text-slate-900">{t('languageOverrides')}</p>
+                  <p className="text-xs leading-5 text-slate-500">{t('autoLanguageFallback')}</p>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    if (productTranslationsOpen) {
+                      setOpenedTranslationKeys((current) => ({
+                        ...current,
+                        [translationVisibilityKey]: false,
+                      }))
+                      setDismissedTranslationKeys((current) => ({
+                        ...current,
+                        [translationVisibilityKey]: true,
+                      }))
+                      return
+                    }
+
                     setOpenedTranslationKeys((current) => ({
-                      ...current,
-                      [translationVisibilityKey]: false,
-                    }))
-                    setDismissedTranslationKeys((current) => ({
                       ...current,
                       [translationVisibilityKey]: true,
                     }))
-                    return
-                  }
-
-                  setOpenedTranslationKeys((current) => ({
-                    ...current,
-                    [translationVisibilityKey]: true,
-                  }))
-                  setDismissedTranslationKeys((current) => ({
-                    ...current,
-                    [translationVisibilityKey]: false,
-                  }))
-                }}
-              >
-                {productTranslationsOpen ? t('hideLanguageOverrides') : t('showLanguageOverrides')}
-              </Button>
+                    setDismissedTranslationKeys((current) => ({
+                      ...current,
+                      [translationVisibilityKey]: false,
+                    }))
+                  }}
+                >
+                  {productTranslationsOpen ? t('hideLanguageOverrides') : t('showLanguageOverrides')}
+                </Button>
+              </div>
+              {productTranslationsOpen ? (
+                <Controller
+                  control={form.control}
+                  name="translations"
+                  render={({ field }) => (
+                    <FormField className="mt-4" label={t('languageOverrides')}>
+                      <TranslationFields value={field.value} onChange={field.onChange} />
+                    </FormField>
+                  )}
+                />
+              ) : null}
             </div>
-            {productTranslationsOpen ? (
-              <Controller
-                control={form.control}
-                name="translations"
-                render={({ field }) => (
-                  <FormField className="mt-4" label={t('languageOverrides')}>
-                    <TranslationFields value={field.value} onChange={field.onChange} />
-                  </FormField>
-                )}
-              />
-            ) : null}
-          </div>
+          ) : null}
         </SectionCard>
 
         <SectionCard
@@ -729,6 +735,7 @@ export function ProductFormPage() {
                   index={index}
                   units={units}
                   canRemove={variantsFieldArray.fields.length > 1}
+                  isEdit={isEdit}
                   onRemove={() => {
                     const variantId = form.getValues(`variants.${index}.id`)
                     if (variantId) {

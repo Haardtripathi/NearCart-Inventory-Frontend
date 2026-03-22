@@ -11,6 +11,7 @@ import {
 import { parseApiError } from '@/lib/utils'
 import type { MasterCatalogCategory } from '@/types/masterCatalog'
 import type { Industry, TranslationInput } from '@/types/common'
+import { ImageUploadField } from '@/components/forms/ImageUploadField'
 import { CheckboxField, ControlledSelect, FormField, TranslationFields } from '@/components/forms'
 import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, Input } from '@/components/ui'
 
@@ -133,7 +134,7 @@ export function MasterCatalogCategoryDialog({
 
         <form className="space-y-4" onSubmit={onSubmit}>
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            <FormField label="Industry" error={form.formState.errors.industryId?.message}>
+            <FormField label="Industry" error={form.formState.errors.industryId?.message} required>
               <ControlledSelect
                 control={form.control}
                 name="industryId"
@@ -160,7 +161,7 @@ export function MasterCatalogCategoryDialog({
               />
             </FormField>
 
-            <FormField label="Code" error={form.formState.errors.code?.message}>
+            <FormField label="Code" error={form.formState.errors.code?.message} required>
               <Input placeholder="dairy" {...form.register('code')} />
             </FormField>
 
@@ -176,8 +177,12 @@ export function MasterCatalogCategoryDialog({
               <Input placeholder="milk" {...form.register('iconKey')} />
             </FormField>
 
-            <FormField className="md:col-span-2" label="Image URL">
-              <Input placeholder="https://..." {...form.register('imageUrl')} />
+            <FormField className="md:col-span-2" label="Image">
+              <Controller
+                control={form.control}
+                name="imageUrl"
+                render={({ field }) => <ImageUploadField label="Category image" value={field.value} onChange={field.onChange} />}
+              />
             </FormField>
           </div>
 

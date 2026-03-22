@@ -10,6 +10,7 @@ import {
   useCreateMasterCatalogItemMutation,
   useUpdateMasterCatalogItemMutation,
 } from '@/features/master-catalog/master-catalog.api'
+import { useUnitsQuery } from '@/features/meta/meta.api'
 import { parseApiError } from '@/lib/utils'
 import type {
   MasterCatalogAliasInput,
@@ -27,6 +28,7 @@ import {
   TRACK_METHODS,
 } from '@/types/common'
 import { getLanguageLabel } from '@/lib/labels'
+import { ImageUploadField } from '@/components/forms/ImageUploadField'
 import { CheckboxField, ControlledSelect, FormField, KeyValueEditor, TranslationFields } from '@/components/forms'
 import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, Input, Textarea } from '@/components/ui'
 
@@ -123,11 +125,17 @@ function VariantTemplateEditor({
   control,
   index,
   onRemove,
+  unitOptions,
+  showTranslations,
 }: {
   control: Control<ItemDialogValues>
   index: number
   onRemove: () => void
+  unitOptions: Array<{ value: string; label: string }>
+  showTranslations: boolean
 }) {
+  const { t } = useTranslation(['products', 'common', 'masterCatalog'])
+
   return (
     <div className="space-y-4 rounded-md border border-slate-200 bg-slate-50/80 p-4">
       <div className="flex items-center justify-between">
@@ -168,9 +176,15 @@ function VariantTemplateEditor({
         <Controller
           control={control}
           name={`variantTemplates.${index}.unitCode`}
-          render={({ field }) => (
-            <FormField label="Unit code">
-              <Input placeholder="PCS" {...field} />
+          render={() => (
+            <FormField label={t('unit', { ns: 'common' })}>
+              <ControlledSelect
+                control={control}
+                name={`variantTemplates.${index}.unitCode` as const}
+                placeholder={t('defaultUnit', { ns: 'masterCatalog' })}
+                emptyOptionLabel={t('noPrimaryUnit', { ns: 'products' })}
+                options={unitOptions}
+              />
             </FormField>
           )}
         />
@@ -285,15 +299,17 @@ function VariantTemplateEditor({
         )}
       />
 
-      <Controller
-        control={control}
-        name={`variantTemplates.${index}.translations`}
-        render={({ field }) => (
-          <FormField label="Variant translations">
-            <TranslationFields value={field.value} onChange={field.onChange} withDescription={false} />
-          </FormField>
-        )}
-      />
+      {showTranslations ? (
+        <Controller
+          control={control}
+          name={`variantTemplates.${index}.translations`}
+          render={({ field }) => (
+            <FormField label="Variant translations">
+              <TranslationFields value={field.value} onChange={field.onChange} withDescription={false} />
+            </FormField>
+          )}
+        />
+      ) : null}
     </div>
   )
 }
@@ -315,9 +331,10 @@ export function MasterCatalogItemDialog({
   item?: MasterCatalogItem | null
   onAddIndustry?: () => void
 }) {
-  const { t } = useTranslation(['products', 'common'])
+  const { t } = useTranslation(['products', 'common', 'masterCatalog'])
   const createMutation = useCreateMasterCatalogItemMutation()
   const updateMutation = useUpdateMasterCatalogItemMutation()
+  const unitsQuery = useUnitsQuery()
   const form = useForm({
     resolver: zodResolver(itemSchema),
     defaultValues: {
@@ -436,6 +453,10 @@ export function MasterCatalogItemDialog({
     name: 'isActive',
   }))
   const categoryOptions = categories.filter((category) => category.industryId === selectedIndustryId)
+  const unitOptions = (unitsQuery.data?.items ?? []).map((unit) => ({
+    value: unit.code,
+    label: `${unit.displayName ?? unit.name ?? unit.code} (${unit.code})`,
+  }))
 
   const onSubmit = form.handleSubmit(async (values) => {
     const payload = {
@@ -522,46 +543,46 @@ export function MasterCatalogItemDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] max-w-6xl overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{item ? 'Edit master item' : 'Add master item'}</DialogTitle>
+          <DialogTitle>{item ? t('editMasterItem', { ns: 'masterCatalog' }) : t('addMasterItem', { ns: 'masterCatalog' })}</DialogTitle>
         </DialogHeader>
 
         <form className="space-y-6" onSubmit={onSubmit}>
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            <FormField label="Industry" error={form.formState.errors.industryId?.message}>
+            <FormField label={t('industry', { ns: 'common' })} error={form.formState.errors.industryId?.message} required>
               <ControlledSelect
                 control={form.control}
                 name="industryId"
-                placeholder="Select industry"
+                placeholder={t('selectIndustry', { ns: 'masterCatalog' })}
                 options={industries.map((industry) => ({
                   value: industry.id,
                   label: industry.displayName ?? industry.name ?? 'Unnamed industry',
                 }))}
-                addActionLabel={onAddIndustry ? 'Add industry' : undefined}
+                addActionLabel={onAddIndustry ? t('addIndustry', { ns: 'masterCatalog' }) : undefined}
                 onAddAction={onAddIndustry}
               />
             </FormField>
-            <FormField label="Master category">
+            <FormField label={t('category', { ns: 'common' })}>
               <ControlledSelect
                 control={form.control}
                 name="masterCategoryId"
-                placeholder="No category"
-                emptyOptionLabel="No category"
+                placeholder={t('noCategory', { ns: 'products' })}
+                emptyOptionLabel={t('noCategory', { ns: 'products' })}
                 options={categoryOptions.map((category) => ({
                   value: category.id,
                   label: category.displayName ?? category.name ?? category.code ?? 'Uncategorized',
                 }))}
               />
             </FormField>
-            <FormField label="Code" error={form.formState.errors.code?.message}>
+            <FormField label="Code" error={form.formState.errors.code?.message} required>
               <Input placeholder="amul_milk" {...form.register('code')} />
             </FormField>
             <FormField label="Slug">
               <Input placeholder="amul-milk" {...form.register('slug')} />
             </FormField>
-            <FormField label="Canonical name" error={form.formState.errors.canonicalName?.message}>
+            <FormField label={t('name', { ns: 'common' })} error={form.formState.errors.canonicalName?.message} required>
               <Input placeholder="Milk" {...form.register('canonicalName')} />
             </FormField>
-            <FormField label="Product type">
+            <FormField label={t('productType', { ns: 'products' })} required>
               <ControlledSelect
                 control={form.control}
                 name="productType"
@@ -571,7 +592,7 @@ export function MasterCatalogItemDialog({
                 }))}
               />
             </FormField>
-            <FormField label="Track method">
+            <FormField label={t('trackMethod', { ns: 'products' })} required>
               <ControlledSelect
                 control={form.control}
                 name="defaultTrackMethod"
@@ -581,69 +602,81 @@ export function MasterCatalogItemDialog({
                 }))}
               />
             </FormField>
-            <FormField label="Default unit code">
-              <Input placeholder="L" {...form.register('defaultUnitCode')} />
+            <FormField label={t('defaultUnit', { ns: 'masterCatalog' })}>
+              <ControlledSelect
+                control={form.control}
+                name="defaultUnitCode"
+                placeholder={t('defaultUnit', { ns: 'masterCatalog' })}
+                emptyOptionLabel={t('noPrimaryUnit', { ns: 'products' })}
+                options={unitOptions}
+              />
             </FormField>
-            <FormField label="Default brand">
+            <FormField label={t('brand', { ns: 'products' })}>
               <Input placeholder="NearCart" {...form.register('defaultBrandName')} />
             </FormField>
             <FormField label="Default tax code">
               <Input placeholder="GST_5" {...form.register('defaultTaxCode')} />
             </FormField>
-            <FormField label="Image URL" className="md:col-span-2">
-              <Input placeholder="https://..." {...form.register('defaultImageUrl')} />
+            <FormField label={t('imageUrl', { ns: 'products' })} className="md:col-span-2">
+              <Controller
+                control={form.control}
+                name="defaultImageUrl"
+                render={({ field }) => <ImageUploadField label={t('productImage', { ns: 'products' })} value={field.value} onChange={field.onChange} />}
+              />
             </FormField>
-            <FormField label="Tags" className="md:col-span-2">
-              <Input placeholder="milk, dairy, chilled" {...form.register('tags')} />
+            <FormField label={t('tags', { ns: 'products' })} className="md:col-span-2">
+              <Input placeholder={t('tagsPlaceholder', { ns: 'products' })} {...form.register('tags')} />
             </FormField>
           </div>
 
-          <FormField label="Canonical description">
+          <FormField label={t('descriptionLabel', { ns: 'common' })}>
             <Textarea rows={4} {...form.register('canonicalDescription')} />
           </FormField>
 
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
             <CheckboxField
               checked={hasVariants}
-              label="Has variants"
+              label={t('hasVariants', { ns: 'masterCatalog' })}
               description="Treat the master item as a multi-template import instead of a single-variant scaffold."
               onCheckedChange={(checked) => form.setValue('hasVariants', checked, { shouldDirty: true })}
             />
             <CheckboxField
               checked={trackInventory}
-              label="Track inventory"
+              label={t('trackInventory', { ns: 'products' })}
               description="Imported products should contribute to stock balances and ledger entries."
               onCheckedChange={(checked) => form.setValue('trackInventory', checked, { shouldDirty: true })}
             />
             <CheckboxField
               checked={allowBackorder}
-              label="Allow backorder"
+              label={t('allowBackorder', { ns: 'products' })}
               description="Imported products may be sold even when current stock is exhausted."
               onCheckedChange={(checked) => form.setValue('allowBackorder', checked, { shouldDirty: true })}
             />
             <CheckboxField
               checked={allowNegativeStock}
-              label="Allow negative stock"
+              label={t('allowNegativeStock', { ns: 'products' })}
               description="Use only for special operational cases where overselling is intentionally supported."
               onCheckedChange={(checked) => form.setValue('allowNegativeStock', checked, { shouldDirty: true })}
             />
             <CheckboxField
               checked={isActive}
-              label="Active"
+              label={t('active', { ns: 'common' })}
               description="Inactive master items remain visible historically but should not be used in new platform workflows."
               onCheckedChange={(checked) => form.setValue('isActive', checked, { shouldDirty: true })}
             />
           </div>
 
-          <Controller
-            control={form.control}
-            name="translations"
-            render={({ field }) => (
-              <FormField label="Localized names and descriptions">
-                <TranslationFields value={field.value} onChange={field.onChange} />
-              </FormField>
-            )}
-          />
+          {item ? (
+            <Controller
+              control={form.control}
+              name="translations"
+              render={({ field }) => (
+                <FormField label="Localized names and descriptions">
+                  <TranslationFields value={field.value} onChange={field.onChange} />
+                </FormField>
+              )}
+            />
+          ) : null}
 
           <div className="space-y-4 rounded-md border border-slate-200 bg-slate-50/80 p-4">
             <div className="flex items-center justify-between">
@@ -708,6 +741,8 @@ export function MasterCatalogItemDialog({
                     key={field.id}
                     control={form.control}
                     index={index}
+                    unitOptions={unitOptions}
+                    showTranslations={Boolean(item)}
                     onRemove={() => templatesFieldArray.remove(index)}
                   />
                 ))}
@@ -717,10 +752,10 @@ export function MasterCatalogItemDialog({
 
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
+              {t('cancel', { ns: 'common' })}
             </Button>
             <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
-              {item ? 'Save master item' : 'Create master item'}
+              {item ? t('save', { ns: 'common' }) : t('create', { ns: 'common' })}
             </Button>
           </div>
         </form>

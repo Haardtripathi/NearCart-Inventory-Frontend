@@ -106,12 +106,14 @@ export function IndustryDialog({
           <FormField label={t('descriptionLabel', { ns: 'common' })}>
             <Textarea placeholder={t('industryDescriptionPlaceholder', { ns: 'masterCatalog' })} {...form.register('description')} />
           </FormField>
-          <FormField label={t('languageOverrides', { ns: 'products' })}>
-            <TranslationFields
-              value={form.watch('translations')}
-              onChange={(value) => form.setValue('translations', value as TranslationInput[], { shouldDirty: true })}
-            />
-          </FormField>
+          {industry?.id ? (
+            <FormField label={t('languageOverrides', { ns: 'products' })}>
+              <TranslationFields
+                value={form.watch('translations')}
+                onChange={(value) => form.setValue('translations', value as TranslationInput[], { shouldDirty: true })}
+              />
+            </FormField>
+          ) : null}
 
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
