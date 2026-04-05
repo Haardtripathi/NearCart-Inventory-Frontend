@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { useForm } from 'react-hook-form'
+import { Controller, useForm, useWatch } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -40,6 +40,10 @@ export function IndustryDialog({
       description: '',
       translations: [],
     },
+  })
+  const translations = useWatch({
+    control: form.control,
+    name: 'translations',
   })
 
   useEffect(() => {
@@ -109,14 +113,18 @@ export function IndustryDialog({
           <FormField label={t('descriptionLabel', { ns: 'common' })}>
             <Textarea placeholder={t('industryDescriptionPlaceholder', { ns: 'masterCatalog' })} {...form.register('description')} />
           </FormField>
-          {industry?.id ? (
-            <FormField label={t('languageOverrides', { ns: 'products' })}>
-              <TranslationFields
-                value={form.watch('translations')}
-                onChange={(value) => form.setValue('translations', value as TranslationInput[], { shouldDirty: true })}
-              />
-            </FormField>
-          ) : null}
+          <Controller
+            control={form.control}
+            name="translations"
+            render={() => (
+              <FormField label={t('languageOverrides', { ns: 'products' })}>
+                <TranslationFields
+                  value={translations}
+                  onChange={(value) => form.setValue('translations', value as TranslationInput[], { shouldDirty: true })}
+                />
+              </FormField>
+            )}
+          />
 
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>

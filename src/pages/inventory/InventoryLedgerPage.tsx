@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useSearchParams } from 'react-router-dom'
 
 import { useInventoryLedgerQuery } from '@/features/inventory/inventory.api'
 import { useDebounce } from '@/hooks/useDebounce'
@@ -14,14 +15,18 @@ import { getStockMovementTypeLabel } from '@/lib/labels'
 export function InventoryLedgerPage() {
   const { t } = useTranslation('common')
   const defaultBranchId = useOrgStore((state) => state.activeBranchId)
+  const [searchParams] = useSearchParams()
   const [page, setPage] = useState(1)
-  const [search, setSearch] = useState('')
-  const [branchId, setBranchId] = useState(defaultBranchId ?? '')
-  const [productId, setProductId] = useState('')
-  const [variantId, setVariantId] = useState('')
-  const [movementType, setMovementType] = useState<StockMovementType | ''>('')
-  const [startDate, setStartDate] = useState('')
-  const [endDate, setEndDate] = useState('')
+  const [search, setSearch] = useState(searchParams.get('search') ?? '')
+  const [branchId, setBranchId] = useState(searchParams.get('branchId') ?? defaultBranchId ?? '')
+  const [productId, setProductId] = useState(searchParams.get('productId') ?? '')
+  const [variantId, setVariantId] = useState(searchParams.get('variantId') ?? '')
+  const [movementType, setMovementType] = useState<StockMovementType | ''>(() => {
+    const value = searchParams.get('movementType')
+    return value && STOCK_MOVEMENT_TYPES.includes(value as StockMovementType) ? value as StockMovementType : ''
+  })
+  const [startDate, setStartDate] = useState(searchParams.get('startDate') ?? '')
+  const [endDate, setEndDate] = useState(searchParams.get('endDate') ?? '')
   const debouncedSearch = useDebounce(search)
 
   const ledgerQuery = useInventoryLedgerQuery({

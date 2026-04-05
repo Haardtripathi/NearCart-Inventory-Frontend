@@ -116,6 +116,9 @@ export function ProductDetailPage() {
         </SectionCard>
 
         <SectionCard title={t('translations')} description={t('translationsDescription')}>
+          <InlineNotice className="mb-4">
+            Review looks correct? <Link className="font-semibold underline" to={`/products/${product.id}/edit`}>Edit product</Link> to update language overrides.
+          </InlineNotice>
           <div className="space-y-3">
             {visibleTranslations.map((translation) => (
               <div key={translation.language} className="rounded-md border border-slate-200 bg-slate-50/80 p-4">

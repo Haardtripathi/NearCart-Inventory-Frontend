@@ -41,6 +41,7 @@ export function UnitsPage() {
     defaultValues: { code: '', name: '', symbol: '', allowsDecimal: false, translations: [] },
   })
   const allowsDecimal = Boolean(useWatch({ control: form.control, name: 'allowsDecimal' }))
+  const translations = useWatch({ control: form.control, name: 'translations' })
 
   const units = useMemo(() => unitsQuery.data?.items ?? [], [unitsQuery.data?.items])
 
@@ -85,7 +86,7 @@ export function UnitsPage() {
   }
 
   const columns = [
-    { key: 'code', header: t('units:code'), render: (unit: Unit) => <span className="font-mono text-sm font-medium text-slate-900">{unit.code}</span> },
+    { key: 'code', header: t('units:code'), render: (unit: Unit) => <span className="font-mono text-sm font-medium whitespace-nowrap text-slate-900">{unit.code}</span> },
     { key: 'name', header: t('units:name'), render: (unit: Unit) => getDisplayName(unit, unit.name) },
     { key: 'symbol', header: t('units:symbol'), render: (unit: Unit) => unit.symbol || '—' },
     { key: 'decimal', header: t('units:allowsDecimal'), render: (unit: Unit) => <StatusBadge value={unit.allowsDecimal ? 'ACTIVE' : 'INACTIVE'} /> },
@@ -172,7 +173,7 @@ export function UnitsPage() {
             />
             <FormField label={t('products:languageOverrides')}>
               <TranslationFields
-                value={form.watch('translations')}
+                value={translations}
                 onChange={(value) => form.setValue('translations', value as TranslationInput[], { shouldDirty: true })}
               />
             </FormField>

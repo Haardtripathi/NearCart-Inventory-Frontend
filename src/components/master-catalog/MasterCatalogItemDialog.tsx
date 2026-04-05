@@ -121,6 +121,14 @@ function createEmptyVariantTemplate() {
   }
 }
 
+function normalizeTranslationInputs<TTranslation extends TranslationInput | VariantTranslationInput>(
+  translations?: TTranslation[],
+) {
+  return (translations ?? []).filter((translation) =>
+    LANGUAGE_CODES.includes(translation.language as (typeof LANGUAGE_CODES)[number]),
+  )
+}
+
 function VariantTemplateEditor({
   control,
   index,
@@ -404,7 +412,7 @@ export function MasterCatalogItemDialog({
       allowBackorder: item?.allowBackorder ?? false,
       allowNegativeStock: item?.allowNegativeStock ?? false,
       isActive: item?.isActive ?? true,
-      translations: item?.translations ?? [],
+      translations: normalizeTranslationInputs(item?.translations),
       aliases:
         item?.aliases
           ?.filter((alias) => LANGUAGE_CODES.includes(alias.language as (typeof LANGUAGE_CODES)[number]))
@@ -431,7 +439,7 @@ export function MasterCatalogItemDialog({
         attributes: Object.fromEntries(
           Object.entries(template.attributes ?? {}).map(([key, value]) => [key, String(value)]),
         ),
-        translations: template.translations ?? [],
+        translations: normalizeTranslationInputs(template.translations),
       })) ?? [],
     })
   }, [form, initialIndustryId, item, open])
@@ -688,17 +696,15 @@ export function MasterCatalogItemDialog({
             />
           </div>
 
-          {item ? (
-            <Controller
-              control={form.control}
-              name="translations"
-              render={({ field }) => (
-                <FormField label="Localized names and descriptions">
-                  <TranslationFields value={field.value} onChange={field.onChange} />
-                </FormField>
-              )}
-            />
-          ) : null}
+          <Controller
+            control={form.control}
+            name="translations"
+            render={({ field }) => (
+              <FormField label="Localized names and descriptions">
+                <TranslationFields value={field.value} onChange={field.onChange} />
+              </FormField>
+            )}
+          />
 
           <div className="space-y-4 rounded-md border border-slate-200 bg-slate-50/80 p-4">
             <div className="flex items-center justify-between">
@@ -764,7 +770,7 @@ export function MasterCatalogItemDialog({
                     control={form.control}
                     index={index}
                     unitOptions={unitOptions}
-                    showTranslations={Boolean(item)}
+                    showTranslations
                     onAddUnit={onAddUnit}
                     onRemove={() => templatesFieldArray.remove(index)}
                   />

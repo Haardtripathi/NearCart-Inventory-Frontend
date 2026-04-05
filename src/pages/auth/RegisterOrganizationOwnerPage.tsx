@@ -17,6 +17,7 @@ import { ControlledSelect, FormField } from '@/components/forms'
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input } from '@/components/ui'
 import { APP_LANGUAGES, BRANCH_TYPES, LANGUAGE_CODES } from '@/types/common'
 import { getBranchTypeLabel, getLanguageLabel } from '@/lib/labels'
+import { LANGUAGE_LABELS } from '@/lib/locale'
 import { cn, normalizeNullableString, parseApiError } from '@/lib/utils'
 
 const registerSchema = z.object({
@@ -38,7 +39,8 @@ const registerSchema = z.object({
   postalCode: z.string().trim().optional(),
 })
 
-type RegisterFormValues = z.output<typeof registerSchema>
+type RegisterFormValues = z.input<typeof registerSchema>
+type RegisterFormOutput = z.output<typeof registerSchema>
 
 export function RegisterOrganizationOwnerPage() {
   const navigate = useNavigate()
@@ -47,8 +49,8 @@ export function RegisterOrganizationOwnerPage() {
   const { language, setLanguage } = useLocale()
   const industriesQuery = useIndustriesQuery()
   const registerMutation = useRegisterOrganizationOwnerMutation()
-  const form = useForm<any>({
-    resolver: zodResolver(registerSchema) as never,
+  const form = useForm<RegisterFormValues, undefined, RegisterFormOutput>({
+    resolver: zodResolver(registerSchema),
     defaultValues: {
       fullName: '',
       email: '',
@@ -64,7 +66,7 @@ export function RegisterOrganizationOwnerPage() {
       firstBranchType: 'STORE',
       city: '',
       state: '',
-      country: 'India',
+      country: '',
       postalCode: '',
     },
   })
@@ -74,12 +76,6 @@ export function RegisterOrganizationOwnerPage() {
       navigate('/dashboard', { replace: true })
     }
   }, [isAuthenticated, navigate])
-
-  useEffect(() => {
-    if (!form.getValues('primaryIndustryId') && industriesQuery.data?.[0]?.id) {
-      form.setValue('primaryIndustryId', industriesQuery.data[0].id)
-    }
-  }, [form, industriesQuery.data])
 
   const onSubmit = form.handleSubmit(async (values) => {
     try {
@@ -201,7 +197,7 @@ export function RegisterOrganizationOwnerPage() {
                             : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900',
                         )}
                       >
-                        {lang}
+                        {LANGUAGE_LABELS[lang]}
                       </button>
                     ))}
                   </div>
@@ -252,10 +248,10 @@ export function RegisterOrganizationOwnerPage() {
                         <p className="mt-1 text-sm text-slate-600">{t('register:workspaceBasicsDesc')}</p>
                       </div>
                       <div className="grid gap-4 md:grid-cols-2">
-                        <FormField label={t('register:organizationName')} error={form.formState.errors.organizationName?.message} required>
+                        <FormField className="md:col-span-2" label={t('register:organizationName')} error={form.formState.errors.organizationName?.message} required>
                           <Input placeholder={t('register:organizationNamePlaceholder')} {...form.register('organizationName')} />
                         </FormField>
-                        <FormField label={t('register:primaryIndustry')} error={form.formState.errors.primaryIndustryId?.message} required>
+                        <FormField className="md:col-span-2" label={t('register:primaryIndustry')} error={form.formState.errors.primaryIndustryId?.message} required>
                           <ControlledSelect
                             control={form.control as never}
                             name="primaryIndustryId"

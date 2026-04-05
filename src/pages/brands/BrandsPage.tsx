@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { z } from 'zod'
@@ -12,7 +12,7 @@ import { useDebounce } from '@/hooks/useDebounce'
 import { ConfirmDialog, DataTable, EmptyState, FilterBar, LoadingState, PageHeader, PaginationControls, SearchInput, StatusBadge } from '@/components/common'
 import { CheckboxField, FormField, TranslationFields } from '@/components/forms'
 import { Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Input } from '@/components/ui'
-import { getDisplayName } from '@/lib/utils'
+import { getDisplayName, slugify } from '@/lib/utils'
 import type { Brand, TranslationInput } from '@/types/common'
 
 const brandSchema = z.object({
@@ -40,18 +40,24 @@ export function BrandsPage() {
     resolver: zodResolver(brandSchema),
     defaultValues: { name: '', slug: '', isActive: true, translations: [] },
   })
+  const autoSlugRef = useRef('')
   const isActive = Boolean(useWatch({ control: form.control, name: 'isActive' }))
+  const name = useWatch({ control: form.control, name: 'name' })
+  const slug = useWatch({ control: form.control, name: 'slug' })
+  const translations = useWatch({ control: form.control, name: 'translations' })
 
   const brands = useMemo(() => brandsQuery.data?.items ?? [], [brandsQuery.data?.items])
 
   const openCreate = () => {
     setEditingBrand(null)
+    autoSlugRef.current = ''
     form.reset({ name: '', slug: '', isActive: true, translations: [] })
     setIsDialogOpen(true)
   }
 
   const openEdit = (brand: Brand) => {
     setEditingBrand(brand)
+    autoSlugRef.current = brand.slug
     form.reset({
       name: brand.name,
       slug: brand.slug,
@@ -60,6 +66,25 @@ export function BrandsPage() {
     })
     setIsDialogOpen(true)
   }
+
+  useEffect(() => {
+    if (editingBrand) {
+      return
+    }
+
+    const nextAutoSlug = slugify(name ?? '')
+    const currentSlug = (slug ?? '').trim()
+
+    if (!currentSlug || currentSlug === autoSlugRef.current) {
+      if (currentSlug !== nextAutoSlug) {
+        form.setValue('slug', nextAutoSlug, { shouldDirty: currentSlug.length > 0 })
+      }
+      autoSlugRef.current = nextAutoSlug
+      return
+    }
+
+    autoSlugRef.current = nextAutoSlug
+  }, [editingBrand, form, name, slug])
 
   const onSubmit = form.handleSubmit(async (values) => {
     try {
@@ -152,7 +177,7 @@ export function BrandsPage() {
             />
             <FormField label={t('products:languageOverrides')}>
               <TranslationFields
-                value={form.watch('translations')}
+                value={translations}
                 onChange={(value) => form.setValue('translations', value as TranslationInput[], { shouldDirty: true })}
               />
             </FormField>

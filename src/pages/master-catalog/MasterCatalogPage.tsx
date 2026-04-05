@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import { Pencil, Plus } from 'lucide-react'
@@ -53,11 +53,16 @@ export function MasterCatalogPage() {
   const {
     activeOrganization,
     defaultIndustryId,
-    isLoading: isActiveOrganizationLoading,
   } = useActiveOrganizationContext()
   const industriesQuery = useIndustriesQuery()
   const unitsQuery = useUnitsQuery()
-  const [industryId, setIndustryId] = useState('')
+  const [industrySelection, setIndustrySelection] = useState<{
+    organizationId: string | null
+    industryId: string
+  }>({
+    organizationId: null,
+    industryId: '',
+  })
   const [categoryId, setCategoryId] = useState('')
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
@@ -79,29 +84,13 @@ export function MasterCatalogPage() {
       : industriesQuery.data?.[0]?.id ?? '',
     [defaultIndustryId, industriesQuery.data],
   )
-  const selectedIndustryId = industriesQuery.data?.some((industry) => industry.id === industryId) ? industryId : ''
+  const selectedIndustryId =
+    !activeOrganization?.id || industrySelection.organizationId !== activeOrganization.id
+      ? ''
+      : industriesQuery.data?.some((industry) => industry.id === industrySelection.industryId)
+        ? industrySelection.industryId
+        : ''
   const resolvedIndustryId = selectedIndustryId || fallbackIndustryId
-  const initializedOrganizationIdRef = useRef<string | null>(null)
-
-  useEffect(() => {
-    if (isActiveOrganizationLoading || !activeOrganization?.id || !industriesQuery.data?.length) {
-      return
-    }
-
-    if (initializedOrganizationIdRef.current === activeOrganization.id) {
-      return
-    }
-
-    const nextIndustryId =
-      defaultIndustryId && industriesQuery.data.some((industry) => industry.id === defaultIndustryId)
-        ? defaultIndustryId
-        : industriesQuery.data[0]?.id ?? ''
-
-    initializedOrganizationIdRef.current = activeOrganization.id
-    setIndustryId(nextIndustryId)
-    setCategoryId('')
-    setPage(1)
-  }, [activeOrganization?.id, defaultIndustryId, industriesQuery.data, isActiveOrganizationLoading])
 
   const categoryTreeQuery = useMasterCatalogCategoryTreeQuery(resolvedIndustryId)
   const categoriesQuery = useMasterCatalogCategoriesQuery({
@@ -174,7 +163,10 @@ export function MasterCatalogPage() {
                   return
                 }
 
-                setIndustryId(value)
+                setIndustrySelection({
+                  organizationId: activeOrganization?.id ?? null,
+                  industryId: value,
+                })
                 setCategoryId('')
                 setPage(1)
               }}
@@ -382,9 +374,13 @@ export function MasterCatalogPage() {
                     <Button asChild size="sm">
                       <Link to={`/products/${item.alreadyImportedProductId}`}>{t('openImportedProduct')}</Link>
                     </Button>
-                  ) : permissions.canManageMasterImports ? (
-                    <Button size="sm" disabled={!item.importable} onClick={() => setImportingItem(item)}>
+                  ) : permissions.canManageMasterImports && item.importable ? (
+                    <Button size="sm" disabled={!item.isActive} onClick={() => setImportingItem(item)}>
                       {t('import')}
+                    </Button>
+                  ) : permissions.canManageMasterImports ? (
+                    <Button asChild size="sm" variant="outline">
+                      <Link to="/organizations">{t('manageOrganizationIndustries')}</Link>
                     </Button>
                   ) : null}
                 </div>

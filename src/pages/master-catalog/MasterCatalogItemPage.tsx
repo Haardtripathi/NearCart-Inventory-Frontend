@@ -126,9 +126,13 @@ export function MasterCatalogItemPage() {
                 {t('editMasterItem')}
               </Button>
             ) : null}
-            {permissions.canManageMasterImports ? (
-              <Button disabled={!item.importable && !item.alreadyImportedProductId} onClick={() => setImportOpen(true)}>
+            {permissions.canManageMasterImports && item.importable ? (
+              <Button disabled={!item.isActive} onClick={() => setImportOpen(true)}>
                 {item.alreadyImportedProductId ? t('importAgain') : t('importItem')}
+              </Button>
+            ) : permissions.canManageMasterImports && !item.alreadyImportedProductId ? (
+              <Button asChild variant="outline">
+                <Link to="/organizations">{t('manageOrganizationIndustries')}</Link>
               </Button>
             ) : null}
           </div>
@@ -149,6 +153,10 @@ export function MasterCatalogItemPage() {
           {item.alreadyImportedProductId ? (
             <InlineNotice className="mt-4" tone="success">
               Already imported into this organization. <Link className="font-semibold underline" to={`/products/${item.alreadyImportedProductId}`}>Open product</Link>
+            </InlineNotice>
+          ) : !item.importable ? (
+            <InlineNotice className="mt-4" tone="warning">
+              This master item needs its industry enabled before import. <Link className="font-semibold underline" to="/organizations">Manage organization industries</Link>
             </InlineNotice>
           ) : null}
         </SectionCard>

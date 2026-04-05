@@ -68,8 +68,10 @@ const updateUserSchema = createUserSchema.extend({
   }
 })
 
-type CreateUserFormValues = z.output<typeof createUserSchema>
-type UpdateUserFormValues = z.output<typeof updateUserSchema>
+type CreateUserFormValues = z.input<typeof createUserSchema>
+type CreateUserFormOutput = z.output<typeof createUserSchema>
+type UpdateUserFormValues = z.input<typeof updateUserSchema>
+type UpdateUserFormOutput = z.output<typeof updateUserSchema>
 
 function toBranchAccess(scope: BranchAccessState['scope'], branchIds: string[]): BranchAccessState {
   return {
@@ -92,8 +94,8 @@ export function UsersPage() {
   const [editingUser, setEditingUser] = useState<OrganizationUser | null>(null)
   const [latestAccessLink, setLatestAccessLink] = useState<{ label: string; url: string; expiresAt: string } | null>(null)
 
-  const createForm = useForm<any>({
-    resolver: zodResolver(createUserSchema) as never,
+  const createForm = useForm<CreateUserFormValues, undefined, CreateUserFormOutput>({
+    resolver: zodResolver(createUserSchema),
     defaultValues: {
       fullName: '',
       email: '',
@@ -103,8 +105,8 @@ export function UsersPage() {
       branchIds: [],
     },
   })
-  const updateForm = useForm<any>({
-    resolver: zodResolver(updateUserSchema) as never,
+  const updateForm = useForm<UpdateUserFormValues, undefined, UpdateUserFormOutput>({
+    resolver: zodResolver(updateUserSchema),
     defaultValues: {
       fullName: '',
       email: '',
@@ -118,7 +120,9 @@ export function UsersPage() {
 
   const branches = useMemo(() => branchesQuery.data?.items ?? [], [branchesQuery.data?.items])
   const createBranchScope = useWatch({ control: createForm.control, name: 'branchScope' })
+  const createBranchIds = useWatch({ control: createForm.control, name: 'branchIds' }) ?? []
   const updateBranchScope = useWatch({ control: updateForm.control, name: 'branchScope' })
+  const updateBranchIds = useWatch({ control: updateForm.control, name: 'branchIds' }) ?? []
 
   const users = useMemo(() => {
     const items = usersQuery.data ?? []
@@ -383,7 +387,7 @@ export function UsersPage() {
                 <p className="text-sm font-semibold text-slate-800">Allowed branches</p>
                 <div className="grid gap-3 md:grid-cols-2">
                   {branches.map((branch) => {
-                    const selected = createForm.watch('branchIds').includes(branch.id)
+                    const selected = createBranchIds.includes(branch.id)
                     return (
                       <CheckboxField
                         key={branch.id}
@@ -391,7 +395,7 @@ export function UsersPage() {
                         label={getDisplayName(branch)}
                         description={branch.code}
                         onCheckedChange={(checked) => {
-                          const current = createForm.getValues('branchIds')
+                          const current = createForm.getValues('branchIds') ?? []
                           createForm.setValue(
                             'branchIds',
                             checked ? [...current, branch.id] : current.filter((branchId: string) => branchId !== branch.id),
@@ -472,7 +476,7 @@ export function UsersPage() {
                 <p className="text-sm font-semibold text-slate-800">Allowed branches</p>
                 <div className="grid gap-3 md:grid-cols-2">
                   {branches.map((branch) => {
-                    const selected = updateForm.watch('branchIds').includes(branch.id)
+                    const selected = updateBranchIds.includes(branch.id)
                     return (
                       <CheckboxField
                         key={branch.id}
@@ -480,7 +484,7 @@ export function UsersPage() {
                         label={getDisplayName(branch)}
                         description={branch.code}
                         onCheckedChange={(checked) => {
-                          const current = updateForm.getValues('branchIds')
+                          const current = updateForm.getValues('branchIds') ?? []
                           updateForm.setValue(
                             'branchIds',
                             checked ? [...current, branch.id] : current.filter((branchId: string) => branchId !== branch.id),

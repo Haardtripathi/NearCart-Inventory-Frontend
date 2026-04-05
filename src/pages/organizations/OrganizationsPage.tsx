@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -56,7 +56,8 @@ const organizationSchema = z.object({
   ownerPreferredLanguage: z.enum(LANGUAGE_CODES).default('EN'),
 })
 
-type OrganizationFormValues = z.output<typeof organizationSchema>
+type OrganizationFormValues = z.input<typeof organizationSchema>
+type OrganizationFormOutput = z.output<typeof organizationSchema>
 
 export function OrganizationsPage() {
   const { t } = useTranslation(['organizations', 'common', 'register'])
@@ -92,9 +93,13 @@ export function OrganizationsPage() {
     const enabledIndustryIds = new Set(activeOrganization?.industries?.map((entry) => entry.industryId) ?? [])
     return (industriesQuery.data ?? []).filter((industry) => !enabledIndustryIds.has(industry.id))
   }, [activeOrganization?.industries, industriesQuery.data])
+  const selectedAdditionalIndustryId = useMemo(
+    () => availableAdditionalIndustries.some((industry) => industry.id === additionalIndustryId) ? additionalIndustryId : '',
+    [additionalIndustryId, availableAdditionalIndustries],
+  )
 
-  const form = useForm<any>({
-    resolver: zodResolver(organizationSchema) as never,
+  const form = useForm<OrganizationFormValues, undefined, OrganizationFormOutput>({
+    resolver: zodResolver(organizationSchema),
     defaultValues: {
       name: '',
       slug: '',
@@ -108,7 +113,7 @@ export function OrganizationsPage() {
       addressLine1: '',
       city: '',
       state: '',
-      country: 'India',
+      country: '',
       postalCode: '',
       ownerUserId: '',
       ownerFullName: '',
@@ -116,26 +121,6 @@ export function OrganizationsPage() {
       ownerPreferredLanguage: 'EN',
     },
   })
-
-  useEffect(() => {
-    if (!form.getValues('primaryIndustryId') && industriesQuery.data?.[0]?.id) {
-      form.setValue('primaryIndustryId', industriesQuery.data[0].id)
-    }
-  }, [form, industriesQuery.data])
-
-  useEffect(() => {
-    if (role === 'SUPER_ADMIN' && !form.getValues('ownerUserId') && directoryQuery.data?.[0]?.id) {
-      form.setValue('ownerUserId', directoryQuery.data[0].id)
-    }
-  }, [directoryQuery.data, form, role])
-
-  const selectedAdditionalIndustryId = useMemo(() => {
-    if (additionalIndustryId && availableAdditionalIndustries.some((industry) => industry.id === additionalIndustryId)) {
-      return additionalIndustryId
-    }
-
-    return availableAdditionalIndustries[0]?.id ?? ''
-  }, [additionalIndustryId, availableAdditionalIndustries])
 
   const onSubmit = form.handleSubmit(async (values) => {
     try {
@@ -199,7 +184,7 @@ export function OrganizationsPage() {
           slug: '',
           email: '',
           phone: '',
-          primaryIndustryId: industriesQuery.data?.[0]?.id ?? '',
+          primaryIndustryId: '',
           defaultLanguage: 'EN',
           firstBranchName: '',
           firstBranchCode: '',
@@ -207,9 +192,9 @@ export function OrganizationsPage() {
           addressLine1: '',
           city: '',
           state: '',
-          country: 'India',
+          country: '',
           postalCode: '',
-          ownerUserId: directoryQuery.data?.[0]?.id ?? '',
+          ownerUserId: '',
           ownerFullName: '',
           ownerEmail: '',
           ownerPreferredLanguage: 'EN',
@@ -316,7 +301,7 @@ export function OrganizationsPage() {
       {activeOrganization && (role === 'SUPER_ADMIN' || role === 'ORG_ADMIN') ? (
         <SectionCard title={t('enableIndustryTitle')} description={t('enableIndustryDescription')}>
           <div className="grid gap-4 lg:grid-cols-[minmax(0,320px)_auto] lg:items-end">
-            <FormField label={t('addIndustry')}>
+            <FormField label={t('selectIndustryToEnable')}>
               <OptionSelect
                 value={selectedAdditionalIndustryId}
                 onValueChange={setAdditionalIndustryId}
@@ -331,7 +316,7 @@ export function OrganizationsPage() {
             <div className="flex flex-wrap gap-2">
               {permissions.canManageMasterPlatform ? (
                 <Button type="button" variant="outline" onClick={() => setIndustryDialogOpen(true)}>
-                  {t('addIndustry')}
+                  {t('addIndustry', { ns: 'masterCatalog' })}
                 </Button>
               ) : null}
               <Button

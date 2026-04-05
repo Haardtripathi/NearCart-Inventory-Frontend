@@ -106,7 +106,7 @@ export function InventoryBalancesPage() {
                   <Link to={`/inventory/adjustments/new?branchId=${row.branchId}&productId=${row.productId}&variantId=${row.variantId}`}>Adjust</Link>
                 </Button>
                 <Button asChild size="sm" variant="ghost">
-                  <Link to={`/inventory/ledger?variantId=${row.variantId}&branchId=${row.branchId}`}>Ledger</Link>
+                  <Link to={`/inventory/ledger?productId=${row.productId}&variantId=${row.variantId}&branchId=${row.branchId}`}>Ledger</Link>
                 </Button>
               </div>
             ),

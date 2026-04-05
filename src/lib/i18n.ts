@@ -4,10 +4,12 @@ import { initReactI18next } from 'react-i18next'
 
 import { en } from '@/i18n/locales/en'
 import { hi } from '@/i18n/locales/hi'
+import { gu } from '@/i18n/locales/gu'
 
 export const resources = {
   en,
   hi,
+  gu,
 } as const
 
 void i18n
@@ -16,7 +18,7 @@ void i18n
   .init({
     resources,
     fallbackLng: 'en',
-    supportedLngs: ['en', 'hi'],
+    supportedLngs: ['en', 'hi', 'gu'],
     defaultNS: 'common',
     ns: [
       'common',

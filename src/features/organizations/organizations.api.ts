@@ -2,11 +2,12 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { api, unwrapResponse } from '@/lib/axios'
 import { authKeys } from '@/features/auth/auth.api'
+import { useUiStore } from '@/store/ui.store'
 import type { Branch, BranchType, LanguageCode, OrganizationSummary, UserAccessLink } from '@/types/common'
 
 export const organizationsKeys = {
-  mine: ['organizations', 'my'] as const,
-  detail: (id: string) => ['organizations', id] as const,
+  mine: (language: string) => ['organizations', 'my', language] as const,
+  detail: (id: string, language: string) => ['organizations', id, language] as const,
 }
 
 export interface CreateOrganizationPayload {
@@ -59,15 +60,19 @@ export interface CreatedOrganization extends OrganizationSummary {
 }
 
 export function useMyOrganizationsQuery() {
+  const language = useUiStore((state) => state.language)
+
   return useQuery({
-    queryKey: organizationsKeys.mine,
+    queryKey: organizationsKeys.mine(language),
     queryFn: async () => unwrapResponse<OrganizationSummary[]>(api.get('/organizations/my')),
   })
 }
 
 export function useOrganizationQuery(id?: string) {
+  const language = useUiStore((state) => state.language)
+
   return useQuery({
-    queryKey: organizationsKeys.detail(id ?? 'unknown'),
+    queryKey: organizationsKeys.detail(id ?? 'unknown', language),
     queryFn: async () => unwrapResponse<OrganizationSummary>(api.get(`/organizations/${id}`)),
     enabled: Boolean(id),
   })
@@ -81,7 +86,7 @@ export function useCreateOrganizationMutation() {
       unwrapResponse<CreatedOrganization>(api.post('/organizations', payload)),
     onSuccess: async () => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: organizationsKeys.mine }),
+        queryClient.invalidateQueries({ queryKey: ['organizations'] }),
         queryClient.invalidateQueries({ queryKey: authKeys.me }),
       ])
     },
@@ -96,8 +101,8 @@ export function useAddOrganizationIndustryMutation() {
       unwrapResponse(api.post(`/organizations/${organizationId}/industries`, payload)),
     onSuccess: async (_, variables) => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: organizationsKeys.mine }),
-        queryClient.invalidateQueries({ queryKey: organizationsKeys.detail(variables.organizationId) }),
+        queryClient.invalidateQueries({ queryKey: ['organizations'] }),
+        queryClient.invalidateQueries({ queryKey: ['organizations', variables.organizationId] }),
         queryClient.invalidateQueries({ queryKey: authKeys.me }),
       ])
     },

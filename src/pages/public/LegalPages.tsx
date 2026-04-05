@@ -1,4 +1,4 @@
-import { useEffect, type ReactNode } from 'react'
+import { useEffect } from 'react'
 import { ArrowLeft, Package2 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 

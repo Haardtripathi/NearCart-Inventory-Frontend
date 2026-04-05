@@ -45,6 +45,7 @@ export function SuppliersPage() {
     defaultValues: { name: '', code: '', phone: '', email: '', taxNumber: '', notes: '', isActive: true, translations: [] },
   })
   const isActive = Boolean(useWatch({ control: form.control, name: 'isActive' }))
+  const translations = useWatch({ control: form.control, name: 'translations' })
 
   const items = useMemo(() => suppliersQuery.data?.items ?? [], [suppliersQuery.data?.items])
 
@@ -163,7 +164,7 @@ export function SuppliersPage() {
             />
             <FormField label={t('products:languageOverrides')}>
               <TranslationFields
-                value={form.watch('translations')}
+                value={translations}
                 onChange={(value) => form.setValue('translations', value as TranslationInput[], { shouldDirty: true })}
               />
             </FormField>

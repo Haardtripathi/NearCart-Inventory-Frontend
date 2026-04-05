@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next'
 
 import { useCategoriesQuery } from '@/features/categories/categories.api'
 import { useImportMasterItemMutation } from '@/features/master-catalog/master-catalog.api'
+import { InlineNotice } from '@/components/common'
 import { CheckboxField, ControlledSelect, FormField } from '@/components/forms'
 import { Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Input } from '@/components/ui'
 import { getDisplayName } from '@/lib/utils'
@@ -75,6 +76,7 @@ export function ImportMasterItemDialog({
     control: form.control,
     name: 'forceImport',
   }))
+  const hasIndustryMismatch = Boolean(item && !item.importable && !item.alreadyImportedProductId)
 
   useEffect(() => {
     if (!item) {
@@ -85,7 +87,7 @@ export function ImportMasterItemDialog({
       categoryMode: 'AUTO_CREATE',
       existingCategoryId: '',
       allowDuplicate: false,
-      strictIndustryMatch: true,
+      strictIndustryMatch: !hasIndustryMismatch,
       forceImport: false,
       namingOverride: item.canonicalName,
       variantPrices: item.variantTemplates.map((variant) => ({
@@ -95,7 +97,7 @@ export function ImportMasterItemDialog({
         mrp: variant.defaultMrp ?? '',
       })),
     })
-  }, [form, item])
+  }, [form, hasIndustryMismatch, item])
 
   const onSubmit = form.handleSubmit(async (values) => {
     if (!item) {
@@ -139,6 +141,11 @@ export function ImportMasterItemDialog({
           <DialogDescription>Review the import options and choose how this master item should be created in your catalog.</DialogDescription>
         </DialogHeader>
         <form className="space-y-4" onSubmit={onSubmit}>
+          {hasIndustryMismatch ? (
+            <InlineNotice tone="warning">
+              This item belongs to an industry that is not enabled for the active organization. Strict industry matching has been turned off so you can still import it after review.
+            </InlineNotice>
+          ) : null}
           <div className="grid gap-4 md:grid-cols-2">
             <FormField label="Category mode">
               <ControlledSelect
@@ -152,20 +159,20 @@ export function ImportMasterItemDialog({
             </FormField>
             {categoryMode === 'USE_EXISTING' ? (
               <FormField label="Existing category">
-              <ControlledSelect
-                control={form.control}
-                name="existingCategoryId"
-                placeholder={t('selectCategory')}
-                emptyOptionLabel={t('selectCategory')}
-                options={(categoriesQuery.data?.items ?? []).map((category) => ({
-                  value: category.id,
-                  label: getDisplayName(category),
-                }))}
-                addActionLabel={t('addCategory', { ns: 'categories' })}
-                onAddAction={() => navigate('/categories')}
-              />
-            </FormField>
-          ) : null}
+                <ControlledSelect
+                  control={form.control}
+                  name="existingCategoryId"
+                  placeholder={t('selectCategory')}
+                  emptyOptionLabel={t('selectCategory')}
+                  options={(categoriesQuery.data?.items ?? []).map((category) => ({
+                    value: category.id,
+                    label: getDisplayName(category),
+                  }))}
+                  addActionLabel={t('addCategory', { ns: 'categories' })}
+                  onAddAction={() => navigate('/categories')}
+                />
+              </FormField>
+            ) : null}
           </div>
           <FormField label="Naming override">
             <Input {...form.register('namingOverride')} />
