@@ -120,6 +120,22 @@ export function parseApiError(error: unknown) {
     }
   }
 
+  if (axiosError.code === 'ECONNABORTED') {
+    return {
+      message: 'The server took too long to respond. Please try again.',
+      errors: [],
+      statusCode: axiosError.response?.status,
+    }
+  }
+
+  if (axiosError.message === 'Network Error' || (!axiosError.response && Boolean(axiosError.message))) {
+    return {
+      message: 'Unable to reach the server. Please check the connection and try again.',
+      errors: [],
+      statusCode: axiosError.response?.status,
+    }
+  }
+
   if (axiosError.message) {
     return {
       message: axiosError.message,

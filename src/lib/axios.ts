@@ -13,6 +13,7 @@ const fallbackApiBaseUrl =
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL ?? fallbackApiBaseUrl,
+  timeout: 60_000,
   headers: {
     'Content-Type': 'application/json',
   },

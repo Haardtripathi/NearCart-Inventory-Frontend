@@ -4,21 +4,19 @@ import { useSearchParams } from 'react-router-dom'
 
 import { useInventoryLedgerQuery } from '@/features/inventory/inventory.api'
 import { useDebounce } from '@/hooks/useDebounce'
-import { useOrgStore } from '@/store/org.store'
 import { BranchSelector, ProductSelector, QuantityText, VariantSelector } from '@/components/inventory/selectors'
-import { DataTable, EmptyState, FilterBar, LoadingState, PageHeader, PaginationControls, SearchInput, StatusBadge } from '@/components/common'
-import { DatePicker, OptionSelect } from '@/components/ui'
+import { DataTable, EmptyState, ErrorState, FilterBar, InlineNotice, LoadingState, PageHeader, PaginationControls, SearchInput, StatusBadge } from '@/components/common'
+import { Button, DatePicker, OptionSelect } from '@/components/ui'
 import { STOCK_MOVEMENT_TYPES, type StockMovementType } from '@/types/common'
 import { formatDateForInput, formatDateTime, getDisplayName, parseDateValue } from '@/lib/utils'
 import { getStockMovementTypeLabel } from '@/lib/labels'
 
 export function InventoryLedgerPage() {
   const { t } = useTranslation('common')
-  const defaultBranchId = useOrgStore((state) => state.activeBranchId)
-  const [searchParams] = useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams()
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState(searchParams.get('search') ?? '')
-  const [branchId, setBranchId] = useState(searchParams.get('branchId') ?? defaultBranchId ?? '')
+  const [branchId, setBranchId] = useState(searchParams.get('branchId') ?? '')
   const [productId, setProductId] = useState(searchParams.get('productId') ?? '')
   const [variantId, setVariantId] = useState(searchParams.get('variantId') ?? '')
   const [movementType, setMovementType] = useState<StockMovementType | ''>(() => {
@@ -42,9 +40,14 @@ export function InventoryLedgerPage() {
   })
 
   const items = useMemo(() => ledgerQuery.data?.items ?? [], [ledgerQuery.data?.items])
+  const hasActiveFilters = Boolean(search.trim() || branchId || productId || variantId || movementType || startDate || endDate)
 
   if (ledgerQuery.isLoading) {
     return <LoadingState label="Loading inventory ledger..." variant="list" />
+  }
+
+  if (ledgerQuery.isError) {
+    return <ErrorState description="Inventory ledger could not be loaded right now." onRetry={() => void ledgerQuery.refetch()} />
   }
 
   return (
@@ -53,6 +56,29 @@ export function InventoryLedgerPage() {
         title="Inventory ledger"
         description="Review immutable stock movement history and trace operational references."
       />
+      {hasActiveFilters ? (
+        <InlineNotice className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <span>Ledger history is currently filtered. Clear filters to review stock movement across the whole workspace.</span>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              setPage(1)
+              setSearch('')
+              setBranchId('')
+              setProductId('')
+              setVariantId('')
+              setMovementType('')
+              setStartDate('')
+              setEndDate('')
+              setSearchParams({})
+            }}
+          >
+            Clear filters
+          </Button>
+        </InlineNotice>
+      ) : null}
       <FilterBar className="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
         <SearchInput value={search} onChange={(event) => {
           setPage(1)
