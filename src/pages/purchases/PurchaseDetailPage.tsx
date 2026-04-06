@@ -3,7 +3,7 @@ import { toast } from 'react-hot-toast'
 
 import { usePostPurchaseMutation, usePurchaseQuery } from '@/features/purchases/purchases.api'
 import { CurrencyText, QuantityText } from '@/components/inventory/selectors'
-import { DataTable, DetailGrid, DetailItem, EmptyState, InlineNotice, LoadingState, PageHeader, SectionCard, StatusBadge } from '@/components/common'
+import { DataTable, DetailGrid, DetailItem, EmptyState, ErrorState, InlineNotice, LoadingState, PageHeader, SectionCard, StatusBadge } from '@/components/common'
 import { Button } from '@/components/ui'
 import { formatDateTime } from '@/lib/utils'
 
@@ -14,6 +14,10 @@ export function PurchaseDetailPage() {
 
   if (purchaseQuery.isLoading) {
     return <LoadingState label="Loading purchase..." variant="detail" />
+  }
+
+  if (purchaseQuery.isError) {
+    return <ErrorState description="Purchase details could not be loaded right now." onRetry={() => void purchaseQuery.refetch()} />
   }
 
   if (!purchaseQuery.data) {

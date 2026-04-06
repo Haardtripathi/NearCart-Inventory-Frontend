@@ -11,7 +11,7 @@ import {
   useSalesOrderQuery,
 } from '@/features/sales-orders/sales-orders.api'
 import { CurrencyText, QuantityText } from '@/components/inventory/selectors'
-import { DataTable, DetailGrid, DetailItem, EmptyState, InlineNotice, LoadingState, PageHeader, SectionCard, StatusBadge } from '@/components/common'
+import { DataTable, DetailGrid, DetailItem, EmptyState, ErrorState, InlineNotice, LoadingState, PageHeader, SectionCard, StatusBadge } from '@/components/common'
 import { Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Input } from '@/components/ui'
 import { formatDateTime } from '@/lib/utils'
 
@@ -28,6 +28,10 @@ export function SalesOrderDetailPage() {
 
   if (orderQuery.isLoading) {
     return <LoadingState label="Loading sales order..." variant="detail" />
+  }
+
+  if (orderQuery.isError) {
+    return <ErrorState description="Sales order details could not be loaded right now." onRetry={() => void orderQuery.refetch()} />
   }
 
   if (!orderQuery.data) {

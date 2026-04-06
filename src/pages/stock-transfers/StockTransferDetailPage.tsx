@@ -3,7 +3,7 @@ import { toast } from 'react-hot-toast'
 
 import { useApproveStockTransferMutation, useCancelStockTransferMutation, useStockTransferQuery } from '@/features/stock-transfers/stock-transfers.api'
 import { CurrencyText, QuantityText } from '@/components/inventory/selectors'
-import { DataTable, DetailGrid, DetailItem, EmptyState, InlineNotice, LoadingState, PageHeader, SectionCard, StatusBadge } from '@/components/common'
+import { DataTable, DetailGrid, DetailItem, EmptyState, ErrorState, InlineNotice, LoadingState, PageHeader, SectionCard, StatusBadge } from '@/components/common'
 import { Button } from '@/components/ui'
 import { formatDateTime } from '@/lib/utils'
 
@@ -15,6 +15,10 @@ export function StockTransferDetailPage() {
 
   if (transferQuery.isLoading) {
     return <LoadingState label="Loading stock transfer..." variant="detail" />
+  }
+
+  if (transferQuery.isError) {
+    return <ErrorState description="Stock transfer details could not be loaded right now." onRetry={() => void transferQuery.refetch()} />
   }
 
   if (!transferQuery.data) {

@@ -6,7 +6,7 @@ import { useInventoryBalancesQuery } from '@/features/inventory/inventory.api'
 import { useDebounce } from '@/hooks/useDebounce'
 import { useOrgStore } from '@/store/org.store'
 import { BranchSelector, ProductSelector, QuantityText, VariantSelector } from '@/components/inventory/selectors'
-import { DataTable, EmptyState, FilterBar, LoadingState, PageHeader, PaginationControls, SearchInput, StatusBadge } from '@/components/common'
+import { DataTable, EmptyState, ErrorState, FilterBar, LoadingState, PageHeader, PaginationControls, SearchInput, StatusBadge } from '@/components/common'
 import { CheckboxField } from '@/components/forms'
 import { Button } from '@/components/ui'
 import { getDisplayName } from '@/lib/utils'
@@ -36,6 +36,10 @@ export function InventoryBalancesPage() {
 
   if (balancesQuery.isLoading) {
     return <LoadingState label="Loading inventory balances..." variant="list" />
+  }
+
+  if (balancesQuery.isError) {
+    return <ErrorState description="Inventory balances could not be loaded right now." onRetry={() => void balancesQuery.refetch()} />
   }
 
   return (

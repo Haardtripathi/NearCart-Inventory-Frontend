@@ -5,7 +5,7 @@ import { Link, useParams } from 'react-router-dom'
 import { useInventoryBalancesQuery, useInventoryLedgerQuery } from '@/features/inventory/inventory.api'
 import { useProductQuery } from '@/features/products/products.api'
 import { CurrencyText, QuantityText } from '@/components/inventory/selectors'
-import { DataTable, DetailGrid, DetailItem, EmptyState, InlineNotice, LoadingState, PageHeader, SectionCard, StatusBadge } from '@/components/common'
+import { DataTable, DetailGrid, DetailItem, EmptyState, ErrorState, InlineNotice, LoadingState, PageHeader, SectionCard, StatusBadge } from '@/components/common'
 import { Button } from '@/components/ui'
 import { formatDateTime, formatNumber, getDisplayName } from '@/lib/utils'
 import { LANGUAGE_CODES, type Category } from '@/types/common'
@@ -61,6 +61,10 @@ export function ProductDetailPage() {
 
   if (productQuery.isLoading) {
     return <LoadingState label={t('loadingData', { ns: 'common' })} variant="detail" />
+  }
+
+  if (productQuery.isError) {
+    return <ErrorState description="Product details could not be loaded right now." onRetry={() => void productQuery.refetch()} />
   }
 
   if (!productQuery.data) {
