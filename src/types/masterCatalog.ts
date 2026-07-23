@@ -145,6 +145,7 @@ export interface ImportMasterCatalogPayload {
   allowDuplicate?: boolean
   strictIndustryMatch?: boolean
   forceImport?: boolean
+  defaultVariantTemplateId?: string
   pricingOverrides?: {
     variantPrices?: Array<{
       masterVariantTemplateId?: string

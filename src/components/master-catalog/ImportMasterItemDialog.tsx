@@ -5,29 +5,41 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
 import { useTranslation } from 'react-i18next'
+import { Trash2 } from 'lucide-react'
 
 import { useCategoriesQuery } from '@/features/categories/categories.api'
 import { useImportMasterItemMutation } from '@/features/master-catalog/master-catalog.api'
 import { InlineNotice } from '@/components/common'
 import { CheckboxField, ControlledSelect, FormField } from '@/components/forms'
 import { Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Input } from '@/components/ui'
-import { getDisplayName } from '@/lib/utils'
+import { getDisplayName, parseApiError } from '@/lib/utils'
 import type { MasterCatalogItem } from '@/types/masterCatalog'
 
-const importSchema = z.object({
-  categoryMode: z.enum(['AUTO_CREATE', 'USE_EXISTING']).default('AUTO_CREATE'),
-  existingCategoryId: z.string().trim().optional(),
-  allowDuplicate: z.boolean().default(false),
-  strictIndustryMatch: z.boolean().default(true),
-  forceImport: z.boolean().default(false),
-  namingOverride: z.string().trim().optional(),
-  variantPrices: z.array(z.object({
-    masterVariantTemplateId: z.string().trim().optional(),
-    sellingPrice: z.string().trim().optional(),
-    costPrice: z.string().trim().optional(),
-    mrp: z.string().trim().optional(),
-  })).default([]),
-})
+const importSchema = z
+  .object({
+    categoryMode: z.enum(['AUTO_CREATE', 'USE_EXISTING']).default('AUTO_CREATE'),
+    existingCategoryId: z.string().trim().optional(),
+    allowDuplicate: z.boolean().default(false),
+    strictIndustryMatch: z.boolean().default(true),
+    forceImport: z.boolean().default(false),
+    namingOverride: z.string().trim().optional(),
+    defaultVariantTemplateId: z.string().trim().optional(),
+    variantPrices: z.array(z.object({
+      masterVariantTemplateId: z.string().trim().optional(),
+      sellingPrice: z.string().trim().optional(),
+      costPrice: z.string().trim().optional(),
+      mrp: z.string().trim().optional(),
+    })).default([]),
+  })
+  .superRefine((value, ctx) => {
+    if (value.categoryMode === 'USE_EXISTING' && !value.existingCategoryId) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Select an existing category to import into',
+        path: ['existingCategoryId'],
+      })
+    }
+  })
 
 type ImportFormValues = z.infer<typeof importSchema>
 
@@ -53,6 +65,7 @@ export function ImportMasterItemDialog({
       strictIndustryMatch: true,
       forceImport: false,
       namingOverride: '',
+      defaultVariantTemplateId: '',
       variantPrices: [],
     },
   })
@@ -78,10 +91,15 @@ export function ImportMasterItemDialog({
   }))
   const hasIndustryMismatch = Boolean(item && !item.importable && !item.alreadyImportedProductId)
 
+  // Depending on `item` alone meant reopening the dialog for the same item (e.g. Cancel, then
+  // Import again) kept whatever the user had typed last time instead of starting fresh from the
+  // item's current defaults. Reset whenever the dialog transitions to open.
   useEffect(() => {
-    if (!item) {
+    if (!open || !item) {
       return
     }
+
+    const currentDefaultTemplateId = item.variantTemplates.find((variant) => variant.isDefault)?.id ?? ''
 
     form.reset({
       categoryMode: 'AUTO_CREATE',
@@ -90,6 +108,7 @@ export function ImportMasterItemDialog({
       strictIndustryMatch: !hasIndustryMismatch,
       forceImport: false,
       namingOverride: item.canonicalName,
+      defaultVariantTemplateId: currentDefaultTemplateId,
       variantPrices: item.variantTemplates.map((variant) => ({
         masterVariantTemplateId: variant.id,
         sellingPrice: variant.defaultSellingPrice ?? '',
@@ -97,7 +116,7 @@ export function ImportMasterItemDialog({
         mrp: variant.defaultMrp ?? '',
       })),
     })
-  }, [form, hasIndustryMismatch, item])
+  }, [form, hasIndustryMismatch, item, open])
 
   const onSubmit = form.handleSubmit(async (values) => {
     if (!item) {
@@ -114,6 +133,7 @@ export function ImportMasterItemDialog({
           strictIndustryMatch: values.strictIndustryMatch,
           forceImport: values.forceImport,
           namingOverrides: values.namingOverride ? { canonicalName: values.namingOverride } : undefined,
+          defaultVariantTemplateId: values.defaultVariantTemplateId || undefined,
           pricingOverrides: {
             variantPrices: values.variantPrices.map((variant: ImportFormValues['variantPrices'][number]) => ({
               masterVariantTemplateId: variant.masterVariantTemplateId || undefined,
@@ -128,8 +148,8 @@ export function ImportMasterItemDialog({
       toast.success(result.alreadyExisted ? 'Using existing imported product' : 'Master item imported')
       onOpenChange(false)
       navigate(`/products/${result.product.id}`)
-    } catch {
-      toast.error('Could not import master item')
+    } catch (error) {
+      toast.error(parseApiError(error).message)
     }
   })
 
@@ -158,7 +178,7 @@ export function ImportMasterItemDialog({
               />
             </FormField>
             {categoryMode === 'USE_EXISTING' ? (
-              <FormField label="Existing category">
+              <FormField label="Existing category" error={form.formState.errors.existingCategoryId?.message} required>
                 <ControlledSelect
                   control={form.control}
                   name="existingCategoryId"
@@ -174,10 +194,26 @@ export function ImportMasterItemDialog({
               </FormField>
             ) : null}
           </div>
-          <FormField label="Naming override">
-            <Input {...form.register('namingOverride')} />
-          </FormField>
-          <div className="grid gap-3 md:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2">
+            <FormField label="Naming override">
+              <Input {...form.register('namingOverride')} />
+            </FormField>
+            {(item?.variantTemplates.length ?? 0) > 1 ? (
+              <FormField label="Default variant template" description="Which imported variant should be the product's default.">
+                <ControlledSelect
+                  control={form.control}
+                  name="defaultVariantTemplateId"
+                  placeholder="Use master item's default"
+                  emptyOptionLabel="Use master item's default"
+                  options={(item?.variantTemplates ?? []).map((variant) => ({
+                    value: variant.id,
+                    label: variant.displayName ?? variant.name ?? 'Unnamed template',
+                  }))}
+                />
+              </FormField>
+            ) : null}
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <CheckboxField
               checked={allowDuplicate}
               label="Allow duplicate"
@@ -199,8 +235,15 @@ export function ImportMasterItemDialog({
           </div>
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <h3 className="text-base font-semibold text-slate-900">Pricing overrides</h3>
-              {!variantFieldArray.fields.length ? (
+              <div>
+                <h3 className="text-base font-semibold text-slate-900">Pricing overrides</h3>
+                <p className="text-sm text-slate-500">
+                  {(item?.variantTemplates.length ?? 0) > 0
+                    ? 'Prefilled from each template\'s default price - edit or clear a field to change it.'
+                    : 'Optionally override the price of the single variant that will be created.'}
+                </p>
+              </div>
+              {!item?.variantTemplates.length && !variantFieldArray.fields.length ? (
                 <Button
                   type="button"
                   variant="outline"
@@ -211,7 +254,7 @@ export function ImportMasterItemDialog({
               ) : null}
             </div>
             {variantFieldArray.fields.map((field, index) => (
-              <div key={field.id} className="grid gap-3 rounded-md border border-slate-200 bg-slate-50/80 p-4 md:grid-cols-4">
+              <div key={field.id} className="grid gap-3 rounded-md border border-slate-200 bg-slate-50/80 p-4 sm:grid-cols-2 lg:grid-cols-[1.2fr_1fr_1fr_1fr_auto]">
                 <Controller control={form.control} name={`variantPrices.${index}.masterVariantTemplateId`} render={() => (
                   <FormField label="Template">
                     <ControlledSelect
@@ -241,6 +284,16 @@ export function ImportMasterItemDialog({
                     <Input {...field} />
                   </FormField>
                 )} />
+                <div className="flex items-end">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    aria-label="Remove pricing override"
+                    onClick={() => variantFieldArray.remove(index)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             ))}
           </div>
