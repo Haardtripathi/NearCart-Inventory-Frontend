@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Plus } from 'lucide-react'
 
 import type { TranslationInput, VariantTranslationInput } from '@/types/common'
-import { LANGUAGE_CODES } from '@/types/common'
+import { LANGUAGE_CODES, MACHINE_TRANSLATABLE_LANGUAGE_CODES } from '@/types/common'
 import { getLanguageLabel } from '@/lib/labels'
 import { Button, Checkbox, Input, Textarea, Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui'
 import { DatePicker } from '@/components/ui/date-picker'
@@ -98,11 +98,20 @@ export function TranslationFields({
       {LANGUAGE_CODES.map((languageCode) => {
         const backendLanguage = languageCode
         const current = safeValue.find((item) => item.language === backendLanguage)
+        const isAutoTranslatable = MACHINE_TRANSLATABLE_LANGUAGE_CODES.includes(backendLanguage)
 
         return (
           <div key={languageCode} className="rounded-md border border-slate-200 bg-slate-50/80 p-4">
-            <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+            <p className="mb-3 flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
               {getLanguageLabel(t, backendLanguage)}
+              {!isAutoTranslatable ? (
+                <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[0.65rem] font-medium normal-case tracking-normal text-amber-700">
+                  {t('manualOnlyLanguage', {
+                    ns: 'common',
+                    defaultValue: 'Auto-translate unavailable — enter manually',
+                  })}
+                </span>
+              ) : null}
             </p>
             <div className="space-y-3">
               <Input

@@ -6,6 +6,12 @@ export type AppLanguage = (typeof APP_LANGUAGES)[number]
 export const LANGUAGE_CODES = ['EN', 'HI', 'GU'] as const
 export type LanguageCode = (typeof LANGUAGE_CODES)[number]
 
+// Languages the self-hosted LibreTranslate instance has models loaded for (matches backend
+// MACHINE_TRANSLATABLE_LANGUAGE_CODES in localization.ts). GU is a supported display/manual-entry
+// language but auto-translate can't generate it yet — surfaced in TranslationFields so it doesn't
+// look broken when it's just untranslated.
+export const MACHINE_TRANSLATABLE_LANGUAGE_CODES: readonly LanguageCode[] = ['EN', 'HI']
+
 export const USER_ROLES = ['SUPER_ADMIN', 'ORG_ADMIN', 'MANAGER', 'STAFF'] as const
 export type UserRole = (typeof USER_ROLES)[number]
 
