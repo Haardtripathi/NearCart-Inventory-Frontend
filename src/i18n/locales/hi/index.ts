@@ -86,6 +86,7 @@ export const hi = {
     selectedBranches: 'चुनी हुई शाखाएँ',
     allProducts: 'सभी प्रोडक्ट्स',
     allVariants: 'सभी वेरिएंट्स',
+    allStatuses: 'सभी स्थितियाँ',
     allPaymentStatuses: 'सभी भुगतान स्थितियाँ',
     allMovements: 'सभी मूवमेंट्स',
     allActions: 'सभी एक्शन',

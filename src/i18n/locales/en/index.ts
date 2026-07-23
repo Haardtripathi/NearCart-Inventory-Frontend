@@ -86,6 +86,7 @@ export const en = {
     selectedBranches: 'Selected branches',
     allProducts: 'All products',
     allVariants: 'All variants',
+    allStatuses: 'All statuses',
     allPaymentStatuses: 'All payment statuses',
     allMovements: 'All movements',
     allActions: 'All actions',
