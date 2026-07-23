@@ -111,9 +111,28 @@ export function TranslationFields({
                 onChange={(event) => {
                   const nextValue = [...safeValue]
                   const index = nextValue.findIndex((item) => item.language === backendLanguage)
+                  const nextName = event.target.value
+
+                  // The backend requires a non-empty `name` on every translation entry that is
+                  // submitted (translations are per-language optional, but once present they
+                  // must have a name - see brandTranslationSchema etc.). If a user types into a
+                  // language's name field and then clears it again, keeping a
+                  // `{ language, name: "" }` entry around used to make the *entire* save request
+                  // fail with an opaque 400 ("String must contain at least 1 character(s)") that
+                  // didn't even say which language was the problem. Instead, drop the entry
+                  // entirely once its name is blank again - that just means "no translation
+                  // provided for this language yet", which is exactly what an empty field means.
+                  if (!nextName.trim()) {
+                    if (index >= 0) {
+                      nextValue.splice(index, 1)
+                    }
+                    onChange(nextValue)
+                    return
+                  }
+
                   const updated = {
                     ...(current ?? { language: backendLanguage }),
-                    name: event.target.value,
+                    name: nextName,
                   }
 
                   if (index >= 0) {
@@ -132,16 +151,22 @@ export function TranslationFields({
                   onChange={(event) => {
                     const nextValue = [...safeValue]
                     const index = nextValue.findIndex((item) => item.language === backendLanguage)
+
+                    // Same rule as the name field: the backend requires `name` on every
+                    // submitted translation entry. Typing only a description with no name yet
+                    // would otherwise create a name-less entry and fail validation the same
+                    // opaque way, so only attach the description to an entry that already has a
+                    // name - description-before-name isn't a supported order in this form.
+                    if (index < 0) {
+                      return
+                    }
+
                     const updated = {
-                      ...(current ?? { language: backendLanguage }),
+                      ...current,
                       description: event.target.value,
                     }
 
-                    if (index >= 0) {
-                      nextValue[index] = updated as TranslationInput
-                    } else {
-                      nextValue.push(updated as TranslationInput)
-                    }
+                    nextValue[index] = updated as TranslationInput
 
                     onChange(nextValue)
                   }}

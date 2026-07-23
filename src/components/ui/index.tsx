@@ -85,7 +85,7 @@ export const Input = React.forwardRef<HTMLInputElement, React.InputHTMLAttribute
     <input
       ref={ref}
       className={cn(
-        'flex h-10 w-full rounded-md border border-slate-200 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 shadow-sm outline-none transition [color-scheme:light]',
+        'flex h-11 w-full min-w-0 rounded-md border border-slate-200 bg-white px-4 py-2 text-[0.925rem] font-medium text-slate-700 shadow-sm outline-none transition [color-scheme:light]',
         'placeholder:text-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-50',
         'disabled:cursor-not-allowed disabled:opacity-60',
         className,
@@ -101,7 +101,7 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, React.TextareaHTML
     <textarea
       ref={ref}
       className={cn(
-        'flex min-h-[120px] w-full rounded-md border border-slate-200 bg-white px-3.5 py-3 text-sm font-medium text-slate-700 shadow-sm outline-none transition [color-scheme:light]',
+        'flex min-h-[120px] w-full min-w-0 rounded-md border border-slate-200 bg-white px-4 py-3 text-[0.925rem] font-medium text-slate-700 shadow-sm outline-none transition [color-scheme:light]',
         'placeholder:text-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-50',
         'disabled:cursor-not-allowed disabled:opacity-60',
         className,
@@ -117,8 +117,8 @@ export const NativeSelect = React.forwardRef<HTMLSelectElement, React.SelectHTML
     <select
       ref={ref}
       className={cn(
-        'flex h-10 w-full cursor-pointer appearance-none rounded-md border border-slate-200 bg-white [color-scheme:light]',
-        'bg-[url("data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 fill=%27none%27 viewBox=%270 0 20 20%27%3e%3cpath stroke=%27%2364748b%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27 stroke-width=%271.5%27 d=%27M6 8l4 4 4-4%27/%3e%3c/svg%3e")] bg-[length:1.2em_1.2em] bg-[right_0.9rem_center] bg-no-repeat px-3.5 py-2 pr-10 text-sm font-medium text-slate-700 shadow-sm outline-none transition',
+        'flex h-11 w-full min-w-0 cursor-pointer appearance-none rounded-md border border-slate-200 bg-white [color-scheme:light]',
+        'bg-[url("data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 fill=%27none%27 viewBox=%270 0 20 20%27%3e%3cpath stroke=%27%2364748b%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27 stroke-width=%271.5%27 d=%27M6 8l4 4 4-4%27/%3e%3c/svg%3e")] bg-[length:1.2em_1.2em] bg-[right_0.9rem_center] bg-no-repeat px-4 py-2 pr-10 text-[0.925rem] font-medium text-slate-700 shadow-sm outline-none transition',
         'focus:border-emerald-500 focus:ring-4 focus:ring-emerald-50 disabled:cursor-not-allowed disabled:opacity-60',
         className,
       )}

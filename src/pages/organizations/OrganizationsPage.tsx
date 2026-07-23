@@ -357,7 +357,7 @@ export function OrganizationsPage() {
                   <h3 className="text-base font-semibold text-slate-900">{t('basicsTitle')}</h3>
                   <p className="text-sm text-slate-600">{t('basicsDescription')}</p>
                 </div>
-                <div className="grid gap-4 md:grid-cols-2">
+                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
                   <FormField label={t('organizationName')} error={form.formState.errors.name?.message} required>
                     <Input placeholder={t('organizationNamePlaceholder', { ns: 'register' })} {...form.register('name')} />
                   </FormField>
@@ -390,7 +390,7 @@ export function OrganizationsPage() {
                   title="Workspace contact details"
                   description="Slug, organization email, and phone are optional so setup is faster on smaller screens."
                 >
-                  <div className="grid gap-4 md:grid-cols-2">
+                  <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
                     <FormField label="Slug" error={form.formState.errors.slug?.message}>
                       <Input placeholder={t('slugPlaceholder')} {...form.register('slug')} />
                     </FormField>
@@ -409,7 +409,7 @@ export function OrganizationsPage() {
                       <h4 className="text-sm font-semibold text-slate-900">Owner assignment</h4>
                       <p className="text-sm text-slate-600">Choose who should own this workspace on day one.</p>
                     </div>
-                    <div className="grid gap-4 md:grid-cols-2">
+                    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
                       <FormField label="Owner flow">
                         <OptionSelect
                           value={ownerMode}
@@ -464,7 +464,7 @@ export function OrganizationsPage() {
                   <h3 className="text-base font-semibold text-slate-900">{t('firstBranchTitle')}</h3>
                   <p className="text-sm text-slate-600">{t('firstBranchDescription')}</p>
                 </div>
-                <div className="grid gap-4 md:grid-cols-2">
+                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
                   <FormField label={t('firstBranchName')} error={form.formState.errors.firstBranchName?.message} required>
                     <Input placeholder={t('branchNamePlaceholder', { ns: 'register' })} {...form.register('firstBranchName')} />
                   </FormField>
@@ -484,7 +484,7 @@ export function OrganizationsPage() {
                   title="Branch address details"
                   description="Location fields are optional while you create the workspace and can be added after setup."
                 >
-                  <div className="grid gap-4 md:grid-cols-2">
+                  <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
                     <FormField label={t('addressLine1')} error={form.formState.errors.addressLine1?.message}>
                       <Input placeholder={t('addressLine1Placeholder', { ns: 'common' })} {...form.register('addressLine1')} />
                     </FormField>
