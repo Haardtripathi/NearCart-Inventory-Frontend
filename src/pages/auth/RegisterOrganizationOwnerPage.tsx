@@ -219,7 +219,7 @@ export function RegisterOrganizationOwnerPage() {
                         <h2 className="text-base font-semibold text-slate-900">{t('register:ownerAccount')}</h2>
                         <p className="mt-1 text-sm text-slate-600">{t('register:ownerAccountDesc')}</p>
                       </div>
-                      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
+                      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1 2xl:grid-cols-2">
                         <FormField label={t('register:fullName')} error={form.formState.errors.fullName?.message} required>
                           <Input placeholder={t('register:fullNamePlaceholder')} {...form.register('fullName')} />
                         </FormField>
@@ -247,7 +247,7 @@ export function RegisterOrganizationOwnerPage() {
                         <h2 className="text-base font-semibold text-slate-900">{t('register:workspaceBasics')}</h2>
                         <p className="mt-1 text-sm text-slate-600">{t('register:workspaceBasicsDesc')}</p>
                       </div>
-                      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
+                      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1 2xl:grid-cols-2">
                         <FormField className="md:col-span-2 2xl:col-span-2" label={t('register:organizationName')} error={form.formState.errors.organizationName?.message} required>
                           <Input placeholder={t('register:organizationNamePlaceholder')} {...form.register('organizationName')} />
                         </FormField>
@@ -279,7 +279,7 @@ export function RegisterOrganizationOwnerPage() {
                         title="Workspace contact details"
                         description="Organization email and phone are optional, so you can finish setup faster on mobile."
                       >
-                        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
+                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1 2xl:grid-cols-2">
                           <FormField label={t('register:organizationEmail')} error={form.formState.errors.organizationEmail?.message}>
                             <Input placeholder={t('register:organizationEmailPlaceholder')} {...form.register('organizationEmail')} />
                           </FormField>
