@@ -11,7 +11,7 @@ import { ControlledSelect, DirtyStatePrompt, FormField } from '@/components/form
 import { BranchSelector, ProductSelector, QuantityText, VariantSelector } from '@/components/inventory/selectors'
 import { DetailGrid, DetailItem, PageHeader, SectionCard } from '@/components/common'
 import { Button, DatePicker, Input, Textarea } from '@/components/ui'
-import { formatDateForInput, parseDateValue } from '@/lib/utils'
+import { formatDateForInput, parseApiError, parseDateValue } from '@/lib/utils'
 
 const adjustmentSchema = z.object({
   branchId: z.string().trim().min(1),
@@ -79,8 +79,8 @@ export function StockAdjustmentPage() {
       })
       toast.success('Stock adjustment created')
       navigate('/inventory/balances')
-    } catch {
-      toast.error('Could not create stock adjustment')
+    } catch (error) {
+      toast.error(parseApiError(error).message || 'Could not create stock adjustment')
     }
   })
 
