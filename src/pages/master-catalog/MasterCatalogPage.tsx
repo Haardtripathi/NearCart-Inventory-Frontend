@@ -560,6 +560,12 @@ export function MasterCatalogPage() {
                 items={items}
                 empty={<EmptyState title={t('noItemsForFiltersTitle')} description={t('noItemsForFiltersDescription')} />}
               />
+              <p className="mt-3 text-xs text-slate-500">
+                This list follows the search and filters set above. Use the pagination there to reach items beyond this page.
+              </p>
+              <div className="mt-3">
+                <PaginationControls pagination={itemsQuery.data?.pagination} onPageChange={setPage} />
+              </div>
             </SectionCard>
           </TabsContent>
         </Tabs>
