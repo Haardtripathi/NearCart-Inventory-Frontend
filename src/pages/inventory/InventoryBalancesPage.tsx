@@ -11,6 +11,18 @@ import { CheckboxField } from '@/components/forms'
 import { Button } from '@/components/ui'
 import { getDisplayName } from '@/lib/utils'
 
+/**
+ * Mirrors the backend's `isLowStock` (src/utils/stock.ts): low stock is onHand <= the HIGHER of
+ * reorderLevel/minStockLevel, not just reorderLevel. Using the same rule here keeps the "Low
+ * stock only" filter (server-side) consistent with what the Status column shows client-side —
+ * previously this used `reorderLevel || minStockLevel`, which could mark a row "Healthy" here
+ * while the low-stock filter (correctly) still included it.
+ */
+function isRowLowStock(row: { onHand: string; variant: { reorderLevel: string; minStockLevel: string } }) {
+  const threshold = Math.max(Number(row.variant.reorderLevel), Number(row.variant.minStockLevel))
+  return Number(row.onHand) <= threshold
+}
+
 export function InventoryBalancesPage() {
   const { t } = useTranslation(['common', 'inventory'])
   const defaultBranchId = useOrgStore((state) => state.activeBranchId)
@@ -97,7 +109,7 @@ export function InventoryBalancesPage() {
             key: 'status',
             header: 'Status',
             render: (row) =>
-              Number(row.onHand) <= Number(row.variant.reorderLevel || row.variant.minStockLevel)
+              isRowLowStock(row)
                 ? <StatusBadge value="LOW_STOCK" />
                 : <StatusBadge value="HEALTHY" />,
           },
@@ -117,7 +129,7 @@ export function InventoryBalancesPage() {
           },
         ]}
         items={items}
-        rowClassName={(row) => Number(row.onHand) <= Number(row.variant.reorderLevel || row.variant.minStockLevel) ? 'bg-amber-50/60' : undefined}
+        rowClassName={(row) => (isRowLowStock(row) ? 'bg-amber-50/60' : undefined)}
         empty={<EmptyState title="No inventory balances found" description="Balances appear after purchases, adjustments, sales, or transfers." />}
         rowKey={(row) => row.id}
       />

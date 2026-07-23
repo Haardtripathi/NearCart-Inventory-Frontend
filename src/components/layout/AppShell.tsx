@@ -29,6 +29,7 @@ import { LanguageSwitcher } from '@/components/language/LanguageSwitcher'
 import { BreadcrumbTrail, LoadingState } from '@/components/common'
 import { Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, OptionSelect, Sheet, SheetContent } from '@/components/ui'
 import { useMyOrganizationsQuery } from '@/features/organizations/organizations.api'
+import { usePageVisibilityQuery } from '@/features/organizations/pageVisibility.api'
 import { useAuth } from '@/hooks/useAuth'
 import { useAuthStore } from '@/store/auth.store'
 
@@ -39,6 +40,13 @@ interface NavigationItem {
   icon: LucideIcon
   requiresRole?: string
   requiresAnyRole?: string[]
+  /**
+   * Key into the org's `enabledPages` sidebar-visibility settings (Settings > Sidebar pages).
+   * Items without a key (Dashboard, Settings) are always shown — they're either the landing page
+   * or the page that controls this very toggle. Multiple nav items can share a key (Inventory
+   * Balances + Inventory Ledger both map to "inventory") so they hide/show together.
+   */
+  visibilityKey?: string
 }
 
 interface NavigationSection {
@@ -70,7 +78,7 @@ const navigationSections: NavigationSection[] = [
     translationKey: 'overviewSection',
     items: [
       { to: '/dashboard', label: 'Dashboard', translationKey: 'dashboard', icon: LayoutDashboard },
-      { to: '/organizations', label: 'Organizations', translationKey: 'organizations', icon: Building2 },
+      { to: '/organizations', label: 'Organizations', translationKey: 'organizations', icon: Building2, visibilityKey: 'organizations' },
     ],
   },
   {
@@ -78,13 +86,13 @@ const navigationSections: NavigationSection[] = [
     label: 'Catalog',
     translationKey: 'catalogSection',
     items: [
-      { to: '/master-catalog', label: 'Master Catalog', translationKey: 'masterCatalog', icon: BookOpen, requiresRole: 'SUPER_ADMIN' },
-      { to: '/products', label: 'Products', translationKey: 'products', icon: Boxes },
-      { to: '/categories', label: 'Categories', translationKey: 'categories', icon: Tags },
-      { to: '/brands', label: 'Brands', translationKey: 'brands', icon: Tags },
-      { to: '/units', label: 'Units', translationKey: 'units', icon: Ruler },
-      { to: '/suppliers', label: 'Suppliers', translationKey: 'suppliers', icon: Truck },
-      { to: '/customers', label: 'Customers', translationKey: 'customers', icon: Users },
+      { to: '/master-catalog', label: 'Master Catalog', translationKey: 'masterCatalog', icon: BookOpen, requiresRole: 'SUPER_ADMIN', visibilityKey: 'masterCatalog' },
+      { to: '/products', label: 'Products', translationKey: 'products', icon: Boxes, visibilityKey: 'products' },
+      { to: '/categories', label: 'Categories', translationKey: 'categories', icon: Tags, visibilityKey: 'categories' },
+      { to: '/brands', label: 'Brands', translationKey: 'brands', icon: Tags, visibilityKey: 'brands' },
+      { to: '/units', label: 'Units', translationKey: 'units', icon: Ruler, visibilityKey: 'units' },
+      { to: '/suppliers', label: 'Suppliers', translationKey: 'suppliers', icon: Truck, visibilityKey: 'suppliers' },
+      { to: '/customers', label: 'Customers', translationKey: 'customers', icon: Users, visibilityKey: 'customers' },
     ],
   },
   {
@@ -92,12 +100,12 @@ const navigationSections: NavigationSection[] = [
     label: 'Operations',
     translationKey: 'operationsSection',
     items: [
-      { to: '/inventory/balances', label: 'Inventory Balances', translationKey: 'inventoryBalances', icon: Warehouse },
-      { to: '/inventory/ledger', label: 'Inventory Ledger', translationKey: 'inventoryLedger', icon: FileText },
-      { to: '/purchases', label: 'Purchases', translationKey: 'purchases', icon: ShoppingBag },
-      { to: '/sales-orders', label: 'Sales Orders', translationKey: 'salesOrders', icon: ShoppingCart },
-      { to: '/stock-transfers', label: 'Stock Transfers', translationKey: 'stockTransfers', icon: ArrowRightLeft },
-      { to: '/branches', label: 'Branches', translationKey: 'branches', icon: Store },
+      { to: '/inventory/balances', label: 'Inventory Balances', translationKey: 'inventoryBalances', icon: Warehouse, visibilityKey: 'inventory' },
+      { to: '/inventory/ledger', label: 'Inventory Ledger', translationKey: 'inventoryLedger', icon: FileText, visibilityKey: 'inventory' },
+      { to: '/purchases', label: 'Purchases', translationKey: 'purchases', icon: ShoppingBag, visibilityKey: 'purchases' },
+      { to: '/sales-orders', label: 'Sales Orders', translationKey: 'salesOrders', icon: ShoppingCart, visibilityKey: 'salesOrders' },
+      { to: '/stock-transfers', label: 'Stock Transfers', translationKey: 'stockTransfers', icon: ArrowRightLeft, visibilityKey: 'stockTransfers' },
+      { to: '/branches', label: 'Branches', translationKey: 'branches', icon: Store, visibilityKey: 'branches' },
     ],
   },
   {
@@ -105,8 +113,8 @@ const navigationSections: NavigationSection[] = [
     label: 'Administration',
     translationKey: 'administrationSection',
     items: [
-      { to: '/audit-logs', label: 'Audit Logs', translationKey: 'auditLogs', icon: ShieldCheck, requiresRole: 'SUPER_ADMIN' },
-      { to: '/users', label: 'Users', icon: Users, requiresAnyRole: ['SUPER_ADMIN', 'ORG_ADMIN'] },
+      { to: '/audit-logs', label: 'Audit Logs', translationKey: 'auditLogs', icon: ShieldCheck, requiresRole: 'SUPER_ADMIN', visibilityKey: 'auditLogs' },
+      { to: '/users', label: 'Users', icon: Users, requiresAnyRole: ['SUPER_ADMIN', 'ORG_ADMIN'], visibilityKey: 'users' },
       { to: '/settings', label: 'Settings', translationKey: 'settings', icon: Settings },
     ],
   },
@@ -302,6 +310,20 @@ function canAccessNavigationItem(item: NavigationItem, currentUserRole?: string 
   return (!item.requiresRole || item.requiresRole === currentUserRole) && (!item.requiresAnyRole || item.requiresAnyRole.includes(currentUserRole ?? ''))
 }
 
+/**
+ * Sidebar-declutter check only (Settings > Sidebar pages), not a security boundary — direct
+ * route access still works even when a module is toggled off here. Fails open (shows the item)
+ * until the enabledPages settings have loaded, and for any key not present in the map, so a
+ * slow/failed settings fetch never hides the whole sidebar.
+ */
+function isNavigationItemVisible(item: NavigationItem, enabledPages?: Record<string, boolean>) {
+  if (!item.visibilityKey || !enabledPages) {
+    return true
+  }
+
+  return enabledPages[item.visibilityKey] !== false
+}
+
 function getNavigationLabel(item: NavigationItem, translate: (key: string, options?: Record<string, unknown>) => string) {
   return item.translationKey
     ? translate(item.translationKey, { ns: 'navigation', defaultValue: item.label })
@@ -398,6 +420,8 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = useLocation().pathname
   const { t } = useTranslation()
   const { role: currentUserRole } = useAuth()
+  const pageVisibilityQuery = usePageVisibilityQuery()
+  const enabledPages = pageVisibilityQuery.data?.enabledPages
   const activeSectionId = useMemo(
     () =>
       navigationSections.find((section) =>
@@ -410,6 +434,14 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <nav className="space-y-2">
       {navigationSections.map((section) => {
+        const visibleItems = section.items.filter(
+          (item) => canAccessNavigationItem(item, currentUserRole) && isNavigationItemVisible(item, enabledPages),
+        )
+
+        if (visibleItems.length === 0) {
+          return null
+        }
+
         const isOpen = openSections[section.id] ?? section.id === activeSectionId
 
         return (
@@ -430,9 +462,7 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
 
             {isOpen ? (
               <div className="space-y-1">
-                {section.items
-                  .filter((item) => canAccessNavigationItem(item, currentUserRole))
-                  .map((item) => {
+                {visibleItems.map((item) => {
                   const active = isRouteActive(pathname, item.to)
                   const Icon = item.icon
 
@@ -536,6 +566,8 @@ export function AppShell() {
   const navigation = useNavigation()
   const { user, memberships, activeOrganizationId, role } = useAuth()
   const organizationsQuery = useMyOrganizationsQuery()
+  const pageVisibilityQuery = usePageVisibilityQuery()
+  const enabledPages = pageVisibilityQuery.data?.enabledPages
   const setActiveOrganizationId = useAuthStore((state) => state.setActiveOrganizationId)
   const clearSession = useAuthStore((state) => state.clearSession)
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
@@ -577,9 +609,11 @@ export function AppShell() {
         { to: '/sales-orders', icon: ShoppingCart, label: t('salesOrders', { ns: 'navigation', defaultValue: 'Orders' }) },
       ].filter((item) => {
         const navigationItem = navigationSections.flatMap((section) => section.items).find((entry) => entry.to === item.to)
-        return navigationItem ? canAccessNavigationItem(navigationItem, role) : true
+        return navigationItem
+          ? canAccessNavigationItem(navigationItem, role) && isNavigationItemVisible(navigationItem, enabledPages)
+          : true
       }),
-    [role, t],
+    [enabledPages, role, t],
   )
   const isNavigating = navigation.state !== 'idle'
 

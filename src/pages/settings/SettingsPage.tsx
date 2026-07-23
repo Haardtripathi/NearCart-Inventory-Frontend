@@ -1,19 +1,22 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'react-hot-toast'
 import { useTranslation } from 'react-i18next'
 
-import { DetailGrid, DetailItem, InlineNotice, PageHeader, SectionCard } from '@/components/common'
+import { DetailGrid, DetailItem, ErrorState, InlineNotice, LoadingState, PageHeader, SectionCard } from '@/components/common'
 import { LanguageSwitcher } from '@/components/language/LanguageSwitcher'
-import { FormField } from '@/components/forms'
+import { CheckboxField, FormField } from '@/components/forms'
 import { Badge, Button, Input } from '@/components/ui'
 import { useAuth } from '@/hooks/useAuth'
 import { useHealthQuery, useLocalizationContextQuery } from '@/features/meta/meta.api'
 import { useChangePasswordMutation } from '@/features/auth/auth.api'
+import { usePageVisibilityQuery, useUpdatePageVisibilityMutation } from '@/features/organizations/pageVisibility.api'
 import { normalizeBackendLanguage } from '@/lib/locale'
 import { formatDateTime, parseApiError } from '@/lib/utils'
+
+const PAGE_VISIBILITY_ADMIN_ROLES = ['SUPER_ADMIN', 'ORG_ADMIN']
 
 const passwordSchema = z
   .object({
@@ -27,6 +30,57 @@ const passwordSchema = z
   })
 
 type PasswordFormValues = z.infer<typeof passwordSchema>
+
+function SidebarPagesSection() {
+  const { role } = useAuth()
+  const canManage = PAGE_VISIBILITY_ADMIN_ROLES.includes(role ?? '')
+  const pageVisibilityQuery = usePageVisibilityQuery()
+  const updateMutation = useUpdatePageVisibilityMutation()
+  const [pendingKey, setPendingKey] = useState<string | null>(null)
+
+  if (!canManage) {
+    return null
+  }
+
+  const handleToggle = async (key: string, label: string, checked: boolean) => {
+    setPendingKey(key)
+    try {
+      await updateMutation.mutateAsync({ [key]: checked })
+      toast.success(`${label} ${checked ? 'shown in' : 'hidden from'} the sidebar`)
+    } catch (error) {
+      toast.error(parseApiError(error).message)
+    } finally {
+      setPendingKey(null)
+    }
+  }
+
+  return (
+    <SectionCard
+      title="Sidebar pages"
+      description="Choose which modules show up in the sidebar for everyone in this organization. Hiding a module here only declutters navigation — it does not restrict API access to that module."
+      className="xl:col-span-2"
+    >
+      {pageVisibilityQuery.isLoading ? (
+        <LoadingState label="Loading sidebar settings..." variant="compact" />
+      ) : pageVisibilityQuery.isError ? (
+        <ErrorState description="Sidebar settings could not be loaded right now." onRetry={() => void pageVisibilityQuery.refetch()} />
+      ) : (
+        <div className="grid gap-3 md:grid-cols-2">
+          {(pageVisibilityQuery.data?.modules ?? []).map((module) => (
+            <CheckboxField
+              key={module.key}
+              label={module.label}
+              description={module.description}
+              checked={pageVisibilityQuery.data?.enabledPages[module.key] ?? module.defaultEnabled}
+              disabled={pendingKey === module.key}
+              onCheckedChange={(checked) => void handleToggle(module.key, module.label, checked)}
+            />
+          ))}
+        </div>
+      )}
+    </SectionCard>
+  )
+}
 
 export function SettingsPage() {
   const { t } = useTranslation(['settings', 'common'])
@@ -129,6 +183,8 @@ export function SettingsPage() {
             <DetailItem label={t('healthTimestamp')} value={formatDateTime(healthQuery.data?.timestamp)} />
           </DetailGrid>
         </SectionCard>
+
+        <SidebarPagesSection />
       </div>
     </div>
   )
