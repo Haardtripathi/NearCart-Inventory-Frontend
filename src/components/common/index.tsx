@@ -529,7 +529,7 @@ export function FilterBar({ children, className }: { children: ReactNode; classN
   )
 }
 
-export function StatusBadge({ value, label }: { value?: string | null; label?: ReactNode }) {
+export function StatusBadge({ value }: { value?: string | null }) {
   const normalized = value?.toLowerCase() ?? ''
   let tone: 'default' | 'success' | 'warning' | 'danger' | 'muted' | 'info' = 'default'
 
@@ -545,7 +545,7 @@ export function StatusBadge({ value, label }: { value?: string | null; label?: R
     tone = 'danger'
   }
 
-  return <Badge tone={tone}>{label ?? value ?? '—'}</Badge>
+  return <Badge tone={tone}>{value ?? '—'}</Badge>
 }
 
 export function PaginationControls({
