@@ -142,6 +142,7 @@ export function UsersPage() {
   const roleOptions = useMemo(() => {
     const options = [
       { value: 'STAFF', label: getUserRoleLabel(t, 'STAFF') },
+      { value: 'DRIVER', label: getUserRoleLabel(t, 'DRIVER') },
       { value: 'MANAGER', label: getUserRoleLabel(t, 'MANAGER') },
       { value: 'ORG_ADMIN', label: getUserRoleLabel(t, 'ORG_ADMIN') },
     ]

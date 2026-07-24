@@ -148,6 +148,15 @@ export interface SalesOrder {
   branch: Branch
   customer?: Nullable<Customer>
   items: SalesOrderItem[]
+  // Driver assignment (READY / OUT_FOR_DELIVERY flow) — contract for a parallel backend change,
+  // see POST /sales-orders/:id/assign-driver in sales-orders.api.ts.
+  assignedDriverId?: Nullable<string>
+  assignedAt?: Nullable<string>
+  assignedDriver?: Nullable<{
+    id: string
+    fullName: string
+    email: string
+  }>
   createdAt: string
   updatedAt: string
 }

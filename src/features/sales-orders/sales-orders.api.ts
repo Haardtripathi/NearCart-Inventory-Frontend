@@ -126,3 +126,21 @@ export function useDeliverSalesOrderMutation() {
     },
   })
 }
+
+// Contract for a parallel backend change (not yet merged as of this build): restricted to
+// MANAGER/ORG_ADMIN, transitions CONFIRMED -> READY. Body: { driverId }. Response: the updated
+// SalesOrder with assignedDriverId/assignedAt populated.
+export function useAssignDriverMutation() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ id, driverId }: { id: string; driverId: string }) =>
+      unwrapResponse<SalesOrder>(api.post(`/sales-orders/${id}/assign-driver`, { driverId })),
+    onSuccess: async (_, variables) => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['sales-orders'] }),
+        queryClient.invalidateQueries({ queryKey: salesOrdersKeys.detail(variables.id) }),
+      ])
+    },
+  })
+}

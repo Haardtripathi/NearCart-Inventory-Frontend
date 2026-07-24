@@ -38,6 +38,7 @@ void i18n
       'masterCatalog',
       'settings',
       'validation',
+      'platform',
     ],
     detection: {
       order: ['localStorage', 'navigator', 'htmlTag'],

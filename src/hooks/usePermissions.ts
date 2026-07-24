@@ -10,6 +10,7 @@ import {
   canManageSalesOrders,
   canManageTransfers,
   canViewAuditLogs,
+  canViewPlatformOverview,
 } from '@/lib/permissions'
 
 export function usePermissions() {
@@ -26,5 +27,6 @@ export function usePermissions() {
     canManageMasterPlatform: canManageMasterPlatform(role),
     canManageUsers: canManageUsers(role),
     canViewAuditLogs: canViewAuditLogs(role),
+    canViewPlatformOverview: canViewPlatformOverview(role),
   }
 }

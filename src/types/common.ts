@@ -6,7 +6,10 @@ export type AppLanguage = (typeof APP_LANGUAGES)[number]
 export const LANGUAGE_CODES = ['EN', 'HI', 'GU'] as const
 export type LanguageCode = (typeof LANGUAGE_CODES)[number]
 
-export const USER_ROLES = ['SUPER_ADMIN', 'ORG_ADMIN', 'MANAGER', 'STAFF'] as const
+// DRIVER is being introduced by a parallel backend change (assign-driver / READY-OUT_FOR_DELIVERY
+// flow) — see NearCart-Inventory/backend sales-orders module. Included here so the frontend can be
+// built against the contract even if the backend enum value hasn't landed yet.
+export const USER_ROLES = ['SUPER_ADMIN', 'ORG_ADMIN', 'MANAGER', 'STAFF', 'DRIVER'] as const
 export type UserRole = (typeof USER_ROLES)[number]
 
 export const MEMBERSHIP_STATUSES = ['ACTIVE', 'INVITED', 'SUSPENDED'] as const

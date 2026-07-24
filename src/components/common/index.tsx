@@ -529,19 +529,23 @@ export function FilterBar({ children, className }: { children: ReactNode; classN
   )
 }
 
-export function StatusBadge({ value }: { value?: string | null }) {
+export function StatusBadge({ value, label }: { value?: string | null; label?: ReactNode }) {
   const normalized = value?.toLowerCase() ?? ''
-  let tone: 'default' | 'success' | 'warning' | 'danger' | 'muted' = 'default'
+  let tone: 'default' | 'success' | 'warning' | 'danger' | 'muted' | 'info' = 'default'
 
   if (normalized.includes('active') || normalized.includes('approved') || normalized.includes('delivered') || normalized.includes('paid')) {
     tone = 'success'
+  } else if (normalized.includes('out_for_delivery')) {
+    // Distinct from the generic 'default' fallback so an in-transit order reads as an active,
+    // in-progress state rather than looking unstyled/unhandled.
+    tone = 'info'
   } else if (normalized.includes('pending') || normalized.includes('draft') || normalized.includes('partial') || normalized.includes('ready')) {
     tone = 'warning'
   } else if (normalized.includes('inactive') || normalized.includes('archived') || normalized.includes('rejected') || normalized.includes('cancelled')) {
     tone = 'danger'
   }
 
-  return <Badge tone={tone}>{value ?? '—'}</Badge>
+  return <Badge tone={tone}>{label ?? value ?? '—'}</Badge>
 }
 
 export function PaginationControls({

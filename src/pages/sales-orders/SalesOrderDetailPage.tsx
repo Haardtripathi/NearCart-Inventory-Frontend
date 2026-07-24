@@ -1,22 +1,100 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
+import { ChevronsUpDown } from 'lucide-react'
 
 import {
+  useAssignDriverMutation,
   useCancelSalesOrderMutation,
   useConfirmSalesOrderMutation,
   useDeliverSalesOrderMutation,
   useRejectSalesOrderMutation,
   useSalesOrderQuery,
 } from '@/features/sales-orders/sales-orders.api'
+import { useOrganizationUsersQuery } from '@/features/users/users.api'
 import { CurrencyText, QuantityText } from '@/components/inventory/selectors'
 import { DataTable, DetailGrid, DetailItem, EmptyState, ErrorState, InlineNotice, LoadingState, PageHeader, SectionCard, StatusBadge } from '@/components/common'
-import { Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Input } from '@/components/ui'
-import { formatDateTime } from '@/lib/utils'
+import {
+  Button,
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  Input,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui'
+import { getSalesOrderStatusLabel } from '@/lib/labels'
+import { formatDateTime, parseApiError } from '@/lib/utils'
+import type { OrganizationUser } from '@/types/common'
+
+// Orders reaching this stage are relevant to the driver-assignment flow: CONFIRMED is when a
+// driver can be assigned, READY/OUT_FOR_DELIVERY/DELIVERED are shown read-only for record-keeping.
+const DELIVERY_SECTION_STATUSES = ['CONFIRMED', 'READY', 'OUT_FOR_DELIVERY', 'DELIVERED']
+
+function DriverSelect({
+  drivers,
+  onSelect,
+  disabled,
+  placeholder,
+  emptyLabel,
+}: {
+  drivers: OrganizationUser[]
+  onSelect: (driverId: string) => void
+  disabled?: boolean
+  placeholder: string
+  emptyLabel: string
+}) {
+  const [open, setOpen] = useState(false)
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button variant="outline" className="w-full justify-between sm:w-80" disabled={disabled}>
+          <span className="truncate text-slate-500">{placeholder}</span>
+          <ChevronsUpDown className="h-4 w-4 shrink-0 text-slate-400" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[--radix-popover-trigger-width] min-w-[18rem] p-0" align="start">
+        <Command>
+          <CommandInput placeholder={placeholder} />
+          <CommandList>
+            <CommandEmpty>{emptyLabel}</CommandEmpty>
+            <CommandGroup>
+              {drivers.map((driver) => (
+                <CommandItem
+                  key={driver.id}
+                  value={`${driver.fullName} ${driver.email}`}
+                  onSelect={() => {
+                    onSelect(driver.id)
+                    setOpen(false)
+                  }}
+                >
+                  <div className="min-w-0">
+                    <p className="truncate font-medium text-slate-900">{driver.fullName}</p>
+                    <p className="truncate text-xs text-slate-500">{driver.email}</p>
+                  </div>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  )
+}
 
 export function SalesOrderDetailPage() {
-  const { t } = useTranslation('orders')
+  const { t } = useTranslation(['orders', 'common'])
   const { id } = useParams()
   const [rejectOpen, setRejectOpen] = useState(false)
   const [rejectReason, setRejectReason] = useState('')
@@ -25,6 +103,13 @@ export function SalesOrderDetailPage() {
   const rejectMutation = useRejectSalesOrderMutation()
   const cancelMutation = useCancelSalesOrderMutation()
   const deliverMutation = useDeliverSalesOrderMutation()
+  const assignDriverMutation = useAssignDriverMutation()
+  const usersQuery = useOrganizationUsersQuery()
+
+  const drivers = useMemo(
+    () => (usersQuery.data ?? []).filter((user) => user.role === 'DRIVER' && user.status === 'ACTIVE'),
+    [usersQuery.data],
+  )
 
   if (orderQuery.isLoading) {
     return <LoadingState label="Loading sales order..." variant="detail" />
@@ -39,6 +124,15 @@ export function SalesOrderDetailPage() {
   }
 
   const order = orderQuery.data
+
+  const handleAssignDriver = async (driverId: string) => {
+    try {
+      await assignDriverMutation.mutateAsync({ id: order.id, driverId })
+      toast.success(t('driverAssignedSuccess'))
+    } catch (error) {
+      toast.error(parseApiError(error).message || t('driverAssignFailed'))
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -93,13 +187,46 @@ export function SalesOrderDetailPage() {
       />
       <SectionCard title="Order summary" description="Customer, branch, payment, and totals.">
         <DetailGrid>
-          <DetailItem label="Status" value={<StatusBadge value={order.status} />} />
+          <DetailItem label="Status" value={<StatusBadge value={order.status} label={getSalesOrderStatusLabel(t, order.status)} />} />
           <DetailItem label="Payment" value={<StatusBadge value={order.paymentStatus} />} />
           <DetailItem label="Customer" value={order.customer?.name ?? 'Walk-in'} />
           <DetailItem label="Total" value={<CurrencyText value={order.total} />} />
         </DetailGrid>
         {order.notes ? <InlineNotice className="mt-4">{order.notes}</InlineNotice> : null}
       </SectionCard>
+
+      {DELIVERY_SECTION_STATUSES.includes(order.status) ? (
+        <SectionCard title={t('deliveryTitle')} description={t('deliveryDescription')}>
+          {order.status === 'CONFIRMED' ? (
+            <div className="space-y-3">
+              <p className="text-sm text-slate-600">{t('assignDriverDescription')}</p>
+              {usersQuery.isLoading ? (
+                <p className="text-sm text-slate-500">{t('loadingData', { ns: 'common' })}</p>
+              ) : drivers.length ? (
+                <DriverSelect
+                  drivers={drivers}
+                  onSelect={handleAssignDriver}
+                  disabled={assignDriverMutation.isPending}
+                  placeholder={assignDriverMutation.isPending ? 'Assigning...' : t('selectDriverPlaceholder')}
+                  emptyLabel={t('noDriversFound')}
+                />
+              ) : (
+                <InlineNotice tone="warning">{t('noDriversAvailableDescription')}</InlineNotice>
+              )}
+            </div>
+          ) : (
+            <DetailGrid className="sm:grid-cols-2 xl:grid-cols-2">
+              <DetailItem
+                label={t('assignedDriverLabel')}
+                value={order.assignedDriver?.fullName ?? t('notAssignedYet')}
+                hint={order.assignedDriver?.email}
+              />
+              <DetailItem label={t('assignedAtLabel')} value={formatDateTime(order.assignedAt)} />
+            </DetailGrid>
+          )}
+        </SectionCard>
+      ) : null}
+
       <SectionCard title="Order items" description="Current order line items from the backend.">
         <DataTable
           columns={[
