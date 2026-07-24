@@ -55,6 +55,12 @@ export type StockTransferStatus = (typeof STOCK_TRANSFER_STATUSES)[number]
 export const ORDER_SOURCES = ['APP', 'WALK_IN', 'PHONE', 'WHATSAPP', 'OTHER'] as const
 export type OrderSource = (typeof ORDER_SOURCES)[number]
 
+// Platform-wide gig-driver pool (Swiggy/Zomato-style) — a Driver is not a User/OrganizationMembership.
+// Drivers self-register via the separate NearCart-Driver app and are verified here by a SUPER_ADMIN.
+// See PHASE1_REQUIREMENTS.md "Driver API contract" (locked 2026-07-24).
+export const DRIVER_STATUSES = ['PENDING_VERIFICATION', 'VERIFIED', 'SUSPENDED'] as const
+export type DriverStatus = (typeof DRIVER_STATUSES)[number]
+
 export const STOCK_MOVEMENT_TYPES = [
   'OPENING',
   'PURCHASE',
@@ -271,6 +277,30 @@ export interface Customer extends LocalizedRecord {
   address?: unknown
   notes?: Nullable<string>
   isActive: boolean
+}
+
+export interface Driver {
+  id: string
+  fullName: string
+  phone: string
+  email?: Nullable<string>
+  vehicleType: string
+  vehicleNumber: string
+  status: DriverStatus
+  createdAt?: string
+  updatedAt?: string
+}
+
+/**
+ * Minimal driver shape returned by `GET /api/drivers?status=VERIFIED` (the org-staff assignment
+ * dropdown) — per PHASE1_REQUIREMENTS.md the contract deliberately limits this to
+ * `id, fullName, phone, vehicleType` since any shop can see the whole shared driver pool.
+ */
+export interface DriverSummary {
+  id: string
+  fullName: string
+  phone: string
+  vehicleType: string
 }
 
 export interface ListState<T> {

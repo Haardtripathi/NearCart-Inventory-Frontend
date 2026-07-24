@@ -203,6 +203,11 @@ export const hi = {
       MANAGER: 'मैनेजर',
       STAFF: 'स्टाफ',
     },
+    driverStatusValues: {
+      PENDING_VERIFICATION: 'सत्यापन लंबित',
+      VERIFIED: 'सत्यापित',
+      SUSPENDED: 'निलंबित',
+    },
   },
   auth: {
     title: 'अपने इन्वेंटरी वर्कस्पेस में साइन इन करें',
@@ -254,6 +259,7 @@ export const hi = {
     branches: 'शाखाएँ',
     auditLogs: 'ऑडिट लॉग्स',
     platformOrganizations: 'प्लेटफ़ॉर्म संगठन',
+    drivers: 'ड्राइवर',
     settings: 'सेटिंग्स',
     logout: 'लॉग आउट',
   },

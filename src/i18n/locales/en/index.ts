@@ -203,6 +203,11 @@ export const en = {
       MANAGER: 'Manager',
       STAFF: 'Staff',
     },
+    driverStatusValues: {
+      PENDING_VERIFICATION: 'Pending verification',
+      VERIFIED: 'Verified',
+      SUSPENDED: 'Suspended',
+    },
   },
   auth: {
     title: 'Sign in to your inventory workspace',
@@ -254,6 +259,7 @@ export const en = {
     branches: 'Branches',
     auditLogs: 'Audit Logs',
     platformOrganizations: 'Platform Organizations',
+    drivers: 'Drivers',
     settings: 'Settings',
     logout: 'Log out',
   },

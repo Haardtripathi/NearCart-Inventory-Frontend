@@ -1,6 +1,7 @@
 import type {
   Branch,
   Customer,
+  DriverSummary,
   Nullable,
   OrderSource,
   PaymentStatus,
@@ -148,6 +149,15 @@ export interface SalesOrder {
   branch: Branch
   customer?: Nullable<Customer>
   items: SalesOrderItem[]
+  /**
+   * Driver assignment — set once status reaches READY via `POST /sales-orders/:id/assign-driver`.
+   * The nested `assignedDriver` object shape follows the same "id + summary fields" convention as
+   * `customer`/`branch` on this record; the backend contract in PHASE1_REQUIREMENTS.md only
+   * documents the request/response for the driver endpoints themselves, not this embed, so this
+   * is inferred from existing SalesOrder response conventions rather than a doc'd field.
+   */
+  assignedDriverId?: Nullable<string>
+  assignedDriver?: Nullable<DriverSummary>
   createdAt: string
   updatedAt: string
 }

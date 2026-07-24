@@ -533,15 +533,15 @@ export function StatusBadge({ value }: { value?: string | null }) {
   const normalized = value?.toLowerCase() ?? ''
   let tone: 'default' | 'success' | 'warning' | 'danger' | 'muted' | 'info' = 'default'
 
-  if (normalized.includes('active') || normalized.includes('approved') || normalized.includes('delivered') || normalized.includes('paid')) {
+  if (normalized.includes('active') || normalized.includes('approved') || normalized.includes('delivered') || normalized.includes('paid') || normalized.includes('verified')) {
     tone = 'success'
   } else if (normalized.includes('out_for_delivery')) {
-    // Distinct from the generic 'default' fallback so an in-transit order reads as an active,
-    // in-progress state rather than looking unstyled/unhandled.
+    // Distinct from READY (warning, below) and CONFIRMED (falls through to default) — a driver
+    // has picked up the order and it's genuinely in transit, not just prepped or newly confirmed.
     tone = 'info'
   } else if (normalized.includes('pending') || normalized.includes('draft') || normalized.includes('partial') || normalized.includes('ready')) {
     tone = 'warning'
-  } else if (normalized.includes('inactive') || normalized.includes('archived') || normalized.includes('rejected') || normalized.includes('cancelled')) {
+  } else if (normalized.includes('inactive') || normalized.includes('archived') || normalized.includes('rejected') || normalized.includes('cancelled') || normalized.includes('suspended')) {
     tone = 'danger'
   }
 

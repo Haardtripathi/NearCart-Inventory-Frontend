@@ -1,6 +1,7 @@
 import { useAuth } from './useAuth'
 import {
   canManageCatalog,
+  canManageDrivers,
   canManageInventory,
   canManageMasterImports,
   canManageMasterPlatform,
@@ -28,5 +29,6 @@ export function usePermissions() {
     canManageUsers: canManageUsers(role),
     canViewAuditLogs: canViewAuditLogs(role),
     canViewPlatformOverview: canViewPlatformOverview(role),
+    canManageDrivers: canManageDrivers(role),
   }
 }

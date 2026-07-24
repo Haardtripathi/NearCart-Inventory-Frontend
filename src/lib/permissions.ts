@@ -43,3 +43,9 @@ export function canViewAuditLogs(role?: UserRole | null) {
 export function canViewPlatformOverview(role?: UserRole | null) {
   return role === 'SUPER_ADMIN'
 }
+
+// Platform-wide driver pool verification (Drivers page) — SUPER_ADMIN only, same rule as
+// canViewPlatformOverview but kept as its own named check for clarity at call sites.
+export function canManageDrivers(role?: UserRole | null) {
+  return role === 'SUPER_ADMIN'
+}

@@ -4,15 +4,18 @@ import { useParams } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
 
 import {
+  useAssignSalesOrderDriverMutation,
   useCancelSalesOrderMutation,
   useConfirmSalesOrderMutation,
   useDeliverSalesOrderMutation,
+  useMarkSalesOrderReadyMutation,
   useRejectSalesOrderMutation,
   useSalesOrderQuery,
 } from '@/features/sales-orders/sales-orders.api'
+import { useVerifiedDriversQuery } from '@/features/drivers/drivers.api'
 import { CurrencyText, QuantityText } from '@/components/inventory/selectors'
 import { DataTable, DetailGrid, DetailItem, EmptyState, ErrorState, InlineNotice, LoadingState, PageHeader, SectionCard, StatusBadge } from '@/components/common'
-import { Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Input } from '@/components/ui'
+import { Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Input, OptionSelect } from '@/components/ui'
 import { formatDateTime } from '@/lib/utils'
 
 export function SalesOrderDetailPage() {
@@ -20,11 +23,15 @@ export function SalesOrderDetailPage() {
   const { id } = useParams()
   const [rejectOpen, setRejectOpen] = useState(false)
   const [rejectReason, setRejectReason] = useState('')
+  const [selectedDriverId, setSelectedDriverId] = useState('')
   const orderQuery = useSalesOrderQuery(id)
   const confirmMutation = useConfirmSalesOrderMutation()
   const rejectMutation = useRejectSalesOrderMutation()
   const cancelMutation = useCancelSalesOrderMutation()
   const deliverMutation = useDeliverSalesOrderMutation()
+  const markReadyMutation = useMarkSalesOrderReadyMutation()
+  const assignDriverMutation = useAssignSalesOrderDriverMutation()
+  const verifiedDriversQuery = useVerifiedDriversQuery()
 
   if (orderQuery.isLoading) {
     return <LoadingState label="Loading sales order..." variant="detail" />
@@ -64,6 +71,18 @@ export function SalesOrderDetailPage() {
                 </Button>
               </>
             ) : null}
+            {order.status === 'CONFIRMED' ? (
+              <Button loading={markReadyMutation.isPending} loadingText="Marking ready..." onClick={async () => {
+                try {
+                  await markReadyMutation.mutateAsync(order.id)
+                  toast.success('Order marked ready')
+                } catch {
+                  toast.error('Could not mark order ready')
+                }
+              }}>
+                Mark ready
+              </Button>
+            ) : null}
             {order.status !== 'CANCELLED' && order.status !== 'REJECTED' && order.status !== 'DELIVERED' ? (
               <Button variant="outline" loading={cancelMutation.isPending} loadingText="Cancelling..." onClick={async () => {
                 try {
@@ -76,7 +95,7 @@ export function SalesOrderDetailPage() {
                 Cancel
               </Button>
             ) : null}
-            {['CONFIRMED', 'READY', 'OUT_FOR_DELIVERY'].includes(order.status) ? (
+            {order.status === 'OUT_FOR_DELIVERY' ? (
               <Button loading={deliverMutation.isPending} loadingText="Delivering..." onClick={async () => {
                 try {
                   await deliverMutation.mutateAsync(order.id)
@@ -100,6 +119,61 @@ export function SalesOrderDetailPage() {
         </DetailGrid>
         {order.notes ? <InlineNotice className="mt-4">{order.notes}</InlineNotice> : null}
       </SectionCard>
+      {(['READY', 'OUT_FOR_DELIVERY', 'DELIVERED'] as string[]).includes(order.status) ? (
+        <SectionCard
+          title="Delivery"
+          description="Driver assignment and fulfillment handoff for this order."
+        >
+          {order.assignedDriver ? (
+            <DetailGrid>
+              <DetailItem label="Driver" value={order.assignedDriver.fullName} />
+              <DetailItem label="Phone" value={order.assignedDriver.phone} />
+              <DetailItem label="Vehicle" value={order.assignedDriver.vehicleType} />
+            </DetailGrid>
+          ) : order.status === 'READY' ? (
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+              <div className="w-full sm:max-w-sm">
+                <p className="mb-1.5 text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-slate-400">
+                  Assign driver
+                </p>
+                <OptionSelect
+                  value={selectedDriverId}
+                  onValueChange={setSelectedDriverId}
+                  placeholder={verifiedDriversQuery.isLoading ? 'Loading drivers...' : 'Select a verified driver'}
+                  options={(verifiedDriversQuery.data ?? []).map((driver) => ({
+                    value: driver.id,
+                    label: `${driver.fullName} · ${driver.phone} · ${driver.vehicleType}`,
+                  }))}
+                  disabled={verifiedDriversQuery.isLoading}
+                />
+              </div>
+              <Button
+                disabled={!selectedDriverId}
+                loading={assignDriverMutation.isPending}
+                loadingText="Assigning..."
+                onClick={async () => {
+                  try {
+                    await assignDriverMutation.mutateAsync({ id: order.id, driverId: selectedDriverId })
+                    toast.success('Driver assigned')
+                    setSelectedDriverId('')
+                  } catch {
+                    toast.error('Could not assign driver')
+                  }
+                }}
+              >
+                Assign driver
+              </Button>
+            </div>
+          ) : (
+            <InlineNotice>No driver has been assigned to this order.</InlineNotice>
+          )}
+          {!order.assignedDriver && order.status === 'READY' && !verifiedDriversQuery.isLoading && (verifiedDriversQuery.data ?? []).length === 0 ? (
+            <InlineNotice className="mt-4" tone="warning">
+              No verified drivers are available yet. Verify a driver from the Drivers page before assigning.
+            </InlineNotice>
+          ) : null}
+        </SectionCard>
+      ) : null}
       <SectionCard title="Order items" description="Current order line items from the backend.">
         <DataTable
           columns={[
