@@ -232,13 +232,14 @@ export function Badge({
   className,
   tone = 'default',
   ...props
-}: React.HTMLAttributes<HTMLSpanElement> & { tone?: 'default' | 'success' | 'warning' | 'danger' | 'muted' }) {
+}: React.HTMLAttributes<HTMLSpanElement> & { tone?: 'default' | 'success' | 'warning' | 'danger' | 'muted' | 'info' }) {
   const toneClasses = {
     default: 'bg-slate-100 text-slate-700',
     success: 'bg-emerald-50 text-emerald-700',
     warning: 'bg-amber-50 text-amber-700',
     danger: 'bg-rose-50 text-rose-700',
     muted: 'bg-slate-100 text-slate-500',
+    info: 'bg-blue-50 text-blue-700',
   }
 
   return (

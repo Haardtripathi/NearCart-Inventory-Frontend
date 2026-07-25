@@ -126,3 +126,36 @@ export function useDeliverSalesOrderMutation() {
     },
   })
 }
+
+// CONFIRMED -> READY. Per PHASE1_REQUIREMENTS.md "Driver API contract":
+// `PATCH /api/sales-orders/:id/mark-ready`.
+export function useMarkSalesOrderReadyMutation() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (id: string) => unwrapResponse<SalesOrder>(api.patch(`/sales-orders/${id}/mark-ready`)),
+    onSuccess: async (_, id) => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['sales-orders'] }),
+        queryClient.invalidateQueries({ queryKey: salesOrdersKeys.detail(id) }),
+      ])
+    },
+  })
+}
+
+// Requires status READY. Per PHASE1_REQUIREMENTS.md: `POST /api/sales-orders/:id/assign-driver`
+// with body `{ driverId }`, sets `assignedDriverId`.
+export function useAssignSalesOrderDriverMutation() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ id, driverId }: { id: string; driverId: string }) =>
+      unwrapResponse<SalesOrder>(api.post(`/sales-orders/${id}/assign-driver`, { driverId })),
+    onSuccess: async (_, variables) => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['sales-orders'] }),
+        queryClient.invalidateQueries({ queryKey: salesOrdersKeys.detail(variables.id) }),
+      ])
+    },
+  })
+}

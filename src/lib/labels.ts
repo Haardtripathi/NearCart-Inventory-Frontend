@@ -52,3 +52,7 @@ export function getMembershipStatusLabel(t: TFunction, value: string) {
 export function getUserRoleLabel(t: TFunction, value: string) {
   return translateEnumValue(t, 'roleValues', value)
 }
+
+export function getDriverStatusLabel(t: TFunction, value: string) {
+  return translateEnumValue(t, 'driverStatusValues', value)
+}

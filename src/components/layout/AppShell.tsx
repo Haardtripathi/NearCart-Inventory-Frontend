@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import {
   ArrowRightLeft,
+  Bike,
   BookOpen,
   Boxes,
   Building2,
   ChevronDown,
   ChevronRight,
   FileText,
+  Globe,
   LayoutDashboard,
   Menu,
   Package2,
@@ -115,12 +117,14 @@ const navigationSections: NavigationSection[] = [
     items: [
       { to: '/audit-logs', label: 'Audit Logs', translationKey: 'auditLogs', icon: ShieldCheck, requiresRole: 'SUPER_ADMIN', visibilityKey: 'auditLogs' },
       { to: '/users', label: 'Users', icon: Users, requiresAnyRole: ['SUPER_ADMIN', 'ORG_ADMIN'], visibilityKey: 'users' },
+      { to: '/platform/organizations', label: 'Platform Organizations', translationKey: 'platformOrganizations', icon: Globe, requiresRole: 'SUPER_ADMIN' },
+      { to: '/drivers', label: 'Drivers', translationKey: 'drivers', icon: Bike, requiresRole: 'SUPER_ADMIN' },
       { to: '/settings', label: 'Settings', translationKey: 'settings', icon: Settings },
     ],
   },
 ]
 
-const organizationOptionalRoutes = ['/master-catalog', '/organizations', '/settings']
+const organizationOptionalRoutes = ['/master-catalog', '/organizations', '/settings', '/platform', '/drivers']
 
 const routeMeta: RouteMeta[] = [
   {
@@ -295,6 +299,16 @@ const routeMeta: RouteMeta[] = [
     match: /^\/users/,
     titleDefault: 'Users',
     descriptionDefault: 'Manage invited users, workspace roles, and branch-scoped access.',
+  },
+  {
+    match: /^\/platform\/organizations/,
+    titleDefault: 'Platform Organizations',
+    descriptionDefault: 'Cross-organization overview for the platform owner: activity, volume, and health signals across every tenant.',
+  },
+  {
+    match: /^\/drivers/,
+    titleDefault: 'Drivers',
+    descriptionDefault: 'Verify or suspend drivers in the platform-wide delivery pool.',
   },
 ]
 

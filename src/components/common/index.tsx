@@ -531,13 +531,17 @@ export function FilterBar({ children, className }: { children: ReactNode; classN
 
 export function StatusBadge({ value }: { value?: string | null }) {
   const normalized = value?.toLowerCase() ?? ''
-  let tone: 'default' | 'success' | 'warning' | 'danger' | 'muted' = 'default'
+  let tone: 'default' | 'success' | 'warning' | 'danger' | 'muted' | 'info' = 'default'
 
-  if (normalized.includes('active') || normalized.includes('approved') || normalized.includes('delivered') || normalized.includes('paid')) {
+  if (normalized.includes('active') || normalized.includes('approved') || normalized.includes('delivered') || normalized.includes('paid') || normalized.includes('verified')) {
     tone = 'success'
+  } else if (normalized.includes('out_for_delivery')) {
+    // Distinct from READY (warning, below) and CONFIRMED (falls through to default) — a driver
+    // has picked up the order and it's genuinely in transit, not just prepped or newly confirmed.
+    tone = 'info'
   } else if (normalized.includes('pending') || normalized.includes('draft') || normalized.includes('partial') || normalized.includes('ready')) {
     tone = 'warning'
-  } else if (normalized.includes('inactive') || normalized.includes('archived') || normalized.includes('rejected') || normalized.includes('cancelled')) {
+  } else if (normalized.includes('inactive') || normalized.includes('archived') || normalized.includes('rejected') || normalized.includes('cancelled') || normalized.includes('suspended')) {
     tone = 'danger'
   }
 
@@ -689,6 +693,7 @@ export function ConfirmDialog({
   confirmLabel = 'Confirm',
   onConfirm,
   destructive = false,
+  loading = false,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -697,6 +702,10 @@ export function ConfirmDialog({
   confirmLabel?: string
   onConfirm: () => void
   destructive?: boolean
+  // Pass a mutation's `isPending` here so a rapid double-click on the confirm action can't fire
+  // it twice — Radix closes the dialog on click by default, but the click that starts the async
+  // action and the dialog's close animation aren't synchronous, so a second click can still land.
+  loading?: boolean
 }) {
   const { t } = useTranslation('common')
 
@@ -709,10 +718,10 @@ export function ConfirmDialog({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel asChild>
-            <Button variant="outline">{t('cancel')}</Button>
+            <Button variant="outline" disabled={loading}>{t('cancel')}</Button>
           </AlertDialogCancel>
           <AlertDialogAction asChild>
-            <Button variant={destructive ? 'destructive' : 'default'} onClick={onConfirm}>
+            <Button variant={destructive ? 'destructive' : 'default'} loading={loading} onClick={onConfirm}>
               {confirmLabel}
             </Button>
           </AlertDialogAction>
