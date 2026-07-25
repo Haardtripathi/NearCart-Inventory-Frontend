@@ -27,12 +27,17 @@ export const driversKeys = {
 
 // GET /api/drivers?status=VERIFIED — minimal fields (id, fullName, phone, vehicleType) for the
 // sales-order "Assign driver" dropdown. Any shop can see/assign any verified driver (shared pool).
-export function useVerifiedDriversQuery() {
+// `enabled` defaults to true but callers that only need this for a READY, unassigned order (e.g.
+// SalesOrderDetailPage) should pass a scoped condition — otherwise every order-detail page view
+// (including DRAFT/CONFIRMED/DELIVERED orders that will never show the assign-driver UI) fires an
+// unnecessary request.
+export function useVerifiedDriversQuery(enabled = true) {
   return useQuery({
     queryKey: driversKeys.verified,
     queryFn: async () =>
       unwrapResponse<DriverSummary[]>(api.get('/drivers', { params: { status: 'VERIFIED' } })),
     staleTime: 30_000,
+    enabled,
   })
 }
 

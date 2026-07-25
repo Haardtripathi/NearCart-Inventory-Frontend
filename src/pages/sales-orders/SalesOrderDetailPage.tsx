@@ -31,7 +31,11 @@ export function SalesOrderDetailPage() {
   const deliverMutation = useDeliverSalesOrderMutation()
   const markReadyMutation = useMarkSalesOrderReadyMutation()
   const assignDriverMutation = useAssignSalesOrderDriverMutation()
-  const verifiedDriversQuery = useVerifiedDriversQuery()
+  // Only needed once the order is READY and doesn't already have a driver — avoid firing this on
+  // every order-detail view (DRAFT/CONFIRMED/DELIVERED orders never render the assign-driver UI).
+  const verifiedDriversQuery = useVerifiedDriversQuery(
+    orderQuery.data?.status === 'READY' && !orderQuery.data.assignedDriver,
+  )
 
   if (orderQuery.isLoading) {
     return <LoadingState label="Loading sales order..." variant="detail" />
@@ -131,43 +135,58 @@ export function SalesOrderDetailPage() {
               <DetailItem label="Vehicle" value={order.assignedDriver.vehicleType} />
             </DetailGrid>
           ) : order.status === 'READY' ? (
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
-              <div className="w-full sm:max-w-sm">
-                <p className="mb-1.5 text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-slate-400">
+            verifiedDriversQuery.isError ? (
+              <InlineNotice tone="warning">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <span>Verified drivers could not be loaded right now.</span>
+                  <Button size="sm" variant="outline" onClick={() => void verifiedDriversQuery.refetch()}>
+                    Retry
+                  </Button>
+                </div>
+              </InlineNotice>
+            ) : (
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+                <div className="w-full sm:max-w-sm">
+                  <p className="mb-1.5 text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-slate-400">
+                    Assign driver
+                  </p>
+                  <OptionSelect
+                    value={selectedDriverId}
+                    onValueChange={setSelectedDriverId}
+                    placeholder={verifiedDriversQuery.isLoading ? 'Loading drivers...' : 'Select a verified driver'}
+                    options={(verifiedDriversQuery.data ?? []).map((driver) => ({
+                      value: driver.id,
+                      label: `${driver.fullName} · ${driver.phone} · ${driver.vehicleType}`,
+                    }))}
+                    disabled={verifiedDriversQuery.isLoading}
+                  />
+                </div>
+                <Button
+                  disabled={!selectedDriverId}
+                  loading={assignDriverMutation.isPending}
+                  loadingText="Assigning..."
+                  onClick={async () => {
+                    try {
+                      await assignDriverMutation.mutateAsync({ id: order.id, driverId: selectedDriverId })
+                      toast.success('Driver assigned')
+                      setSelectedDriverId('')
+                    } catch {
+                      toast.error('Could not assign driver')
+                    }
+                  }}
+                >
                   Assign driver
-                </p>
-                <OptionSelect
-                  value={selectedDriverId}
-                  onValueChange={setSelectedDriverId}
-                  placeholder={verifiedDriversQuery.isLoading ? 'Loading drivers...' : 'Select a verified driver'}
-                  options={(verifiedDriversQuery.data ?? []).map((driver) => ({
-                    value: driver.id,
-                    label: `${driver.fullName} · ${driver.phone} · ${driver.vehicleType}`,
-                  }))}
-                  disabled={verifiedDriversQuery.isLoading}
-                />
+                </Button>
               </div>
-              <Button
-                disabled={!selectedDriverId}
-                loading={assignDriverMutation.isPending}
-                loadingText="Assigning..."
-                onClick={async () => {
-                  try {
-                    await assignDriverMutation.mutateAsync({ id: order.id, driverId: selectedDriverId })
-                    toast.success('Driver assigned')
-                    setSelectedDriverId('')
-                  } catch {
-                    toast.error('Could not assign driver')
-                  }
-                }}
-              >
-                Assign driver
-              </Button>
-            </div>
+            )
           ) : (
             <InlineNotice>No driver has been assigned to this order.</InlineNotice>
           )}
-          {!order.assignedDriver && order.status === 'READY' && !verifiedDriversQuery.isLoading && (verifiedDriversQuery.data ?? []).length === 0 ? (
+          {!order.assignedDriver &&
+          order.status === 'READY' &&
+          !verifiedDriversQuery.isLoading &&
+          !verifiedDriversQuery.isError &&
+          (verifiedDriversQuery.data ?? []).length === 0 ? (
             <InlineNotice className="mt-4" tone="warning">
               No verified drivers are available yet. Verify a driver from the Drivers page before assigning.
             </InlineNotice>
