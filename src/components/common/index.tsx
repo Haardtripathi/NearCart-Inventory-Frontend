@@ -693,6 +693,7 @@ export function ConfirmDialog({
   confirmLabel = 'Confirm',
   onConfirm,
   destructive = false,
+  loading = false,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -701,6 +702,10 @@ export function ConfirmDialog({
   confirmLabel?: string
   onConfirm: () => void
   destructive?: boolean
+  // Pass a mutation's `isPending` here so a rapid double-click on the confirm action can't fire
+  // it twice — Radix closes the dialog on click by default, but the click that starts the async
+  // action and the dialog's close animation aren't synchronous, so a second click can still land.
+  loading?: boolean
 }) {
   const { t } = useTranslation('common')
 
@@ -713,10 +718,10 @@ export function ConfirmDialog({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel asChild>
-            <Button variant="outline">{t('cancel')}</Button>
+            <Button variant="outline" disabled={loading}>{t('cancel')}</Button>
           </AlertDialogCancel>
           <AlertDialogAction asChild>
-            <Button variant={destructive ? 'destructive' : 'default'} onClick={onConfirm}>
+            <Button variant={destructive ? 'destructive' : 'default'} loading={loading} onClick={onConfirm}>
               {confirmLabel}
             </Button>
           </AlertDialogAction>
