@@ -191,6 +191,12 @@ export const en = {
       ORDER_REJECT: 'Order reject',
       ORDER_DELIVER: 'Order deliver',
       TRANSFER_APPROVE: 'Transfer approve',
+      ORDER_READY: 'Order ready',
+      ORDER_ASSIGN_DRIVER: 'Order assign driver',
+      ORDER_PICKUP: 'Order pickup',
+      DRIVER_REGISTER: 'Driver register',
+      DRIVER_VERIFY: 'Driver verify',
+      DRIVER_SUSPEND: 'Driver suspend',
     },
     membershipStatusValues: {
       ACTIVE: 'Active',

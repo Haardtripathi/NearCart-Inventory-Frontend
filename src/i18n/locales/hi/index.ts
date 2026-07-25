@@ -191,6 +191,12 @@ export const hi = {
       ORDER_REJECT: 'ऑर्डर अस्वीकृति',
       ORDER_DELIVER: 'ऑर्डर डिलीवरी',
       TRANSFER_APPROVE: 'ट्रांसफर अनुमोदन',
+      ORDER_READY: 'ऑर्डर तैयार',
+      ORDER_ASSIGN_DRIVER: 'ड्राइवर असाइन',
+      ORDER_PICKUP: 'ऑर्डर पिकअप',
+      DRIVER_REGISTER: 'ड्राइवर पंजीकरण',
+      DRIVER_VERIFY: 'ड्राइवर सत्यापन',
+      DRIVER_SUSPEND: 'ड्राइवर निलंबन',
     },
     membershipStatusValues: {
       ACTIVE: 'सक्रिय',

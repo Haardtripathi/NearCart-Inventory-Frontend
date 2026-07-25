@@ -99,6 +99,12 @@ export const AUDIT_ACTIONS = [
   'ORDER_REJECT',
   'ORDER_DELIVER',
   'TRANSFER_APPROVE',
+  'ORDER_READY',
+  'ORDER_ASSIGN_DRIVER',
+  'ORDER_PICKUP',
+  'DRIVER_REGISTER',
+  'DRIVER_VERIFY',
+  'DRIVER_SUSPEND',
 ] as const
 export type AuditAction = (typeof AUDIT_ACTIONS)[number]
 
