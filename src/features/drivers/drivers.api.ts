@@ -44,7 +44,11 @@ export function useVerifiedDriversQuery(enabled = true) {
 }
 
 // GET /api/platform/drivers?status=PENDING_VERIFICATION|VERIFIED|SUSPENDED — SUPER_ADMIN only.
-export function usePlatformDriversQuery(status?: DriverStatus | '') {
+// `enabled` mirrors useVerifiedDriversQuery/usePlatformOrganizationsOverviewQuery's pattern:
+// callers should gate this on the SUPER_ADMIN-only permission check so a non-SUPER_ADMIN who
+// reaches the page (e.g. by direct URL — there's no route-level guard) never fires this request,
+// which the backend would 403 anyway.
+export function usePlatformDriversQuery(status?: DriverStatus | '', enabled = true) {
   return useQuery({
     queryKey: driversKeys.platformList(status),
     queryFn: async () =>
@@ -52,6 +56,7 @@ export function usePlatformDriversQuery(status?: DriverStatus | '') {
         api.get('/platform/drivers', { params: { limit: MAX_PAGE_SIZE, ...(status ? { status } : undefined) } }),
       ),
     select: (data) => data.items,
+    enabled,
   })
 }
 

@@ -21,7 +21,7 @@ export function DriversPage() {
   // button shows a loading state instead of every "Verify" button in the list lighting up at once.
   const [verifyingDriverId, setVerifyingDriverId] = useState<string | null>(null)
 
-  const driversQuery = usePlatformDriversQuery(status)
+  const driversQuery = usePlatformDriversQuery(status, permissions.canManageDrivers)
   const verifyMutation = useVerifyDriverMutation()
   const suspendMutation = useSuspendDriverMutation()
 
@@ -133,6 +133,7 @@ export function DriversPage() {
         description={suspendingDriver ? `${suspendingDriver.fullName} will no longer be assignable to orders until re-verified.` : undefined}
         confirmLabel="Suspend"
         destructive
+        loading={suspendMutation.isPending}
         onConfirm={async () => {
           if (!suspendingDriver) {
             return
