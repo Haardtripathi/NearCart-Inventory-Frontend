@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { api, unwrapResponse } from '@/lib/axios'
-import type { Driver, DriverStatus, DriverSummary } from '@/types/common'
+import type { Driver, DriverStatus, DriverSummary, ListState } from '@/types/common'
 
 /**
  * Platform-wide gig-driver pool (Swiggy/Zomato-style) — see PHASE1_REQUIREMENTS.md
@@ -12,13 +12,15 @@ import type { Driver, DriverStatus, DriverSummary } from '@/types/common'
  *  - Platform-admin verification (`usePlatformDriversQuery` + verify/suspend mutations):
  *    Inventory SUPER_ADMIN only.
  *
- * Response shapes for the list endpoints aren't fully pinned down in the contract doc (it
- * documents the field sets, not whether they're paginated). Following the same convention as
- * other platform/admin list endpoints in this codebase (e.g. `/platform/industries`,
- * `/users` directory) that return a plain array rather than a `{ items, pagination }` envelope —
- * flagged in the implementation report so the backend agent's actual shape can be reconciled if
- * it differs.
+ * Response shapes cross-checked directly against the real backend implementation
+ * (platform.service.ts): `GET /drivers` (org-staff dropdown) returns a plain array — no
+ * pagination, it's a `findMany` with no skip/take. `GET /platform/drivers` (platform-admin list)
+ * DOES paginate (`{ items, pagination }`, same shape as every other real paginated list endpoint
+ * in this codebase) — it was previously mistyped here as a plain array, which would have thrown
+ * at render time the first time a SUPER_ADMIN opened this page (`items.map is not a function`
+ * inside DataTable). Requests `limit: MAX_PAGE_SIZE` since DriversPage has no pagination UI yet.
  */
+const MAX_PAGE_SIZE = 100
 
 export const driversKeys = {
   verified: ['drivers', 'verified'] as const,
@@ -46,7 +48,10 @@ export function usePlatformDriversQuery(status?: DriverStatus | '') {
   return useQuery({
     queryKey: driversKeys.platformList(status),
     queryFn: async () =>
-      unwrapResponse<Driver[]>(api.get('/platform/drivers', { params: status ? { status } : undefined })),
+      unwrapResponse<ListState<Driver>>(
+        api.get('/platform/drivers', { params: { limit: MAX_PAGE_SIZE, ...(status ? { status } : undefined) } }),
+      ),
+    select: (data) => data.items,
   })
 }
 
