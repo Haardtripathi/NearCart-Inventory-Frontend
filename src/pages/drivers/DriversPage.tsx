@@ -16,6 +16,10 @@ export function DriversPage() {
   const permissions = usePermissions()
   const [status, setStatus] = useState<DriverStatus | ''>('')
   const [suspendingDriver, setSuspendingDriver] = useState<Driver | null>(null)
+  // verifyMutation is a single shared mutation instance, so its `isPending` flag is global across
+  // every row in the table — track which specific driver is being verified so only that row's
+  // button shows a loading state instead of every "Verify" button in the list lighting up at once.
+  const [verifyingDriverId, setVerifyingDriverId] = useState<string | null>(null)
 
   const driversQuery = usePlatformDriversQuery(status)
   const verifyMutation = useVerifyDriverMutation()
@@ -89,14 +93,18 @@ export function DriversPage() {
                 {driver.status !== 'VERIFIED' ? (
                   <Button
                     size="sm"
-                    loading={verifyMutation.isPending}
+                    loading={verifyMutation.isPending && verifyingDriverId === driver.id}
                     loadingText="Verifying..."
+                    disabled={verifyMutation.isPending && verifyingDriverId !== driver.id}
                     onClick={async () => {
+                      setVerifyingDriverId(driver.id)
                       try {
                         await verifyMutation.mutateAsync(driver.id)
                         toast.success(`${driver.fullName} verified`)
                       } catch (error) {
                         toast.error(parseApiError(error).message)
+                      } finally {
+                        setVerifyingDriverId(null)
                       }
                     }}
                   >
