@@ -219,16 +219,21 @@ export function SalesOrderDetailPage() {
             <Input value={rejectReason} onChange={(event) => setRejectReason(event.target.value)} placeholder={t('rejectionReasonPlaceholder')} />
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setRejectOpen(false)}>Cancel</Button>
-              <Button onClick={async () => {
-                try {
-                  await rejectMutation.mutateAsync({ id: order.id, rejectionReason: rejectReason })
-                  toast.success('Order rejected')
-                  setRejectOpen(false)
-                  setRejectReason('')
-                } catch {
-                  toast.error('Could not reject order')
-                }
-              }}>
+              <Button
+                disabled={!rejectReason.trim()}
+                loading={rejectMutation.isPending}
+                loadingText="Rejecting..."
+                onClick={async () => {
+                  try {
+                    await rejectMutation.mutateAsync({ id: order.id, rejectionReason: rejectReason })
+                    toast.success('Order rejected')
+                    setRejectOpen(false)
+                    setRejectReason('')
+                  } catch {
+                    toast.error('Could not reject order')
+                  }
+                }}
+              >
                 Reject
               </Button>
             </div>
