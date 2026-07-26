@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'react-hot-toast'
 import { useTranslation } from 'react-i18next'
+import { Lock } from 'lucide-react'
 
 import { DetailGrid, DetailItem, ErrorState, InlineNotice, LoadingState, PageHeader, SectionCard } from '@/components/common'
 import { LanguageSwitcher } from '@/components/language/LanguageSwitcher'
@@ -66,16 +67,32 @@ function SidebarPagesSection() {
         <ErrorState description="Sidebar settings could not be loaded right now." onRetry={() => void pageVisibilityQuery.refetch()} />
       ) : (
         <div className="grid gap-3 md:grid-cols-2">
-          {(pageVisibilityQuery.data?.modules ?? []).map((module) => (
-            <CheckboxField
-              key={module.key}
-              label={module.label}
-              description={module.description}
-              checked={pageVisibilityQuery.data?.enabledPages[module.key] ?? module.defaultEnabled}
-              disabled={pendingKey === module.key}
-              onCheckedChange={(checked) => void handleToggle(module.key, module.label, checked)}
-            />
-          ))}
+          {(pageVisibilityQuery.data?.modules ?? []).map((module) =>
+            module.required ? (
+              <div
+                key={module.key}
+                className="flex items-start gap-3 rounded-md border border-slate-200 bg-slate-100 px-4 py-3.5 text-left"
+              >
+                <Lock className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" aria-hidden="true" />
+                <span className="space-y-1">
+                  <span className="flex items-center gap-2 text-sm font-semibold text-slate-800">
+                    {module.label}
+                    <Badge tone="muted">Required</Badge>
+                  </span>
+                  <span className="block text-xs leading-5 text-slate-500">{module.description}</span>
+                </span>
+              </div>
+            ) : (
+              <CheckboxField
+                key={module.key}
+                label={module.label}
+                description={module.description}
+                checked={pageVisibilityQuery.data?.enabledPages[module.key] ?? module.defaultEnabled}
+                disabled={pendingKey === module.key}
+                onCheckedChange={(checked) => void handleToggle(module.key, module.label, checked)}
+              />
+            ),
+          )}
         </div>
       )}
     </SectionCard>

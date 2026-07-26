@@ -214,12 +214,12 @@ export function RegisterOrganizationOwnerPage() {
               <CardContent className="p-6 pt-0 sm:p-8 sm:pt-0">
                 <form className="space-y-6" onSubmit={onSubmit}>
                   <div className="grid gap-6 xl:grid-cols-[1fr_1fr]">
-                    <div className="space-y-4 rounded-[1.6rem] border border-slate-200/80 bg-slate-50/80 p-5 sm:p-6">
+                    <div className="@container space-y-4 rounded-[1.6rem] border border-slate-200/80 bg-slate-50/80 p-5 sm:p-6">
                       <div>
                         <h2 className="text-base font-semibold text-slate-900">{t('register:ownerAccount')}</h2>
                         <p className="mt-1 text-sm text-slate-600">{t('register:ownerAccountDesc')}</p>
                       </div>
-                      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1 2xl:grid-cols-2">
+                      <div className="grid gap-4 @sm:grid-cols-2">
                         <FormField label={t('register:fullName')} error={form.formState.errors.fullName?.message} required>
                           <Input placeholder={t('register:fullNamePlaceholder')} {...form.register('fullName')} />
                         </FormField>
@@ -242,16 +242,16 @@ export function RegisterOrganizationOwnerPage() {
                       </div>
                     </div>
 
-                    <div className="space-y-4 rounded-[1.6rem] border border-slate-200/80 bg-slate-50/80 p-5 sm:p-6">
+                    <div className="@container space-y-4 rounded-[1.6rem] border border-slate-200/80 bg-slate-50/80 p-5 sm:p-6">
                       <div>
                         <h2 className="text-base font-semibold text-slate-900">{t('register:workspaceBasics')}</h2>
                         <p className="mt-1 text-sm text-slate-600">{t('register:workspaceBasicsDesc')}</p>
                       </div>
-                      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1 2xl:grid-cols-2">
-                        <FormField className="md:col-span-2 2xl:col-span-2" label={t('register:organizationName')} error={form.formState.errors.organizationName?.message} required>
+                      <div className="grid gap-4 @sm:grid-cols-2">
+                        <FormField className="@sm:col-span-2" label={t('register:organizationName')} error={form.formState.errors.organizationName?.message} required>
                           <Input placeholder={t('register:organizationNamePlaceholder')} {...form.register('organizationName')} />
                         </FormField>
-                        <FormField className="md:col-span-2 2xl:col-span-2" label={t('register:primaryIndustry')} error={form.formState.errors.primaryIndustryId?.message} required>
+                        <FormField className="@sm:col-span-2" label={t('register:primaryIndustry')} error={form.formState.errors.primaryIndustryId?.message} required>
                           <ControlledSelect
                             control={form.control as never}
                             name="primaryIndustryId"
@@ -279,7 +279,7 @@ export function RegisterOrganizationOwnerPage() {
                         title="Workspace contact details"
                         description="Organization email and phone are optional, so you can finish setup faster on mobile."
                       >
-                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1 2xl:grid-cols-2">
+                        <div className="grid gap-4 @sm:grid-cols-2">
                           <FormField label={t('register:organizationEmail')} error={form.formState.errors.organizationEmail?.message}>
                             <Input placeholder={t('register:organizationEmailPlaceholder')} {...form.register('organizationEmail')} />
                           </FormField>
@@ -291,12 +291,12 @@ export function RegisterOrganizationOwnerPage() {
                     </div>
                   </div>
 
-                  <div className="space-y-4 rounded-[1.6rem] border border-slate-200/80 bg-slate-50/80 p-5 sm:p-6">
+                  <div className="@container space-y-4 rounded-[1.6rem] border border-slate-200/80 bg-slate-50/80 p-5 sm:p-6">
                     <div>
                       <h2 className="text-base font-semibold text-slate-900">{t('register:firstBranch')}</h2>
                       <p className="mt-1 text-sm text-slate-600">{t('register:firstBranchDesc')}</p>
                     </div>
-                    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                    <div className="grid gap-4 @sm:grid-cols-2 @xl:grid-cols-3">
                       <FormField label={t('register:branchName')} error={form.formState.errors.firstBranchName?.message} required>
                         <Input placeholder={t('register:branchNamePlaceholder')} {...form.register('firstBranchName')} />
                       </FormField>
@@ -315,7 +315,7 @@ export function RegisterOrganizationOwnerPage() {
                       title="Branch location and code"
                       description="Branch code and address info are optional for the first pass and can be added later."
                     >
-                      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                      <div className="grid gap-4 @sm:grid-cols-2 @xl:grid-cols-4">
                         <FormField
                           label={t('register:branchCode')}
                           description={t('register:branchCodeHelper')}

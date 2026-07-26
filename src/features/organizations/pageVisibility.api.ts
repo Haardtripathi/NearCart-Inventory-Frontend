@@ -8,6 +8,8 @@ export interface SidebarModuleDefinition {
   label: string
   description: string
   defaultEnabled: boolean
+  /** Required modules can't be hidden — the settings UI renders them locked, with no checkbox. */
+  required: boolean
 }
 
 export interface EnabledPagesResponse {
