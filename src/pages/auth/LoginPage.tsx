@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next'
 import { ArrowRight, BellRing, Boxes, CheckCircle2, Package2, Store } from 'lucide-react'
 
 import { PublicNavbar } from '@/components/layout/PublicNavbar'
-import { useLoginMutation } from '@/features/auth/auth.api'
+import { useLoginMutation, useSendEmailOtpMutation, useVerifyEmailOtpMutation } from '@/features/auth/auth.api'
 import { useAuth } from '@/hooks/useAuth'
 import { BreadcrumbTrail } from '@/components/common'
 import { FormField } from '@/components/forms'
@@ -27,6 +27,8 @@ export function LoginPage() {
   const navigate = useNavigate()
   const { isAuthenticated } = useAuth()
   const loginMutation = useLoginMutation()
+  const sendOtpMutation = useSendEmailOtpMutation()
+  const verifyOtpMutation = useVerifyEmailOtpMutation()
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -35,6 +37,14 @@ export function LoginPage() {
     },
   })
 
+  // Set only when login() 403s specifically because the account isn't verified yet (see
+  // backend auth.service.ts's login() — that's the only 403 it throws, so the status code alone
+  // is a reliable signal). The backend's error message points people at a raw API path
+  // ("Request a new code via /auth/send-otp") that no UI ever called — this inline panel is the
+  // small, targeted fix: let the user actually request + enter that code without leaving login.
+  const [unverifiedEmail, setUnverifiedEmail] = useState<string | null>(null)
+  const [otpCode, setOtpCode] = useState('')
+
   useEffect(() => {
     if (isAuthenticated) {
       navigate('/dashboard', { replace: true })
@@ -42,15 +52,73 @@ export function LoginPage() {
   }, [isAuthenticated, navigate])
 
   const onSubmit = form.handleSubmit(async (values) => {
+    setUnverifiedEmail(null)
+
     try {
       await loginMutation.mutateAsync(values)
       toast.success('Logged in successfully')
       navigate('/dashboard', { replace: true })
     } catch (error) {
-      const { message } = parseApiError(error)
+      const { message, statusCode } = parseApiError(error)
+
+      if (statusCode === 403) {
+        setUnverifiedEmail(values.email)
+        setOtpCode('')
+        sendOtpMutation.mutate(
+          { email: values.email },
+          {
+            onError: (otpError) => {
+              toast.error(parseApiError(otpError).message || 'Unable to send a verification code right now.')
+            },
+          },
+        )
+        return
+      }
+
       toast.error(message || t('auth:invalidCredentials'))
     }
   })
+
+  function handleResendOtp() {
+    if (!unverifiedEmail) return
+
+    sendOtpMutation.mutate(
+      { email: unverifiedEmail },
+      {
+        onSuccess: () => toast.success('A new code has been sent to your email.'),
+        onError: (otpError) => {
+          toast.error(parseApiError(otpError).message || 'Unable to send a verification code right now.')
+        },
+      },
+    )
+  }
+
+  function handleVerifyOtp() {
+    if (!unverifiedEmail || otpCode.trim().length !== 6) return
+
+    verifyOtpMutation.mutate(
+      { email: unverifiedEmail, code: otpCode.trim() },
+      {
+        onSuccess: async () => {
+          toast.success('Email verified — signing you in…')
+          setUnverifiedEmail(null)
+
+          try {
+            await loginMutation.mutateAsync(form.getValues())
+            navigate('/dashboard', { replace: true })
+          } catch (error) {
+            // Verified, but the auto-retry login failed for some other reason (e.g. the
+            // password field changed in the meantime) — fall back to asking them to submit
+            // the form again rather than silently stranding them.
+            toast.error(parseApiError(error).message || 'Verified. Please sign in again.')
+          }
+        },
+        onError: (otpError) => {
+          toast.error(parseApiError(otpError).message || 'Invalid or expired code.')
+        },
+      },
+    )
+  }
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,#eefbf2_0%,#f8fafc_48%,#f3f6fb_100%)]">
@@ -145,6 +213,47 @@ export function LoginPage() {
                     <p>Need a reset link? Ask an organization admin or super admin to generate one for you.</p>
                   </div>
                 </form>
+
+                {unverifiedEmail ? (
+                  <div className="mt-6 space-y-4 rounded-2xl border border-amber-200 bg-amber-50/80 p-5">
+                    <div>
+                      <p className="text-sm font-semibold text-amber-900">Verify your email to sign in</p>
+                      <p className="mt-1 text-sm leading-6 text-amber-800">
+                        We sent a 6-digit code to {unverifiedEmail}. Enter it below to verify your account and
+                        continue signing in.
+                      </p>
+                    </div>
+                    <FormField label="Verification code">
+                      <Input
+                        inputMode="numeric"
+                        maxLength={6}
+                        onChange={(event) => setOtpCode(event.target.value.replace(/\D/g, '').slice(0, 6))}
+                        placeholder="000000"
+                        value={otpCode}
+                      />
+                    </FormField>
+                    <div className="flex flex-wrap items-center gap-3">
+                      <Button
+                        className="rounded-full"
+                        disabled={otpCode.length !== 6}
+                        loading={verifyOtpMutation.isPending}
+                        onClick={handleVerifyOtp}
+                        type="button"
+                      >
+                        Verify & sign in
+                      </Button>
+                      <Button
+                        className="rounded-full"
+                        loading={sendOtpMutation.isPending}
+                        onClick={handleResendOtp}
+                        type="button"
+                        variant="outline"
+                      >
+                        Resend code
+                      </Button>
+                    </div>
+                  </div>
+                ) : null}
               </CardContent>
             </Card>
           </div>
