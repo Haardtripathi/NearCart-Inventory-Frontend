@@ -79,7 +79,7 @@ export function RegisterOrganizationOwnerPage() {
 
   const onSubmit = form.handleSubmit(async (values) => {
     try {
-      await registerMutation.mutateAsync({
+      const data = await registerMutation.mutateAsync({
         fullName: values.fullName.trim(),
         email: values.email.trim(),
         password: values.password,
@@ -104,7 +104,14 @@ export function RegisterOrganizationOwnerPage() {
       })
 
       toast.success(t('register:successMessage'))
-      navigate('/dashboard', { replace: true })
+      // No session is issued at registration anymore — the account still needs email
+      // verification (see auth.service.ts's registerOrganizationOwner). Hand off to the login
+      // page's existing unverified-login OTP panel instead of building a second one here: it
+      // pre-fills the email and auto-sends the code via location state.
+      navigate('/login', {
+        replace: true,
+        state: { justRegisteredEmail: data.email },
+      })
     } catch (error) {
       toast.error(parseApiError(error).message)
     }

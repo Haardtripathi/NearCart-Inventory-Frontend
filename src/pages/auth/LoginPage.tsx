@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
 import { useTranslation } from 'react-i18next'
 import { ArrowRight, BellRing, Boxes, CheckCircle2, Package2, Store } from 'lucide-react'
@@ -22,9 +22,14 @@ const loginSchema = z.object({
 
 type LoginFormValues = z.infer<typeof loginSchema>
 
+interface LoginLocationState {
+  justRegisteredEmail?: string
+}
+
 export function LoginPage() {
   const { t } = useTranslation(['auth'])
   const navigate = useNavigate()
+  const location = useLocation()
   const { isAuthenticated } = useAuth()
   const loginMutation = useLoginMutation()
   const sendOtpMutation = useSendEmailOtpMutation()
@@ -50,6 +55,35 @@ export function LoginPage() {
       navigate('/dashboard', { replace: true })
     }
   }, [isAuthenticated, navigate])
+
+  // RegisterOrganizationOwnerPage no longer gets a session back from registration (the account
+  // isn't email-verified yet — see auth.service.ts's registerOrganizationOwner) — it redirects
+  // here with the just-registered email in location state instead. Reuse this page's existing
+  // unverified-login OTP panel rather than building a second verification UI: pre-fill the email
+  // and fire the same send-otp call the panel below would trigger on a 403, so the user lands
+  // straight on "enter your code" instead of having to fail a login attempt first.
+  useEffect(() => {
+    const state = location.state as { justRegisteredEmail?: string } | null
+    const email = state?.justRegisteredEmail
+
+    if (!email) return
+
+    form.setValue('email', email)
+    setUnverifiedEmail(email)
+    setOtpCode('')
+    sendOtpMutation.mutate(
+      { email },
+      {
+        onError: (otpError) => {
+          toast.error(parseApiError(otpError).message || 'Unable to send a verification code right now.')
+        },
+      },
+    )
+    // Clear the navigation state so a refresh or revisiting /login later doesn't resend it.
+    navigate(location.pathname, { replace: true, state: null })
+    // Intentionally run once on mount only — this consumes one-shot navigation state.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const onSubmit = form.handleSubmit(async (values) => {
     setUnverifiedEmail(null)

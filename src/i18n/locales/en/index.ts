@@ -865,7 +865,7 @@ export const en = {
     signIn: 'Sign in',
     createWorkspace: 'Create workspace',
     creatingWorkspace: 'Creating workspace...',
-    successMessage: 'Workspace created successfully',
+    successMessage: 'Workspace created — verify your email to finish signing in',
     loadingIndustries: 'Loading industries…',
   },
   validation: {

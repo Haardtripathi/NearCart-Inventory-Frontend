@@ -865,7 +865,7 @@ export const hi = {
     signIn: 'साइन इन करें',
     createWorkspace: 'वर्कस्पेस बनाएँ',
     creatingWorkspace: 'वर्कस्पेस बन रहा है...',
-    successMessage: 'वर्कस्पेस सफलतापूर्वक बनाया गया',
+    successMessage: 'वर्कस्पेस बन गया — साइन इन पूरा करने के लिए अपना ईमेल सत्यापित करें',
     loadingIndustries: 'उद्योग लोड हो रहे हैं...',
   },
   validation: {

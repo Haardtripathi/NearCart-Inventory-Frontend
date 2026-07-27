@@ -41,6 +41,20 @@ export interface MeResponse extends AuthUser {
 
 export type AuthSession = LoginResponse
 
+/** POST /auth/register-organization-owner response. Previously this was byte-for-byte the same
+ *  shape as LoginResponse (a working session token, no email verification required) — confirmed
+ *  live as a bug: the token worked immediately against authenticated routes even though the new
+ *  account's emailVerified is false, unlike /auth/login which 403s in that exact case. Fixed
+ *  server-side (auth.service.ts's registerOrganizationOwner) to no longer issue a token at all;
+ *  it now auto-sends the same OTP /auth/send-otp uses and returns this instead, so the client
+ *  must complete /auth/verify-otp and then /auth/login to obtain a real session. */
+export interface RegisterOrganizationOwnerResponse {
+  requiresEmailVerification: true
+  email: string
+  fullName: string
+  organizationId: string
+}
+
 /** POST /auth/send-otp response — unauthenticated (email+code, no session yet), used to let a
  *  self-registered org owner who's blocked at login (403 "please verify your email") request a
  *  fresh code without needing to already be signed in. See auth.service.ts's login()/sendOtp(). */

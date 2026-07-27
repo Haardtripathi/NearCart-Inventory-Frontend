@@ -8,6 +8,7 @@ import type {
   LoginPayload,
   LoginResponse,
   MeResponse,
+  RegisterOrganizationOwnerResponse,
   SendEmailOtpResponse,
   VerifyEmailOtpResponse,
 } from '@/types/auth'
@@ -70,15 +71,14 @@ export function useLoginMutation() {
   })
 }
 
+/** POST /auth/register-organization-owner — no longer returns a session (see
+ *  RegisterOrganizationOwnerResponse). The account is created but `emailVerified: false`, so
+ *  there is nothing to store in the auth store yet; the caller (RegisterOrganizationOwnerPage)
+ *  routes to the login page's existing OTP-verification panel instead. */
 export function useRegisterOrganizationOwnerMutation() {
-  const setSession = useAuthStore((state) => state.setSession)
-
   return useMutation({
     mutationFn: async (payload: RegisterOrganizationOwnerPayload) =>
-      unwrapResponse<LoginResponse>(api.post('/auth/register-organization-owner', payload)),
-    onSuccess: (data) => {
-      setSession(data)
-    },
+      unwrapResponse<RegisterOrganizationOwnerResponse>(api.post('/auth/register-organization-owner', payload)),
   })
 }
 
