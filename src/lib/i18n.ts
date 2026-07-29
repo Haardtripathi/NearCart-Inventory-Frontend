@@ -35,6 +35,7 @@ void i18n
       'customers',
       'branches',
       'units',
+      'taxRates',
       'masterCatalog',
       'settings',
       'validation',

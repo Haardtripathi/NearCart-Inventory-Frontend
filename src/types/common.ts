@@ -269,6 +269,7 @@ export interface TaxRate extends LocalizedRecord {
   rate: string
   isInclusive: boolean
   isActive: boolean
+  translations?: TranslationInput[]
 }
 
 export interface Supplier extends LocalizedRecord {

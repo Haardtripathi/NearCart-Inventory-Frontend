@@ -120,6 +120,12 @@ export const router = createBrowserRouter([
             }),
           },
           {
+            path: 'tax-rates',
+            lazy: async () => ({
+              Component: (await import('@/pages/tax-rates/TaxRatesPage')).TaxRatesPage,
+            }),
+          },
+          {
             path: 'suppliers',
             lazy: async () => ({
               Component: (await import('@/pages/suppliers/SuppliersPage')).SuppliersPage,

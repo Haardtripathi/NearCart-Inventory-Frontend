@@ -12,6 +12,7 @@ import {
   LayoutDashboard,
   Menu,
   Package2,
+  Percent,
   Ruler,
   Settings,
   ShieldCheck,
@@ -98,6 +99,7 @@ const navigationSections: NavigationSection[] = [
       { to: '/categories', label: 'Categories', translationKey: 'categories', icon: Tags, visibilityKey: 'categories' },
       { to: '/brands', label: 'Brands', translationKey: 'brands', icon: Tags, visibilityKey: 'brands' },
       { to: '/units', label: 'Units', translationKey: 'units', icon: Ruler, visibilityKey: 'units' },
+      { to: '/tax-rates', label: 'Tax Rates', translationKey: 'taxRates', icon: Percent, visibilityKey: 'taxRates' },
       { to: '/suppliers', label: 'Suppliers', translationKey: 'suppliers', icon: Truck, visibilityKey: 'suppliers' },
       { to: '/customers', label: 'Customers', translationKey: 'customers', icon: Users, visibilityKey: 'customers' },
     ],
@@ -215,6 +217,11 @@ const routeMeta: RouteMeta[] = [
     match: /^\/suppliers/,
     titleDefault: 'Suppliers',
     descriptionDefault: 'Manage supplier records, contacts, and procurement-ready details.',
+  },
+  {
+    match: /^\/tax-rates/,
+    titleDefault: 'Tax Rates',
+    descriptionDefault: 'Manage tax rates used for product pricing and invoicing.',
   },
   {
     match: /^\/customers/,
