@@ -16,6 +16,17 @@ import { Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogT
 import { getBranchTypeLabel } from '@/lib/labels'
 import { getDisplayName, parseApiError } from '@/lib/utils'
 
+// Raw number inputs post a string (or '' when cleared); coerce to a finite number within range,
+// or `undefined` when left blank so an unset coordinate doesn't get submitted as 0/NaN.
+const optionalCoordinate = (min: number, max: number) =>
+  z.preprocess((value) => {
+    if (value === '' || value === undefined || value === null) {
+      return undefined
+    }
+    const num = typeof value === 'number' ? value : Number(value)
+    return Number.isNaN(num) ? undefined : num
+  }, z.number().min(min).max(max).optional())
+
 const branchSchema = z.object({
   code: z.string().trim().optional(),
   name: z.string().trim().min(1),
@@ -28,8 +39,21 @@ const branchSchema = z.object({
   state: z.string().trim().optional(),
   country: z.string().trim().optional(),
   postalCode: z.string().trim().optional(),
+  // Pickup-point coordinates for nearest-free-driver auto-assignment (see
+  // findNearestFreeDriver in the backend sales-orders service). Optional — a branch with no
+  // coordinates simply can't be auto-matched to a driver yet; the manual assign-driver dropdown
+  // still works either way.
+  latitude: optionalCoordinate(-90, 90),
+  longitude: optionalCoordinate(-180, 180),
   isActive: z.boolean().default(true),
 })
+
+// Explicit input/output split needed because `optionalCoordinate` is a `z.preprocess` schema:
+// its inferred *input* type is `unknown` (required), while its *output* type is `number |
+// undefined` (optional) — without splitting these, the zodResolver's inferred field type collapses
+// to the (wrong) output shape for form state and trips a resolver/Control type mismatch.
+type BranchFormValues = z.input<typeof branchSchema>
+type BranchFormOutput = z.output<typeof branchSchema>
 
 export function BranchesPage() {
   const { t } = useTranslation(['branches', 'common'])
@@ -45,7 +69,7 @@ export function BranchesPage() {
   const createBranchMutation = useCreateBranchMutation()
   const updateBranchMutation = useUpdateBranchMutation()
   const deleteBranchMutation = useDeleteBranchMutation()
-  const form = useForm({
+  const form = useForm<BranchFormValues, undefined, BranchFormOutput>({
     resolver: zodResolver(branchSchema),
     defaultValues: {
       code: '',
@@ -59,6 +83,8 @@ export function BranchesPage() {
       state: '',
       country: '',
       postalCode: '',
+      latitude: '',
+      longitude: '',
       isActive: true,
     },
   })
@@ -99,6 +125,8 @@ export function BranchesPage() {
       state: branch.state ?? '',
       country: branch.country ?? '',
       postalCode: branch.postalCode ?? '',
+      latitude: branch.latitude ?? '',
+      longitude: branch.longitude ?? '',
       isActive: branch.isActive,
     })
     setIsDialogOpen(true)
@@ -190,7 +218,7 @@ export function BranchesPage() {
             </FormField>
             <FormField label={t('branches:type')}>
               <ControlledSelect
-                control={form.control}
+                control={form.control as never}
                 name="type"
                 options={BRANCH_TYPES.map((type) => ({
                   value: type,
@@ -235,6 +263,29 @@ export function BranchesPage() {
                   </FormField>
                   <FormField label={t('common:postalCode')}>
                     <Input placeholder={t('common:postalCodePlaceholder')} {...form.register('postalCode')} />
+                  </FormField>
+                </div>
+              </DisclosurePanel>
+            </div>
+            <div className="md:col-span-2">
+              <DisclosurePanel
+                title={t('branches:pickupLocationTitle')}
+                description={t('branches:pickupLocationDescription')}
+              >
+                <div className="grid gap-4 md:grid-cols-2">
+                  <FormField
+                    label={t('branches:latitude')}
+                    description={t('branches:latitudeHelper')}
+                    error={form.formState.errors.latitude?.message}
+                  >
+                    <Input type="number" step="any" min={-90} max={90} placeholder="19.0760" {...form.register('latitude')} />
+                  </FormField>
+                  <FormField
+                    label={t('branches:longitude')}
+                    description={t('branches:longitudeHelper')}
+                    error={form.formState.errors.longitude?.message}
+                  >
+                    <Input type="number" step="any" min={-180} max={180} placeholder="72.8777" {...form.register('longitude')} />
                   </FormField>
                 </div>
               </DisclosurePanel>

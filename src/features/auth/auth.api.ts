@@ -42,6 +42,8 @@ export interface RegisterOrganizationOwnerPayload {
     state?: string
     country?: string
     postalCode?: string
+    latitude?: number
+    longitude?: number
   }
 }
 

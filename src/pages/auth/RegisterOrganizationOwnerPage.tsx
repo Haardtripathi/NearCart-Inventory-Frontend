@@ -20,6 +20,19 @@ import { getBranchTypeLabel, getLanguageLabel } from '@/lib/labels'
 import { LANGUAGE_LABELS } from '@/lib/locale'
 import { cn, normalizeNullableString, parseApiError } from '@/lib/utils'
 
+// Raw number inputs post a string (or '' when cleared); coerce to a finite number within range,
+// or `undefined` when left blank so an unset coordinate doesn't get submitted as 0/NaN. Kept
+// optional here — a shop owner may not have coordinates handy while signing up and can add them
+// later via the Branches page.
+const optionalCoordinate = (min: number, max: number) =>
+  z.preprocess((value) => {
+    if (value === '' || value === undefined || value === null) {
+      return undefined
+    }
+    const num = typeof value === 'number' ? value : Number(value)
+    return Number.isNaN(num) ? undefined : num
+  }, z.number().min(min).max(max).optional())
+
 const registerSchema = z.object({
   fullName: z.string().trim().min(2),
   email: z.string().trim().email(),
@@ -37,6 +50,8 @@ const registerSchema = z.object({
   state: z.string().trim().optional(),
   country: z.string().trim().optional(),
   postalCode: z.string().trim().optional(),
+  latitude: optionalCoordinate(-90, 90),
+  longitude: optionalCoordinate(-180, 180),
 })
 
 type RegisterFormValues = z.input<typeof registerSchema>
@@ -68,6 +83,8 @@ export function RegisterOrganizationOwnerPage() {
       state: '',
       country: '',
       postalCode: '',
+      latitude: '',
+      longitude: '',
     },
   })
 
@@ -100,6 +117,8 @@ export function RegisterOrganizationOwnerPage() {
           state: normalizeNullableString(values.state) ?? undefined,
           country: normalizeNullableString(values.country) ?? undefined,
           postalCode: normalizeNullableString(values.postalCode) ?? undefined,
+          latitude: values.latitude,
+          longitude: values.longitude,
         },
       })
 
@@ -341,6 +360,27 @@ export function RegisterOrganizationOwnerPage() {
                         </FormField>
                         <FormField label={t('register:postalCode')}>
                           <Input placeholder={t('register:postalCodePlaceholder')} {...form.register('postalCode')} />
+                        </FormField>
+                      </div>
+                    </DisclosurePanel>
+                    <DisclosurePanel
+                      title={t('register:pickupLocationTitle')}
+                      description={t('register:pickupLocationDescription')}
+                    >
+                      <div className="grid gap-4 @sm:grid-cols-2">
+                        <FormField
+                          label={t('register:latitude')}
+                          description={t('register:latitudeHelper')}
+                          error={form.formState.errors.latitude?.message}
+                        >
+                          <Input type="number" step="any" min={-90} max={90} placeholder="19.0760" {...form.register('latitude')} />
+                        </FormField>
+                        <FormField
+                          label={t('register:longitude')}
+                          description={t('register:longitudeHelper')}
+                          error={form.formState.errors.longitude?.message}
+                        >
+                          <Input type="number" step="any" min={-180} max={180} placeholder="72.8777" {...form.register('longitude')} />
                         </FormField>
                       </div>
                     </DisclosurePanel>

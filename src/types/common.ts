@@ -180,6 +180,8 @@ export interface Branch extends LocalizedRecord {
   state?: Nullable<string>
   country?: Nullable<string>
   postalCode?: Nullable<string>
+  latitude?: Nullable<number>
+  longitude?: Nullable<number>
   isActive: boolean
   createdAt?: string
   updatedAt?: string
