@@ -5,7 +5,7 @@ import { Plus } from 'lucide-react'
 
 import { useStockTransfersQuery } from '@/features/stock-transfers/stock-transfers.api'
 import { BranchSelector } from '@/components/inventory/selectors'
-import { DataTable, EmptyState, FilterBar, LoadingState, PageHeader, PaginationControls, SearchInput, StatusBadge } from '@/components/common'
+import { DataTable, EmptyState, ErrorState, FilterBar, LoadingState, PageHeader, PaginationControls, SearchInput, StatusBadge } from '@/components/common'
 import { Button } from '@/components/ui'
 import { formatDateTime } from '@/lib/utils'
 
@@ -26,6 +26,10 @@ export function StockTransfersPage() {
 
   if (transfersQuery.isLoading) {
     return <LoadingState label="Loading stock transfers..." variant="list" />
+  }
+
+  if (transfersQuery.isError) {
+    return <ErrorState description="Stock transfers could not be loaded right now." onRetry={() => void transfersQuery.refetch()} />
   }
 
   return (

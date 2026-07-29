@@ -229,10 +229,13 @@ export interface OrganizationUser {
   passwordSetupRequired: boolean
 }
 
+// The backend intentionally never returns the raw token or a clickable URL for an access link —
+// it's emailed directly to the user instead (see backend users.service.ts serializeAccessLink:
+// returning the raw token in an API response used to let anyone who could see the response set
+// that user's password). Only these three fields are ever present.
 export interface UserAccessLink {
   purpose: UserActionTokenPurpose
-  token: string
-  url: string
+  sentTo: string
   expiresAt: string
 }
 

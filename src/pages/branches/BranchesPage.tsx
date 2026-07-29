@@ -14,14 +14,14 @@ import { ConfirmDialog, DataTable, DisclosurePanel, EmptyState, FilterBar, Loadi
 import { CheckboxField, ControlledSelect, FormField } from '@/components/forms'
 import { Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Input } from '@/components/ui'
 import { getBranchTypeLabel } from '@/lib/labels'
-import { getDisplayName } from '@/lib/utils'
+import { getDisplayName, parseApiError } from '@/lib/utils'
 
 const branchSchema = z.object({
   code: z.string().trim().optional(),
   name: z.string().trim().min(1),
   type: z.enum(BRANCH_TYPES),
   phone: z.string().trim().optional(),
-  email: z.string().trim().optional(),
+  email: z.string().trim().email().optional().or(z.literal('')),
   addressLine1: z.string().trim().optional(),
   addressLine2: z.string().trim().optional(),
   city: z.string().trim().optional(),
@@ -114,8 +114,8 @@ export function BranchesPage() {
         toast.success(t('branches:created'))
       }
       setIsDialogOpen(false)
-    } catch {
-      toast.error(t('branches:saveFailed'))
+    } catch (error) {
+      toast.error(parseApiError(error).message || t('branches:saveFailed'))
     }
   })
 
@@ -178,7 +178,7 @@ export function BranchesPage() {
           <DialogHeader>
             <DialogTitle>{editingBranch ? t('branches:editBranch') : t('branches:addBranch')}</DialogTitle>
             <DialogDescription>
-              {editingBranch ? 'Update the branch details and save your changes.' : 'Enter the branch details and save to create a new branch.'}
+              {editingBranch ? t('branches:editDialogDescription') : t('branches:createDialogDescription')}
             </DialogDescription>
           </DialogHeader>
           <form className="grid gap-4 md:grid-cols-2" onSubmit={onSubmit}>

@@ -149,7 +149,7 @@ export function UnitsPage() {
           <DialogHeader>
             <DialogTitle>{editingUnit ? t('units:editUnit') : t('units:addUnit')}</DialogTitle>
             <DialogDescription>
-              {editingUnit ? 'Update the unit settings and save your changes.' : 'Enter the unit details and save to add a new unit.'}
+              {editingUnit ? t('units:editDialogDescription') : t('units:createDialogDescription')}
             </DialogDescription>
           </DialogHeader>
           <form className="space-y-5" onSubmit={onSubmit}>

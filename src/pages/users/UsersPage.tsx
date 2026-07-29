@@ -13,7 +13,6 @@ import {
   useUpdateOrganizationUserMutation,
 } from '@/features/users/users.api'
 import { useBranchesQuery } from '@/features/branches/branches.api'
-import { useAuth } from '@/hooks/useAuth'
 import { usePermissions } from '@/hooks/usePermissions'
 import {
   DataTable,
@@ -83,7 +82,6 @@ function toBranchAccess(scope: BranchAccessState['scope'], branchIds: string[]):
 export function UsersPage() {
   const { t } = useTranslation(['common', 'register'])
   const permissions = usePermissions()
-  const { role } = useAuth()
   const usersQuery = useOrganizationUsersQuery()
   const branchesQuery = useBranchesQuery({ page: 1, limit: 100 })
   const createUserMutation = useCreateOrganizationUserMutation()
@@ -92,7 +90,7 @@ export function UsersPage() {
   const [search, setSearch] = useState('')
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [editingUser, setEditingUser] = useState<OrganizationUser | null>(null)
-  const [latestAccessLink, setLatestAccessLink] = useState<{ label: string; url: string; expiresAt: string } | null>(null)
+  const [latestAccessLink, setLatestAccessLink] = useState<{ label: string; sentTo: string; expiresAt: string } | null>(null)
 
   const createForm = useForm<CreateUserFormValues, undefined, CreateUserFormOutput>({
     resolver: zodResolver(createUserSchema),
@@ -139,15 +137,17 @@ export function UsersPage() {
     )
   }, [search, usersQuery.data])
 
-  const roleOptions = useMemo(() => {
-    const options = [
+  // This page is already gated on `permissions.canManageUsers` below (SUPER_ADMIN/ORG_ADMIN only),
+  // so every role that can reach this form is allowed to assign any of these three roles — there's
+  // no narrower-permission actor that gets here, unlike a previous version of this ternary implied.
+  const roleOptions = useMemo(
+    () => [
       { value: 'STAFF', label: getUserRoleLabel(t, 'STAFF') },
       { value: 'MANAGER', label: getUserRoleLabel(t, 'MANAGER') },
       { value: 'ORG_ADMIN', label: getUserRoleLabel(t, 'ORG_ADMIN') },
-    ]
-
-    return role === 'SUPER_ADMIN' || role === 'ORG_ADMIN' ? options : options.filter((option) => option.value === 'STAFF')
-  }, [role, t])
+    ],
+    [t],
+  )
 
   const openEdit = (user: OrganizationUser) => {
     setEditingUser(user)
@@ -160,11 +160,6 @@ export function UsersPage() {
       branchScope: user.branchAccess.scope,
       branchIds: user.branchAccess.branchIds,
     })
-  }
-
-  const copyAccessLink = async (url: string) => {
-    await navigator.clipboard.writeText(url)
-    toast.success('Access link copied')
   }
 
   const onCreate = createForm.handleSubmit(async (values) => {
@@ -180,7 +175,7 @@ export function UsersPage() {
       if (result.accessLink) {
         setLatestAccessLink({
           label: result.accessLink.purpose === 'ACCOUNT_SETUP' ? 'Setup link' : 'Reset link',
-          url: result.accessLink.url,
+          sentTo: result.accessLink.sentTo,
           expiresAt: result.accessLink.expiresAt,
         })
       } else {
@@ -251,12 +246,11 @@ export function UsersPage() {
         <InlineNotice tone="success">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <p className="font-semibold text-slate-900">{latestAccessLink.label} ready</p>
-              <p className="mt-1 break-all text-sm">{latestAccessLink.url}</p>
+              <p className="font-semibold text-slate-900">{latestAccessLink.label} sent to {latestAccessLink.sentTo}</p>
+              <p className="mt-1 text-sm">We emailed a secure link directly to this address — it isn't shown here for security reasons.</p>
               <p className="mt-1 text-xs text-slate-500">Expires {formatDateTime(latestAccessLink.expiresAt)}</p>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" onClick={() => void copyAccessLink(latestAccessLink.url)}>Copy link</Button>
               <Button variant="ghost" onClick={() => setLatestAccessLink(null)}>Dismiss</Button>
             </div>
           </div>
@@ -326,7 +320,7 @@ export function UsersPage() {
                       const link = await generateAccessLinkMutation.mutateAsync(user.id)
                       setLatestAccessLink({
                         label: link.purpose === 'ACCOUNT_SETUP' ? 'Setup link' : 'Reset link',
-                        url: link.url,
+                        sentTo: link.sentTo,
                         expiresAt: link.expiresAt,
                       })
                       toast.success('Access link generated')

@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { useAuditLogsQuery } from '@/features/audit/audit.api'
 import { usePermissions } from '@/hooks/usePermissions'
 import { AccessDeniedPage } from '@/pages/errors/AccessDeniedPage'
-import { DataTable, EmptyState, FilterBar, LoadingState, PageHeader, PaginationControls, SearchInput, StatusBadge } from '@/components/common'
+import { DataTable, EmptyState, ErrorState, FilterBar, LoadingState, PageHeader, PaginationControls, SearchInput, StatusBadge } from '@/components/common'
 import { DatePicker, Input, OptionSelect } from '@/components/ui'
 import { AUDIT_ACTIONS, type AuditAction } from '@/types/common'
 import { formatDateForInput, formatDateTime, parseDateValue } from '@/lib/utils'
@@ -36,6 +36,10 @@ export function AuditLogsPage() {
 
   if (auditQuery.isLoading) {
     return <LoadingState label="Loading audit logs..." variant="list" />
+  }
+
+  if (auditQuery.isError) {
+    return <ErrorState description="Audit logs could not be loaded right now." onRetry={() => void auditQuery.refetch()} />
   }
 
   return (

@@ -147,7 +147,13 @@ export function CategoriesPage() {
     }
   })
 
-  if (categoriesQuery.isLoading && categoryTreeQuery.isLoading) {
+  // Both queries load in parallel on mount, and either one can back the currently active view
+  // (the flat list needs categoriesQuery for its own rows *and* for the parent-category picker in
+  // the edit dialog; the tree view needs categoryTreeQuery). Gating on `&&` let whichever one
+  // resolved first render immediately — if the user was on Tree view and only categoriesQuery had
+  // resolved, CategoryTreeView would silently render with an empty items array (its `?? []`
+  // fallback) instead of showing a loading state. Gating on `||` waits for both before painting.
+  if (categoriesQuery.isLoading || categoryTreeQuery.isLoading) {
     return <LoadingState label={t('loadingCategories')} variant="list" />
   }
 
@@ -215,7 +221,7 @@ export function CategoriesPage() {
           <DialogHeader>
             <DialogTitle>{editingCategory ? t('editCategory') : t('addCategory')}</DialogTitle>
             <DialogDescription>
-              {editingCategory ? 'Update the category details and save your changes.' : 'Enter the category details and save to create a new category.'}
+              {editingCategory ? t('categories:editDialogDescription') : t('categories:createDialogDescription')}
             </DialogDescription>
           </DialogHeader>
           <form className="space-y-5" onSubmit={onSubmit}>

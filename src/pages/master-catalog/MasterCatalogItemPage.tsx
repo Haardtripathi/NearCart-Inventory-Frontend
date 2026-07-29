@@ -9,7 +9,7 @@ import { ImportMasterItemDialog } from '@/components/master-catalog/ImportMaster
 import { MasterCatalogCategoryDialog } from '@/components/master-catalog/MasterCatalogCategoryDialog'
 import { MasterCatalogItemDialog } from '@/components/master-catalog/MasterCatalogItemDialog'
 import { IndustryDialog } from '@/components/platform/IndustryDialog'
-import { DataTable, DetailGrid, DetailItem, EmptyState, InlineNotice, LoadingState, PageHeader, SectionCard, StatusBadge } from '@/components/common'
+import { DataTable, DetailGrid, DetailItem, EmptyState, ErrorState, InlineNotice, LoadingState, PageHeader, SectionCard, StatusBadge } from '@/components/common'
 import { Button } from '@/components/ui'
 import { formatNumber, getDisplayName } from '@/lib/utils'
 import { getLanguageLabel } from '@/lib/labels'
@@ -98,6 +98,10 @@ export function MasterCatalogItemPage() {
 
   if (itemQuery.isLoading) {
     return <LoadingState label={t('loadingData', { ns: 'common' })} variant="detail" />
+  }
+
+  if (itemQuery.isError) {
+    return <ErrorState description="This catalog item could not be loaded right now." onRetry={() => void itemQuery.refetch()} />
   }
 
   if (!item) {

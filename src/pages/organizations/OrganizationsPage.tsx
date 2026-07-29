@@ -73,7 +73,7 @@ export function OrganizationsPage() {
   const [industryDialogOpen, setIndustryDialogOpen] = useState(false)
   const [additionalIndustryId, setAdditionalIndustryId] = useState('')
   const [ownerMode, setOwnerMode] = useState<'current' | 'existing' | 'new'>('current')
-  const [latestOwnerAccessLink, setLatestOwnerAccessLink] = useState<{ url: string; expiresAt: string; ownerEmail: string } | null>(null)
+  const [latestOwnerAccessLink, setLatestOwnerAccessLink] = useState<{ expiresAt: string; ownerEmail: string } | null>(null)
 
   const organizations = useMemo(
     () =>
@@ -172,9 +172,8 @@ export function OrganizationsPage() {
 
       setActiveOrganizationId(createdOrganization.id)
 
-      if (createdOrganization.ownerAccessLink?.url && createdOrganization.ownerUser?.email) {
+      if (createdOrganization.ownerAccessLink && createdOrganization.ownerUser?.email) {
         setLatestOwnerAccessLink({
-          url: createdOrganization.ownerAccessLink.url,
           expiresAt: createdOrganization.ownerAccessLink.expiresAt,
           ownerEmail: createdOrganization.ownerUser.email,
         })
@@ -218,26 +217,30 @@ export function OrganizationsPage() {
     <div className="space-y-6">
       <PageHeader eyebrow="Setup" title={t('title')} description={t('description')} />
 
+      {organizationsQuery.isError ? (
+        <InlineNotice tone="warning">
+          Couldn't refresh your organization list from the server — showing your last known memberships instead.{' '}
+          <button
+            type="button"
+            className="font-semibold underline underline-offset-2"
+            onClick={() => void organizationsQuery.refetch()}
+          >
+            Retry
+          </button>
+        </InlineNotice>
+      ) : null}
+
       <InlineNotice>{t('workspaceGuide')}</InlineNotice>
 
       {latestOwnerAccessLink ? (
         <InlineNotice tone="success">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <p className="font-semibold text-slate-900">Owner setup link ready for {latestOwnerAccessLink.ownerEmail}</p>
-              <p className="mt-1 break-all text-sm">{latestOwnerAccessLink.url}</p>
+              <p className="font-semibold text-slate-900">Owner setup link sent to {latestOwnerAccessLink.ownerEmail}</p>
+              <p className="mt-1 text-sm">We emailed a secure setup link directly to this address — it isn't shown here for security reasons.</p>
               <p className="mt-1 text-xs text-slate-500">Expires {latestOwnerAccessLink.expiresAt}</p>
             </div>
             <div className="flex gap-2">
-              <Button
-                variant="outline"
-                onClick={async () => {
-                  await navigator.clipboard.writeText(latestOwnerAccessLink.url)
-                  toast.success('Setup link copied')
-                }}
-              >
-                Copy link
-              </Button>
               <Button variant="ghost" onClick={() => setLatestOwnerAccessLink(null)}>
                 Dismiss
               </Button>

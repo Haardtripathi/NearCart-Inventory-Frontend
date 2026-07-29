@@ -13,12 +13,12 @@ import { ConfirmDialog, DataTable, EmptyState, FilterBar, LoadingState, PageHead
 import { CheckboxField, FormField } from '@/components/forms'
 import { Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Input, Textarea } from '@/components/ui'
 import type { Customer } from '@/types/common'
-import { getDisplayName } from '@/lib/utils'
+import { getDisplayName, parseApiError } from '@/lib/utils'
 
 const customerSchema = z.object({
   name: z.string().trim().min(1),
   phone: z.string().trim().optional(),
-  email: z.string().trim().optional(),
+  email: z.string().trim().email().optional().or(z.literal('')),
   notes: z.string().trim().optional(),
   isActive: z.boolean().default(true),
 })
@@ -73,8 +73,8 @@ export function CustomersPage() {
         toast.success(t('customers:created'))
       }
       setDialogOpen(false)
-    } catch {
-      toast.error(t('customers:saveFailed'))
+    } catch (error) {
+      toast.error(parseApiError(error).message || t('customers:saveFailed'))
     }
   })
 
@@ -122,7 +122,7 @@ export function CustomersPage() {
           <DialogHeader>
             <DialogTitle>{editingCustomer ? t('customers:editCustomer') : t('customers:addCustomer')}</DialogTitle>
             <DialogDescription>
-              {editingCustomer ? 'Update customer details and save your changes.' : 'Enter customer details and save to create a new customer.'}
+              {editingCustomer ? t('customers:editDialogDescription') : t('customers:createDialogDescription')}
             </DialogDescription>
           </DialogHeader>
           <form className="space-y-5" onSubmit={onSubmit}>

@@ -63,7 +63,7 @@ export function LoginPage() {
   // and fire the same send-otp call the panel below would trigger on a 403, so the user lands
   // straight on "enter your code" instead of having to fail a login attempt first.
   useEffect(() => {
-    const state = location.state as { justRegisteredEmail?: string } | null
+    const state = location.state as LoginLocationState | null
     const email = state?.justRegisteredEmail
 
     if (!email) return

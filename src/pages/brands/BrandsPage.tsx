@@ -159,7 +159,7 @@ export function BrandsPage() {
           <DialogHeader>
             <DialogTitle>{editingBrand ? t('brands:editBrand') : t('brands:addBrand')}</DialogTitle>
             <DialogDescription>
-              {editingBrand ? 'Update the brand details and save your changes.' : 'Enter the brand details and save to create a new brand.'}
+              {editingBrand ? t('brands:editDialogDescription') : t('brands:createDialogDescription')}
             </DialogDescription>
           </DialogHeader>
           <form className="space-y-5" onSubmit={onSubmit}>

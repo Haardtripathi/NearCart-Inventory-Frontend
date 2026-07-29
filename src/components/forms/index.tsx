@@ -298,6 +298,7 @@ export function ControlledSelect<
   addActionLabel,
   onAddAction,
   emptyOptionLabel,
+  onValueChange,
 }: {
   control: Control<TFieldValues>
   name: TName
@@ -308,6 +309,10 @@ export function ControlledSelect<
   addActionLabel?: string
   onAddAction?: () => void
   emptyOptionLabel?: string
+  // Fires after the field's own value is committed via field.onChange, from the same real
+  // onValueChange event handler — not a render or effect callback — so callers can safely run
+  // side effects (including setState) that only make sense in response to a genuine user pick.
+  onValueChange?: (value: string) => void
 }) {
   const { t } = useTranslation('common')
   const resolvedPlaceholder = placeholder ?? t('selectOption')
@@ -327,10 +332,12 @@ export function ControlledSelect<
 
             if (value === EMPTY_OPTION_VALUE) {
               field.onChange('')
+              onValueChange?.('')
               return
             }
 
             field.onChange(value)
+            onValueChange?.(value)
           }}
           disabled={disabled}
         >

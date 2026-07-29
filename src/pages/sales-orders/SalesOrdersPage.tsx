@@ -5,7 +5,7 @@ import { Plus } from 'lucide-react'
 
 import { useSalesOrdersQuery } from '@/features/sales-orders/sales-orders.api'
 import { BranchSelector, CurrencyText } from '@/components/inventory/selectors'
-import { DataTable, EmptyState, FilterBar, LoadingState, PageHeader, PaginationControls, SearchInput, StatusBadge } from '@/components/common'
+import { DataTable, EmptyState, ErrorState, FilterBar, LoadingState, PageHeader, PaginationControls, SearchInput, StatusBadge } from '@/components/common'
 import { Button, OptionSelect } from '@/components/ui'
 import { PAYMENT_STATUSES, SALES_ORDER_STATUSES, type PaymentStatus, type SalesOrderStatus } from '@/types/common'
 import { formatDateTime } from '@/lib/utils'
@@ -30,6 +30,10 @@ export function SalesOrdersPage() {
 
   if (ordersQuery.isLoading) {
     return <LoadingState label="Loading sales orders..." variant="list" />
+  }
+
+  if (ordersQuery.isError) {
+    return <ErrorState description="Sales orders could not be loaded right now." onRetry={() => void ordersQuery.refetch()} />
   }
 
   return (

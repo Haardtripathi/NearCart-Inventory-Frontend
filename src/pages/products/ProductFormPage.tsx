@@ -488,11 +488,31 @@ export function ProductFormPage() {
     }
   }, [defaultIndustryId, form, form.formState.isDirty, industriesQuery.data, isEdit])
 
-  useEffect(() => {
-    if (productType === 'SIMPLE' && variantsFieldArray.fields.length > 1) {
-      form.setValue('variants', [form.getValues('variants.0')], { shouldDirty: true })
+  // Switching VARIABLE -> SIMPLE only keeps the first variant in the form. Any other variants that
+  // already exist on the server (they have an `id`) must be queued for deletion the same way the
+  // per-row "Remove" button does (see onRemove below) — otherwise they silently stay active
+  // server-side (still reserving/consuming inventory) even though they vanish from this form and
+  // never get deleted on submit. Run this from the productType select's own onValueChange (a real
+  // event handler) rather than a useEffect reacting to productType/fields.length — calling setState
+  // synchronously inside an effect body is exactly the pattern React (and this repo's lint config)
+  // warns against, and this only ever needs to run in direct response to the user's own pick.
+  const trimVariantsForSimpleType = (nextProductType: string) => {
+    if (nextProductType !== 'SIMPLE' || variantsFieldArray.fields.length <= 1) {
+      return
     }
-  }, [form, productType, variantsFieldArray.fields.length])
+
+    const droppedVariantIds = form
+      .getValues('variants')
+      .slice(1)
+      .map((variant) => variant?.id)
+      .filter((variantId): variantId is string => Boolean(variantId))
+
+    if (droppedVariantIds.length) {
+      setRemovedVariantIds((current) => [...current, ...droppedVariantIds])
+    }
+
+    form.setValue('variants', [form.getValues('variants.0')], { shouldDirty: true })
+  }
 
   const units = useMemo(
     () => unitsQuery.data?.items.map((item) => ({ id: item.id, name: getDisplayName(item, item.name) })) ?? [],
@@ -590,6 +610,7 @@ export function ProductFormPage() {
                 control={form.control}
                 name="productType"
                 options={PRODUCT_TYPES.map((type) => ({ value: type, label: t(`typeValues.${type}`, { defaultValue: type }) }))}
+                onValueChange={trimVariantsForSimpleType}
               />
             </FormField>
             <FormField label={t('category', { ns: 'common' })}>

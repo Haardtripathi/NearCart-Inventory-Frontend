@@ -5,7 +5,7 @@ import { Plus } from 'lucide-react'
 
 import { usePurchasesQuery } from '@/features/purchases/purchases.api'
 import { BranchSelector, CurrencyText } from '@/components/inventory/selectors'
-import { DataTable, EmptyState, FilterBar, LoadingState, PageHeader, PaginationControls, SearchInput, StatusBadge } from '@/components/common'
+import { DataTable, EmptyState, ErrorState, FilterBar, LoadingState, PageHeader, PaginationControls, SearchInput, StatusBadge } from '@/components/common'
 import { Button } from '@/components/ui'
 import { formatDate } from '@/lib/utils'
 
@@ -24,6 +24,10 @@ export function PurchasesPage() {
 
   if (purchasesQuery.isLoading) {
     return <LoadingState label="Loading purchases..." variant="list" />
+  }
+
+  if (purchasesQuery.isError) {
+    return <ErrorState description="Purchases could not be loaded right now." onRetry={() => void purchasesQuery.refetch()} />
   }
 
   return (

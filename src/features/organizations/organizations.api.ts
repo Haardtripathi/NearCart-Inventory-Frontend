@@ -56,7 +56,7 @@ export interface CreatedOrganization extends OrganizationSummary {
     preferredLanguage: LanguageCode
     requiresAccountSetup: boolean
   }
-  ownerAccessLink?: Pick<UserAccessLink, 'purpose' | 'token' | 'url' | 'expiresAt'> | null
+  ownerAccessLink?: Pick<UserAccessLink, 'purpose' | 'expiresAt'> | null
 }
 
 export function useMyOrganizationsQuery() {

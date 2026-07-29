@@ -16,7 +16,7 @@ import {
   SectionCard,
   StatusBadge,
 } from '@/components/common'
-import { formatDateTime } from '@/lib/utils'
+import { formatDateTime, isNotFoundError } from '@/lib/utils'
 
 export function PlatformOrganizationsPage() {
   const { t } = useTranslation(['platform', 'common'])
@@ -57,6 +57,18 @@ export function PlatformOrganizationsPage() {
   }
 
   if (overviewQuery.isError) {
+    // GET /platform/organizations doesn't exist on the backend yet (this page was built ahead of
+    // it — see features/platform/platform.api.ts). A 404 here isn't a transient failure a retry
+    // can fix, so don't offer a Retry button that will just fail again forever; say so plainly.
+    if (isNotFoundError(overviewQuery.error)) {
+      return (
+        <EmptyState
+          title="Platform overview isn't available yet"
+          description="This view depends on a backend endpoint (GET /platform/organizations) that hasn't shipped yet. Nothing is broken on your end — check back once it's deployed."
+        />
+      )
+    }
+
     return <ErrorState description={t('loadFailedDescription')} onRetry={() => void overviewQuery.refetch()} />
   }
 

@@ -88,7 +88,12 @@ const navigationSections: NavigationSection[] = [
     label: 'Catalog',
     translationKey: 'catalogSection',
     items: [
-      { to: '/master-catalog', label: 'Master Catalog', translationKey: 'masterCatalog', icon: BookOpen, requiresRole: 'SUPER_ADMIN', visibilityKey: 'masterCatalog' },
+      // Backend GET /master-catalog/* allows all authenticated org roles (READ_WRITE_STAFF_ROLES =
+      // every UserRole) — only the platform-catalog mutation buttons inside the page are gated to
+      // SUPER_ADMIN (permissions.canManageMasterPlatform). Restricting the nav link itself to
+      // SUPER_ADMIN previously hid it from MANAGER/STAFF even though they're backend-authorized to
+      // browse and import from it.
+      { to: '/master-catalog', label: 'Master Catalog', translationKey: 'masterCatalog', icon: BookOpen, visibilityKey: 'masterCatalog' },
       { to: '/products', label: 'Products', translationKey: 'products', icon: Boxes, visibilityKey: 'products' },
       { to: '/categories', label: 'Categories', translationKey: 'categories', icon: Tags, visibilityKey: 'categories' },
       { to: '/brands', label: 'Brands', translationKey: 'brands', icon: Tags, visibilityKey: 'brands' },

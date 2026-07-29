@@ -12,14 +12,14 @@ import { useDebounce } from '@/hooks/useDebounce'
 import { ConfirmDialog, DataTable, EmptyState, FilterBar, LoadingState, PageHeader, PaginationControls, SearchInput, StatusBadge } from '@/components/common'
 import { CheckboxField, FormField, TranslationFields } from '@/components/forms'
 import { Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Input, Textarea } from '@/components/ui'
-import { getDisplayName } from '@/lib/utils'
+import { getDisplayName, parseApiError } from '@/lib/utils'
 import type { Supplier, TranslationInput } from '@/types/common'
 
 const supplierSchema = z.object({
   name: z.string().trim().min(1),
   code: z.string().trim().optional(),
   phone: z.string().trim().optional(),
-  email: z.string().trim().optional(),
+  email: z.string().trim().email().optional().or(z.literal('')),
   taxNumber: z.string().trim().optional(),
   notes: z.string().trim().optional(),
   isActive: z.boolean().default(true),
@@ -80,8 +80,8 @@ export function SuppliersPage() {
         toast.success(t('suppliers:created'))
       }
       setDialogOpen(false)
-    } catch {
-      toast.error(t('suppliers:saveFailed'))
+    } catch (error) {
+      toast.error(parseApiError(error).message || t('suppliers:saveFailed'))
     }
   })
 
@@ -130,7 +130,7 @@ export function SuppliersPage() {
           <DialogHeader>
             <DialogTitle>{editingSupplier ? t('suppliers:editSupplier') : t('suppliers:addSupplier')}</DialogTitle>
             <DialogDescription>
-              {editingSupplier ? 'Update supplier details and save your changes.' : 'Enter supplier details and save to create a new supplier.'}
+              {editingSupplier ? t('suppliers:editDialogDescription') : t('suppliers:createDialogDescription')}
             </DialogDescription>
           </DialogHeader>
           <form className="space-y-5" onSubmit={onSubmit}>
