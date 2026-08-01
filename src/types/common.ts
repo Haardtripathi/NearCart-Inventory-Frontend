@@ -185,6 +185,15 @@ export interface Branch extends LocalizedRecord {
   isActive: boolean
   createdAt?: string
   updatedAt?: string
+  // Compulsory shop-photo verification (POST /branches/:id/verification/photo) — see
+  // backend/prisma/schema.prisma's ShopVerificationStatus for the state machine.
+  shopPhotoUrl?: Nullable<string>
+  shopPhotoVerificationStatus?: 'NOT_UPLOADED' | 'PENDING_VERIFICATION' | 'VERIFIED' | 'FLAGGED_MISMATCH'
+  shopPhotoClarityOk?: Nullable<boolean>
+  shopPhotoNameDetected?: Nullable<string>
+  shopPhotoNameMatch?: Nullable<boolean>
+  shopPhotoPlaceLocationMatch?: Nullable<boolean>
+  shopPhotoVerificationReasons?: Nullable<string[]>
 }
 
 export interface BranchSummary {

@@ -7,10 +7,11 @@ import { toast } from 'react-hot-toast'
 import { Plus } from 'lucide-react'
 
 import { useBranchesQuery, useCreateBranchMutation, useDeleteBranchMutation, useUpdateBranchMutation } from '@/features/branches/branches.api'
+import { ShopPhotoVerificationPanel } from './ShopPhotoVerificationPanel'
 import { usePermissions } from '@/hooks/usePermissions'
 import { useDebounce } from '@/hooks/useDebounce'
 import { BRANCH_TYPES, type Branch, type BranchType } from '@/types/common'
-import { ConfirmDialog, DataTable, DisclosurePanel, EmptyState, FilterBar, LoadingState, PageHeader, PaginationControls, SearchInput, StatusBadge } from '@/components/common'
+import { ConfirmDialog, DataTable, DisclosurePanel, EmptyState, FilterBar, LoadingState, LocationPickerMap, PageHeader, PaginationControls, SearchInput, StatusBadge } from '@/components/common'
 import { CheckboxField, ControlledSelect, FormField } from '@/components/forms'
 import { Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Input } from '@/components/ui'
 import { getBranchTypeLabel } from '@/lib/labels'
@@ -89,6 +90,10 @@ export function BranchesPage() {
     },
   })
   const isActive = Boolean(useWatch({ control: form.control, name: 'isActive' }))
+  const watchedLatitudeRaw = useWatch({ control: form.control, name: 'latitude' })
+  const watchedLongitudeRaw = useWatch({ control: form.control, name: 'longitude' })
+  const watchedLatitude = typeof watchedLatitudeRaw === 'number' ? watchedLatitudeRaw : undefined
+  const watchedLongitude = typeof watchedLongitudeRaw === 'number' ? watchedLongitudeRaw : undefined
 
   const branches = useMemo(() => branchesQuery.data?.items ?? [], [branchesQuery.data?.items])
 
@@ -272,24 +277,56 @@ export function BranchesPage() {
                 title={t('branches:pickupLocationTitle')}
                 description={t('branches:pickupLocationDescription')}
               >
-                <div className="grid gap-4 md:grid-cols-2">
-                  <FormField
-                    label={t('branches:latitude')}
-                    description={t('branches:latitudeHelper')}
-                    error={form.formState.errors.latitude?.message}
-                  >
-                    <Input type="number" step="any" min={-90} max={90} placeholder="19.0760" {...form.register('latitude')} />
-                  </FormField>
-                  <FormField
-                    label={t('branches:longitude')}
-                    description={t('branches:longitudeHelper')}
-                    error={form.formState.errors.longitude?.message}
-                  >
-                    <Input type="number" step="any" min={-180} max={180} placeholder="72.8777" {...form.register('longitude')} />
-                  </FormField>
+                <div className="space-y-4">
+                  {/* Map pin + search-to-jump is a convenience layered on top of the manual
+                      fields below — it is never the only way to set a branch's location. Picking
+                      a spot here reverse-geocodes into the address fields (still fully editable)
+                      and the lat/lng fields further down. */}
+                  <LocationPickerMap
+                    latitude={watchedLatitude}
+                    longitude={watchedLongitude}
+                    label={t('branches:pickupLocationTitle')}
+                    onLocationChange={(coords, address) => {
+                      form.setValue('latitude', coords.latitude, { shouldDirty: true })
+                      form.setValue('longitude', coords.longitude, { shouldDirty: true })
+                      if (address) {
+                        if (address.addressLine1) form.setValue('addressLine1', address.addressLine1, { shouldDirty: true })
+                        if (address.city) form.setValue('city', address.city, { shouldDirty: true })
+                        if (address.state) form.setValue('state', address.state, { shouldDirty: true })
+                        if (address.country) form.setValue('country', address.country, { shouldDirty: true })
+                        if (address.postalCode) form.setValue('postalCode', address.postalCode, { shouldDirty: true })
+                      }
+                    }}
+                  />
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <FormField
+                      label={t('branches:latitude')}
+                      description={t('branches:latitudeHelper')}
+                      error={form.formState.errors.latitude?.message}
+                    >
+                      <Input type="number" step="any" min={-90} max={90} placeholder="19.0760" {...form.register('latitude')} />
+                    </FormField>
+                    <FormField
+                      label={t('branches:longitude')}
+                      description={t('branches:longitudeHelper')}
+                      error={form.formState.errors.longitude?.message}
+                    >
+                      <Input type="number" step="any" min={-180} max={180} placeholder="72.8777" {...form.register('longitude')} />
+                    </FormField>
+                  </div>
                 </div>
               </DisclosurePanel>
             </div>
+            {editingBranch ? (
+              <div className="md:col-span-2">
+                <DisclosurePanel
+                  title={t('branches:shopPhotoTitle')}
+                  description={t('branches:shopPhotoDescription')}
+                >
+                  <ShopPhotoVerificationPanel branch={editingBranch} />
+                </DisclosurePanel>
+              </div>
+            ) : null}
             <div className="md:col-span-2 flex justify-end gap-2">
               <Button variant="outline" type="button" onClick={() => setIsDialogOpen(false)}>
                 {t('common:cancel')}

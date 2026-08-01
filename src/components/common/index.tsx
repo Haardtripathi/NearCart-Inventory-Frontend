@@ -730,3 +730,5 @@ export function ConfirmDialog({
     </AlertDialog>
   )
 }
+
+export { LocationPickerMap, type ResolvedAddress } from './LocationPickerMap'

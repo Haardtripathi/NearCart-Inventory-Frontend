@@ -65,6 +65,40 @@ export function useUpdateBranchMutation() {
   })
 }
 
+export interface ShopPhotoVerificationResponse {
+  verified: boolean
+  clarityOk: boolean | null
+  nameDetectedInPhoto: string | null
+  nameMatch: boolean | null
+  placeLocationMatch: boolean
+  matchedPlaceCandidates: Array<{ name: string; placeId: string; distanceMeters: number }>
+  photoUrl: string
+  reasons: string[]
+}
+
+/** POST /branches/:id/verification/photo — compulsory shop-photo upload + best-effort AI check. */
+export function useVerifyShopPhotoMutation() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ id, file }: { id: string; file: File }) => {
+      const formData = new FormData()
+      formData.append('photo', file)
+      return unwrapResponse<ShopPhotoVerificationResponse>(
+        api.post(`/branches/${id}/verification/photo`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        }),
+      )
+    },
+    onSuccess: async (_, variables) => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['branches'] }),
+        queryClient.invalidateQueries({ queryKey: ['branches', variables.id] }),
+      ])
+    },
+  })
+}
+
 export function useDeleteBranchMutation() {
   const queryClient = useQueryClient()
 
