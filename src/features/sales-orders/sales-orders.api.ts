@@ -22,6 +22,14 @@ export const salesOrdersKeys = {
   detail: (id: string) => ['sales-orders', id] as const,
 }
 
+// New orders land here via the marketplace bridge / walk-in entry without any action from
+// whoever has this list open — the global QueryClient default (`refetchOnWindowFocus: false`,
+// no interval, see lib/queryClient.ts) meant a staff member watching this screen would never see
+// a new order appear on its own, not even by tabbing back to the browser. Overridden per-query
+// here (not globally) so unrelated screens keep the quieter default. 20s keeps it comfortably
+// above the "avoid sub-10s polling" guidance.
+const SALES_ORDERS_POLL_INTERVAL_MS = 20_000
+
 export function useSalesOrdersQuery(filters: SalesOrderFilters) {
   const activeOrganizationId = useAuthStore((state) => state.activeOrganizationId)
 
@@ -30,6 +38,9 @@ export function useSalesOrdersQuery(filters: SalesOrderFilters) {
     queryFn: async () =>
       unwrapResponse<PaginatedResponse<SalesOrder>>(api.get('/sales-orders', { params: filters })),
     enabled: Boolean(activeOrganizationId),
+    refetchInterval: SALES_ORDERS_POLL_INTERVAL_MS,
+    refetchIntervalInBackground: false,
+    refetchOnWindowFocus: true,
   })
 }
 
@@ -38,6 +49,13 @@ export function useSalesOrderQuery(id?: string) {
     queryKey: salesOrdersKeys.detail(id ?? 'unknown'),
     queryFn: async () => unwrapResponse<SalesOrder>(api.get(`/sales-orders/${id}`)),
     enabled: Boolean(id),
+    // A single order's detail page is exactly where a staff member watches for the next status
+    // change (confirm -> ready -> driver assigned -> out for delivery -> delivered) — same
+    // rationale as the list query above, just a shorter interval since there's only one row to
+    // fetch and the payoff (seeing "driver assigned" appear live) matters more here.
+    refetchInterval: 15_000,
+    refetchIntervalInBackground: false,
+    refetchOnWindowFocus: true,
   })
 }
 

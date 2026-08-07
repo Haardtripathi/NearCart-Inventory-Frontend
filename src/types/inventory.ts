@@ -205,6 +205,20 @@ export interface StockTransferPayload {
   items: StockTransferItem[]
 }
 
+// `type` is intentionally `string`, not a narrow union — the backend's NotificationLogType enum
+// (currently LOW_STOCK/NEW_ORDER) is expected to grow (e.g. auto-assign-failed, driver-arrived)
+// and the UI must render any unrecognized type gracefully rather than break/omit it.
+export interface NotificationLog {
+  id: string
+  organizationId: string
+  type: string
+  title: string
+  body: string
+  data?: Nullable<Record<string, unknown>>
+  readAt?: Nullable<string>
+  createdAt: string
+}
+
 export interface DashboardSummaryCard {
   label: string
   value: number

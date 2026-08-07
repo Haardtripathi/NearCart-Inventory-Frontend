@@ -52,5 +52,10 @@ export function useDashboardQuery() {
     },
     enabled: Boolean(activeOrganizationId),
     staleTime: 30_000,
+    // Surfaces pendingSalesOrders / recentOrders, both order-relevant per the global
+    // refetchOnWindowFocus:false default audit (lib/queryClient.ts). This is an 8-endpoint
+    // fan-out per fetch, so a tab-focus refetch (not a fixed interval) is the appropriate fix
+    // here rather than continuous polling, which would multiply into a lot of backend load.
+    refetchOnWindowFocus: true,
   })
 }

@@ -2,7 +2,7 @@ import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'react-hot-toast'
 
-import { useVerifyShopPhotoMutation, type ShopPhotoVerificationResponse } from '@/features/branches/branches.api'
+import { useBranchQuery, useVerifyShopPhotoMutation, type ShopPhotoVerificationResponse } from '@/features/branches/branches.api'
 import { StatusBadge } from '@/components/common'
 import { Button } from '@/components/ui'
 import type { Branch } from '@/types/common'
@@ -20,9 +20,20 @@ export function ShopPhotoVerificationPanel({ branch }: { branch: Branch }) {
   const [result, setResult] = useState<ShopPhotoVerificationResponse | null>(null)
   const mutation = useVerifyShopPhotoMutation()
 
-  const status = branch.shopPhotoVerificationStatus ?? 'NOT_UPLOADED'
-  const photoUrl = result?.photoUrl ?? branch.shopPhotoUrl
-  const reasons = result?.reasons ?? branch.shopPhotoVerificationReasons ?? []
+  // `branch` is a point-in-time snapshot captured by the parent page when the edit dialog was
+  // opened (see BranchesPage's `editingBranch` state) — it never updates on its own. The upload
+  // mutation's response also doesn't carry the computed `shopPhotoVerificationStatus` (only the
+  // raw AI signals), so without this live query the status badge below would keep showing the
+  // pre-upload value (e.g. "Not uploaded") even right after a successful upload, even though the
+  // photo/reasons (sourced from the mutation response) update immediately. Re-fetching the single
+  // branch here — kept in sync automatically because the mutation invalidates this same query key
+  // — fixes that without needing the dialog to be closed and reopened.
+  const liveBranchQuery = useBranchQuery(branch.id)
+  const liveBranch = liveBranchQuery.data ?? branch
+
+  const status = liveBranch.shopPhotoVerificationStatus ?? 'NOT_UPLOADED'
+  const photoUrl = result?.photoUrl ?? liveBranch.shopPhotoUrl
+  const reasons = result?.reasons ?? liveBranch.shopPhotoVerificationReasons ?? []
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]

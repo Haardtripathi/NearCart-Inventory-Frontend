@@ -29,6 +29,7 @@ import { useTranslation } from 'react-i18next'
 import { Link, Navigate, Outlet, useLocation, useNavigation } from 'react-router-dom'
 
 import { LanguageSwitcher } from '@/components/language/LanguageSwitcher'
+import { NotificationBell } from '@/components/notifications/NotificationBell'
 import { BreadcrumbTrail, LoadingState } from '@/components/common'
 import { Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, OptionSelect, Sheet, SheetContent } from '@/components/ui'
 import { useMyOrganizationsQuery } from '@/features/organizations/organizations.api'
@@ -730,6 +731,8 @@ export function AppShell() {
                 <div className="flex items-center gap-2">
                   <LanguageSwitcher />
 
+                  <NotificationBell />
+
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="outline" className="min-w-[176px] justify-between rounded-full px-3">
@@ -762,19 +765,23 @@ export function AppShell() {
                     <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-emerald-700">NearCart</p>
                     <p className="truncate text-lg font-semibold text-slate-900">{activePageTitle}</p>
                   </div>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button className="shrink-0 rounded-full" size="icon" variant="outline">
-                        <ShieldCheck className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem asChild>
-                        <Link to="/settings">{t('settings', { ns: 'navigation' })}</Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => clearSession()}>{t('logout', { ns: 'navigation' })}</DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  <div className="flex shrink-0 items-center gap-2">
+                    <NotificationBell />
+
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button className="shrink-0 rounded-full" size="icon" variant="outline">
+                          <ShieldCheck className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem asChild>
+                          <Link to="/settings">{t('settings', { ns: 'navigation' })}</Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => clearSession()}>{t('logout', { ns: 'navigation' })}</DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
                 </div>
 
                 {organizationOptions.length ? (
