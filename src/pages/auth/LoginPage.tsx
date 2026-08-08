@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -60,26 +60,32 @@ export function LoginPage() {
   // isn't email-verified yet — see auth.service.ts's registerOrganizationOwner) — it redirects
   // here with the just-registered email in location state instead. Reuse this page's existing
   // unverified-login OTP panel rather than building a second verification UI: pre-fill the email
-  // and fire the same send-otp call the panel below would trigger on a 403, so the user lands
-  // straight on "enter your code" instead of having to fail a login attempt first.
+  // and open the "enter your code" panel directly.
+  //
+  // Bug found 2026-08-08 via real signup UI testing: this used to also fire its own
+  // sendOtpMutation here to email a code — but registerOrganizationOwner() on the backend
+  // (auth.service.ts) already calls sendEmailVerificationOtp() itself as the last step of
+  // registration, before this redirect even happens. That first send is the one that actually
+  // reaches the user's inbox. Firing a second send-otp here almost always hit
+  // OTP_RESEND_COOLDOWN_SECONDS (60s default — nobody takes that long to land on the next page),
+  // so essentially every brand-new signup immediately saw a red "Please wait a bit before
+  // requesting another code" error toast seconds after successfully creating their account, for
+  // no real reason (the first code was already valid and delivered). Just open the panel with the
+  // email pre-filled instead of redundantly re-sending; the existing "Resend code" button still
+  // works normally if the user actually needs a fresh one.
+  const justRegisteredHandledRef = useRef(false)
+
   useEffect(() => {
     const state = location.state as LoginLocationState | null
     const email = state?.justRegisteredEmail
 
-    if (!email) return
+    if (!email || justRegisteredHandledRef.current) return
+    justRegisteredHandledRef.current = true
 
     form.setValue('email', email)
     setUnverifiedEmail(email)
     setOtpCode('')
-    sendOtpMutation.mutate(
-      { email },
-      {
-        onError: (otpError) => {
-          toast.error(parseApiError(otpError).message || 'Unable to send a verification code right now.')
-        },
-      },
-    )
-    // Clear the navigation state so a refresh or revisiting /login later doesn't resend it.
+    // Clear the navigation state so a refresh or revisiting /login later doesn't reopen it.
     navigate(location.pathname, { replace: true, state: null })
     // Intentionally run once on mount only — this consumes one-shot navigation state.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -134,8 +140,25 @@ export function LoginPage() {
       { email: unverifiedEmail, code: otpCode.trim() },
       {
         onSuccess: async () => {
-          toast.success('Email verified — signing you in…')
           setUnverifiedEmail(null)
+
+          // The auto-retry login below only has a real password to submit when the user
+          // typed one into *this* form before hitting the 403 (the "existing account, just
+          // unverified" path). When we got here via RegisterOrganizationOwnerPage's redirect
+          // (see the justRegisteredEmail effect above), only the email was ever populated —
+          // the password never leaves that page/navigation state — so form.getValues().password
+          // is still '' here. Submitting that always 400s Zod's min-8-chars check on /auth/login,
+          // which used to surface as a confusing generic error with no working form. Detect that
+          // case and just hand the (pre-filled-email) form back for the user to type their
+          // password into, instead of guessing at a password we were never given.
+          const password = form.getValues('password')
+
+          if (!password) {
+            toast.success('Email verified! Enter your password below to sign in.')
+            return
+          }
+
+          toast.success('Email verified — signing you in…')
 
           try {
             await loginMutation.mutateAsync(form.getValues())
