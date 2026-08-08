@@ -18,7 +18,7 @@ import { Button, Input, Textarea } from '@/components/ui'
 import { usePermissions } from '@/hooks/usePermissions'
 import { ORDER_SOURCES, PAYMENT_STATUSES } from '@/types/common'
 import type { SalesOrderPayload } from '@/types/inventory'
-import { getDisplayName } from '@/lib/utils'
+import { getDisplayName, parseApiError } from '@/lib/utils'
 import { getOrderSourceLabel, getPaymentStatusLabel } from '@/lib/labels'
 
 const orderItemSchema = z.object({
@@ -97,7 +97,14 @@ function SalesOrderItemRow({
   // Still fully editable afterwards — this only seeds the fields, it doesn't lock them.
   const { data: productDetail } = useProductQuery(productId || undefined)
   const { data: variantsData } = useProductVariantsQuery(productId || undefined)
-  const { data: taxRatesData } = useTaxRatesQuery({ page: 1, limit: 200 })
+  // limit is capped at 100 by the backend's shared pagination schema (paginationQuerySchema in
+  // utils/validation.ts, z.number().max(100)) - requesting 200 here made every tax-rates fetch
+  // on this page 400, which meant taxRatesData never populated and the tax-rate auto-fill below
+  // silently always fell back to 0 (confirmed live: a product with a configured 12% GST rate
+  // still produced a sales order with taxTotal: 0). That's the same symptom commit 682032c
+  // originally set out to fix, just reintroduced by this over-the-cap limit rather than by a
+  // missing auto-fill call.
+  const { data: taxRatesData } = useTaxRatesQuery({ page: 1, limit: 100 })
 
   useEffect(() => {
     if (!variantId) {
@@ -205,8 +212,8 @@ export function SalesOrderCreatePage() {
       const order = await createSalesOrderMutation.mutateAsync(normalizeSalesOrderPayload(values, submitStatus))
       toast.success(`Sales order ${submitStatus === 'DRAFT' ? 'saved as draft' : 'created'}`)
       navigate(`/sales-orders/${order.id}`)
-    } catch {
-      toast.error('Could not create sales order')
+    } catch (error) {
+      toast.error(parseApiError(error).message || 'Could not create sales order')
     }
   })
 

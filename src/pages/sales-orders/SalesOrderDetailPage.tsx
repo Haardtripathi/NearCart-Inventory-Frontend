@@ -16,7 +16,7 @@ import { useVerifiedDriversQuery } from '@/features/drivers/drivers.api'
 import { CurrencyText, QuantityText } from '@/components/inventory/selectors'
 import { DataTable, DetailGrid, DetailItem, EmptyState, ErrorState, InlineNotice, LoadingState, PageHeader, SectionCard, StatusBadge } from '@/components/common'
 import { Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Input, OptionSelect } from '@/components/ui'
-import { formatDateTime } from '@/lib/utils'
+import { formatDateTime, parseApiError } from '@/lib/utils'
 
 export function SalesOrderDetailPage() {
   const { t } = useTranslation('orders')
@@ -64,8 +64,12 @@ export function SalesOrderDetailPage() {
                   try {
                     await confirmMutation.mutateAsync(order.id)
                     toast.success('Order confirmed')
-                  } catch {
-                    toast.error('Could not confirm order')
+                  } catch (error) {
+                    // Confirm commonly fails for a specific, actionable reason (e.g. insufficient
+                    // stock) - surface the backend's real message instead of a generic one that
+                    // leaves staff with no idea what to fix (see parseApiError usage pattern
+                    // already established elsewhere in this app, e.g. LoginPage/ProductFormPage).
+                    toast.error(parseApiError(error).message || 'Could not confirm order')
                   }
                 }}>
                   Confirm
@@ -80,8 +84,8 @@ export function SalesOrderDetailPage() {
                 try {
                   await markReadyMutation.mutateAsync(order.id)
                   toast.success('Order marked ready')
-                } catch {
-                  toast.error('Could not mark order ready')
+                } catch (error) {
+                  toast.error(parseApiError(error).message || 'Could not mark order ready')
                 }
               }}>
                 Mark ready
@@ -92,8 +96,8 @@ export function SalesOrderDetailPage() {
                 try {
                   await cancelMutation.mutateAsync(order.id)
                   toast.success('Order cancelled')
-                } catch {
-                  toast.error('Could not cancel order')
+                } catch (error) {
+                  toast.error(parseApiError(error).message || 'Could not cancel order')
                 }
               }}>
                 Cancel
@@ -104,8 +108,8 @@ export function SalesOrderDetailPage() {
                 try {
                   await deliverMutation.mutateAsync(order.id)
                   toast.success('Order delivered')
-                } catch {
-                  toast.error('Could not deliver order')
+                } catch (error) {
+                  toast.error(parseApiError(error).message || 'Could not deliver order')
                 }
               }}>
                 Deliver
@@ -170,8 +174,8 @@ export function SalesOrderDetailPage() {
                       await assignDriverMutation.mutateAsync({ id: order.id, driverId: selectedDriverId })
                       toast.success('Driver assigned')
                       setSelectedDriverId('')
-                    } catch {
-                      toast.error('Could not assign driver')
+                    } catch (error) {
+                      toast.error(parseApiError(error).message || 'Could not assign driver')
                     }
                   }}
                 >
@@ -229,8 +233,8 @@ export function SalesOrderDetailPage() {
                     toast.success('Order rejected')
                     setRejectOpen(false)
                     setRejectReason('')
-                  } catch {
-                    toast.error('Could not reject order')
+                  } catch (error) {
+                    toast.error(parseApiError(error).message || 'Could not reject order')
                   }
                 }}
               >
