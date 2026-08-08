@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Controller, useFieldArray, useForm, useWatch, type Control, type UseFormSetValue } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -9,6 +9,8 @@ import { useTranslation } from 'react-i18next'
 
 import { useCustomersQuery } from '@/features/customers/customers.api'
 import { useCreateSalesOrderMutation } from '@/features/sales-orders/sales-orders.api'
+import { useProductQuery, useProductVariantsQuery } from '@/features/products/products.api'
+import { useTaxRatesQuery } from '@/features/tax-rates/tax-rates.api'
 import { BranchSelector, ProductSelector, VariantSelector } from '@/components/inventory/selectors'
 import { ControlledSelect, DirtyStatePrompt, FormField } from '@/components/forms'
 import { DisclosurePanel, PageHeader, SectionCard } from '@/components/common'
@@ -82,6 +84,39 @@ function SalesOrderItemRow({
     control,
     name: `items.${index}.productId`,
   })
+  const variantId = useWatch({
+    control,
+    name: `items.${index}.variantId`,
+  })
+
+  // Auto-fill unit price and tax % from the selected variant/product so staff aren't left
+  // manually re-typing values the catalog already knows (previously nothing pre-filled these:
+  // unitPrice always started at 0, and tax % — tucked inside a collapsed "More line details"
+  // panel captioned "optional" — silently stayed 0 unless someone remembered to open it and type
+  // in the product's GST rate by hand, so real orders were being totalled with no tax at all).
+  // Still fully editable afterwards — this only seeds the fields, it doesn't lock them.
+  const { data: productDetail } = useProductQuery(productId || undefined)
+  const { data: variantsData } = useProductVariantsQuery(productId || undefined)
+  const { data: taxRatesData } = useTaxRatesQuery({ page: 1, limit: 200 })
+
+  useEffect(() => {
+    if (!variantId) {
+      return
+    }
+
+    const variant = variantsData?.find((item) => item.id === variantId)
+
+    if (variant) {
+      setValue(`items.${index}.unitPrice`, Number(variant.sellingPrice), { shouldDirty: true })
+    }
+
+    const taxRateId = productDetail?.taxRateId
+    const taxRate = taxRateId ? taxRatesData?.items.find((rate) => rate.id === taxRateId) : undefined
+    setValue(`items.${index}.taxRate`, taxRate ? Number(taxRate.rate) : 0, { shouldDirty: true })
+    // Only re-run when the variant selection itself changes (or once its supporting data lands) —
+    // not on every render, so this seeds the fields on selection without fighting manual edits.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [variantId, variantsData, productDetail, taxRatesData])
 
   return (
     <div className="space-y-4 rounded-md border border-slate-200 bg-slate-50/80 p-4">
