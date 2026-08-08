@@ -42,7 +42,12 @@ export function useDashboardQuery() {
       return {
         totalProducts: totalProducts.pagination.totalItems,
         activeProducts: activeProducts.pagination.totalItems,
+        // `.items` is capped at the `limit: 5` request above (just enough for the preview list) —
+        // confirmed live 2026-08-08: with 6 real low-stock balances in the org, `.items.length`
+        // read 5 while `.pagination.totalItems` correctly read 6. The metric card must use the
+        // latter, not `lowStockItems.length`, or it silently under-reports past 5.
         lowStockItems: lowStockItems.items,
+        lowStockItemsTotal: lowStockItems.pagination.totalItems,
         pendingSalesOrders: pendingSalesOrders.pagination.totalItems,
         totalBranches: totalBranches.pagination.totalItems,
         recentMovements: recentMovements.items,

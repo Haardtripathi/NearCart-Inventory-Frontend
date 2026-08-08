@@ -230,6 +230,10 @@ export interface DashboardState {
   totalProducts: number
   activeProducts: number
   lowStockItems: InventoryBalance[]
+  // True low-stock count across the whole org/branch — `lowStockItems` above is fetched with
+  // `limit: 5` purely to render the "Low stock preview" list, so its `.length` silently caps at 5
+  // even when more items are actually low. See dashboard.api.ts.
+  lowStockItemsTotal: number
   pendingSalesOrders: number
   totalBranches: number
   recentMovements: InventoryLedgerEntry[]

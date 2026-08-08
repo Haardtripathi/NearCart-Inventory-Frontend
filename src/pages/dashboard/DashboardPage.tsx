@@ -75,7 +75,7 @@ export function DashboardPage() {
           const Icon = card.icon
           const value =
             card.key === 'lowStockItems'
-              ? dashboard.lowStockItems.length
+              ? dashboard.lowStockItemsTotal
               : dashboard[card.key]
 
           return (
