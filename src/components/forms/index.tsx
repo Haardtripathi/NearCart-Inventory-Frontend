@@ -336,6 +336,26 @@ export function ControlledSelect<
               return
             }
 
+            // Radix's Select mirrors the current selection into a hidden native <select> for
+            // form/autofill compatibility, and re-syncs that mirror whenever the rendered
+            // SelectItem list changes identity — which happens here on every parent re-render,
+            // since `options` is typically built with an inline `.map()` and gets a fresh array
+            // each time (e.g. while an async query like tax rates/categories/units is still
+            // settling shortly after this field was just populated via `form.reset()` on an edit
+            // page). That re-sync occasionally fires a genuine 'change' event on the native
+            // mirror with nothing selected, which surfaces here as onValueChange('') — even
+            // though no user touched this control. None of our real option values are ever an
+            // empty string (the deliberate "no selection" case always goes through the
+            // EMPTY_OPTION_VALUE sentinel above), so a raw '' reaching this branch is always
+            // this spurious re-sync, never an actual user pick. Ignoring it here previously let
+            // it fall through to field.onChange(''), which silently wiped out a value we'd just
+            // loaded — for a required field (e.g. product type) that blocked saving entirely; for
+            // an optional field (e.g. a product's tax rate) it would save successfully with the
+            // value quietly nulled out.
+            if (value === '') {
+              return
+            }
+
             field.onChange(value)
             onValueChange?.(value)
           }}

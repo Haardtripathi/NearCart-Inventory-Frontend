@@ -176,6 +176,18 @@ export function OptionSelect({
           return
         }
 
+        // See the identical guard in ControlledSelect (src/components/forms/index.tsx) for the
+        // full explanation: Radix's hidden native-<select> mirror can fire a spurious
+        // onValueChange('') when `options` gets a new array identity on a parent re-render
+        // (typically from an inline `.map()`), unrelated to any real user interaction. None of
+        // our real option values are ever an empty string — the deliberate "no selection" case
+        // always goes through the EMPTY_SELECT_VALUE sentinel — so a raw '' here is always that
+        // spurious re-sync, not a genuine pick. Ignore it rather than silently clearing whatever
+        // was selected.
+        if (nextValue === '') {
+          return
+        }
+
         onValueChange(nextValue === EMPTY_SELECT_VALUE ? '' : nextValue)
       }}
       disabled={disabled}
