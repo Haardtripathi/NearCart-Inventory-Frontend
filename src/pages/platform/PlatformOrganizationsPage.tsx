@@ -81,7 +81,7 @@ export function PlatformOrganizationsPage() {
           label={t('totalOrganizations')}
           value={totals.organizations}
           icon={<Building2 className="h-5 w-5" />}
-          tone="bg-sky-50 text-sky-700"
+          tone="bg-primary/10 text-primary"
         />
         <MetricCard
           label={t('activeOrganizations')}

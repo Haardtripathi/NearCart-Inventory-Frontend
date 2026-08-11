@@ -36,11 +36,13 @@ function PublicPageLayout({
   }, [pageDescription, pageTitle])
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,#eefbf2_0%,#f8fafc_48%,#f3f6fb_100%)] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
-      <div className="mx-auto flex max-w-5xl flex-col gap-6">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,#fff7ed_0%,#f8fafc_48%,#f3f6fb_100%)] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+      {/* stagger-in (see index.css) settles the header bar, content card, and footer note in on
+          mount — a small "page has arrived" cue appropriate for a public marketing/legal page. */}
+      <div className="stagger-in mx-auto flex max-w-5xl flex-col gap-6">
         <div className="flex flex-col gap-4 rounded-[1.8rem] border border-white/80 bg-white/90 p-5 shadow-[0_20px_55px_rgba(15,23,42,0.08)] sm:flex-row sm:items-center sm:justify-between sm:p-6">
           <Link className="flex items-center gap-3" to="/">
-            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700">
+            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
               <Package2 className="h-5 w-5" />
             </span>
             <div>
@@ -50,13 +52,13 @@ function PublicPageLayout({
           </Link>
 
           <div className="flex flex-wrap gap-3">
-            <Button asChild variant="outline">
+            <Button asChild variant="outline" className="transition-transform duration-200 ease-out hover:-translate-y-0.5">
               <Link to="/">
                 <ArrowLeft className="h-4 w-4" />
                 Back to home
               </Link>
             </Button>
-            <Button asChild>
+            <Button asChild className="transition-transform duration-200 ease-out hover:-translate-y-0.5">
               <Link to="/login">Login</Link>
             </Button>
           </div>
@@ -64,12 +66,13 @@ function PublicPageLayout({
 
         <Card className="rounded-[2rem] border-white/80 bg-white/92 p-6 shadow-[0_24px_70px_rgba(15,23,42,0.08)] sm:p-8">
           <div className="max-w-3xl space-y-3">
-            <p className="text-[0.72rem] font-semibold uppercase tracking-[0.22em] text-emerald-700">NearCart Inventory</p>
+            <p className="text-[0.72rem] font-semibold uppercase tracking-[0.22em] text-primary">NearCart Inventory</p>
             <h1 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-[2.4rem]">{title}</h1>
             <p className="text-sm leading-7 text-slate-600 sm:text-base">{description}</p>
           </div>
 
-          <div className="mt-8 space-y-6">
+          {/* Nested stagger-in for the sections themselves, one tier behind the outer stagger. */}
+          <div className="stagger-in mt-8 space-y-6">
             {sections.map((section) => (
               <section key={section.title} className="rounded-[1.5rem] border border-slate-200/80 bg-slate-50/80 p-5 sm:p-6">
                 <h2 className="text-lg font-semibold text-slate-900">{section.title}</h2>

@@ -35,7 +35,11 @@ export function FormField({
         {description ? <span className="text-xs leading-5 text-slate-500">{description}</span> : null}
       </div>
       {children}
-      {error ? <span className="text-xs font-medium text-rose-600">{typeof error === 'string' ? error : 'This field is invalid'}</span> : null}
+      {error ? (
+        <span className="animate-field-error text-xs font-medium text-rose-600">
+          {typeof error === 'string' ? error : 'This field is invalid'}
+        </span>
+      ) : null}
     </label>
   )
 }
@@ -61,7 +65,7 @@ export function CheckboxField({
     <label
       htmlFor={id}
       className={cn(
-        'flex items-start gap-3 rounded-md border border-slate-200 bg-slate-50/80 px-4 py-3.5 text-left transition hover:border-emerald-200',
+        'flex items-start gap-3 rounded-md border border-slate-200 bg-slate-50/80 px-4 py-3.5 text-left transition hover:border-primary/40',
         disabled && 'cursor-not-allowed opacity-60',
         className,
       )}

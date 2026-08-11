@@ -592,14 +592,16 @@ export function ProductFormPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="animate-fade-in-up space-y-6">
       <DirtyStatePrompt active={form.formState.isDirty} />
       <PageHeader
         title={isEdit ? t('editTitle') : t('createTitle')}
         description={t('formDescription')}
       />
 
-      <form className="space-y-6" onSubmit={onSubmit}>
+      {/* stagger-in (see index.css) settles the Basic info / Variants sections and the sticky
+          action bar in one after another on mount instead of popping in all at once. */}
+      <form className="stagger-in space-y-6" onSubmit={onSubmit}>
         <SectionCard title={t('basicInfoTitle')} description={t('basicInfoDescription')}>
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             <FormField label={t('name')} error={form.formState.errors.name?.message} required>

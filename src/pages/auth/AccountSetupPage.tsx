@@ -92,7 +92,7 @@ export function AccountSetupPage() {
               {t('activateAccount')}
             </Button>
             <p className="text-center text-sm text-slate-500">
-              {t('alreadyActive')} <Link className="font-semibold text-emerald-700" to="/login">{t('submit')}</Link>
+              {t('alreadyActive')} <Link className="font-semibold text-primary" to="/login">{t('submit')}</Link>
             </p>
           </form>
         </CardContent>

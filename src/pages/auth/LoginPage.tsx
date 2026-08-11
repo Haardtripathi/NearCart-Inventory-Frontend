@@ -178,7 +178,7 @@ export function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,#eefbf2_0%,#f8fafc_48%,#f3f6fb_100%)]">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,#fff5ea_0%,#f8fafc_48%,#f3f6fb_100%)]">
       <PublicNavbar />
 
       <main className="px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
@@ -188,7 +188,7 @@ export function LoginPage() {
           <div className="grid w-full gap-6 lg:grid-cols-[1.02fr_0.98fr] lg:items-start">
             <div className="order-2 space-y-5 lg:order-1">
               <div className="max-w-2xl space-y-4">
-                <div className="inline-flex rounded-full border border-emerald-100 bg-white/90 px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-emerald-700 shadow-sm">
+                <div className="inline-flex rounded-full border border-primary/20 bg-white/90 px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-primary shadow-sm">
                   Welcome back
                 </div>
                 <h1 className="text-[2.2rem] font-semibold tracking-tight text-slate-900 sm:text-[3rem]">
@@ -209,7 +209,7 @@ export function LoginPage() {
 
                   return (
                     <Card key={item.title} className="rounded-[1.5rem] border-white/80 bg-white/88 p-5 shadow-[0_16px_40px_rgba(15,23,42,0.06)]">
-                      <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700">
+                      <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                         <Icon className="h-5 w-5" />
                       </span>
                       <p className="mt-4 text-sm font-semibold text-slate-900">{item.title}</p>
@@ -219,9 +219,9 @@ export function LoginPage() {
                 })}
               </div>
 
-              <Card className="overflow-hidden rounded-[2rem] border-white/80 bg-[linear-gradient(135deg,rgba(255,255,255,0.95),rgba(240,253,244,0.9))] p-6 shadow-[0_24px_55px_rgba(15,23,42,0.08)]">
+              <Card className="overflow-hidden rounded-[2rem] border-white/80 bg-[linear-gradient(135deg,rgba(255,255,255,0.95),rgba(255,244,231,0.9))] p-6 shadow-[0_24px_55px_rgba(15,23,42,0.08)]">
                 <div className="flex items-start gap-4">
-                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-600 text-white shadow-sm shadow-emerald-200">
+                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary text-white shadow-sm shadow-primary/25">
                     <Package2 className="h-5 w-5" />
                   </span>
                   <div>
@@ -233,7 +233,7 @@ export function LoginPage() {
                         'Keep your product list cleaner for your team and your counter.',
                       ].map((item) => (
                         <div key={item} className="flex items-start gap-3">
-                          <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+                          <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                           <p className="text-sm leading-6 text-slate-600">{item}</p>
                         </div>
                       ))}
@@ -245,7 +245,7 @@ export function LoginPage() {
 
             <Card className="order-1 rounded-[2rem] border-white/80 bg-white/94 shadow-[0_28px_70px_rgba(15,23,42,0.08)] lg:order-2">
               <CardHeader className="p-6 pb-4 sm:p-8 sm:pb-4">
-                <div className="inline-flex w-fit rounded-full bg-emerald-600/10 px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-emerald-700">
+                <div className="inline-flex w-fit rounded-full bg-primary/10 px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-primary">
                   NearCart Inventory
                 </div>
                 <CardTitle className="mt-3 text-[1.9rem]">{t('auth:title')}</CardTitle>
@@ -265,7 +265,7 @@ export function LoginPage() {
                   </Button>
                   <div className="space-y-2 text-sm text-slate-500">
                     <p>
-                      New business? <Link className="font-semibold text-emerald-700" to="/register">Create a workspace</Link>
+                      New business? <Link className="font-semibold text-primary" to="/register">Create a workspace</Link>
                     </p>
                     <p>Need a reset link? Ask an organization admin or super admin to generate one for you.</p>
                   </div>

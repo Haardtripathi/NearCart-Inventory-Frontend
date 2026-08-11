@@ -55,7 +55,7 @@ export function ShopPhotoVerificationPanel({ branch }: { branch: Branch }) {
       <div className="flex flex-wrap items-center gap-3">
         <StatusBadge value={status} />
         {photoUrl ? (
-          <a href={photoUrl} target="_blank" rel="noreferrer" className="text-sm text-blue-600 underline">
+          <a href={photoUrl} target="_blank" rel="noreferrer" className="text-sm text-primary underline">
             {t('branches:viewCurrentPhoto')}
           </a>
         ) : (

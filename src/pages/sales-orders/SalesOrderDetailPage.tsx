@@ -74,7 +74,7 @@ export function SalesOrderDetailPage() {
                 }}>
                   Confirm
                 </Button>
-                <Button variant="outline" onClick={() => setRejectOpen(true)}>
+                <Button variant="destructive" onClick={() => setRejectOpen(true)}>
                   Reject
                 </Button>
               </>
@@ -92,7 +92,7 @@ export function SalesOrderDetailPage() {
               </Button>
             ) : null}
             {order.status !== 'CANCELLED' && order.status !== 'REJECTED' && order.status !== 'DELIVERED' && order.status !== 'RETURNED' ? (
-              <Button variant="outline" loading={cancelMutation.isPending} loadingText="Cancelling..." onClick={async () => {
+              <Button variant="destructive" loading={cancelMutation.isPending} loadingText="Cancelling..." onClick={async () => {
                 try {
                   await cancelMutation.mutateAsync(order.id)
                   toast.success('Order cancelled')
@@ -224,6 +224,7 @@ export function SalesOrderDetailPage() {
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setRejectOpen(false)}>Cancel</Button>
               <Button
+                variant="destructive"
                 disabled={!rejectReason.trim()}
                 loading={rejectMutation.isPending}
                 loadingText="Rejecting..."

@@ -459,7 +459,7 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({})
 
   return (
-    <nav className="space-y-2">
+    <nav className="space-y-1">
       {navigationSections.map((section) => {
         const visibleItems = section.items.filter(
           (item) => canAccessNavigationItem(item, currentUserRole) && isNavigationItemVisible(item, enabledPages),
@@ -472,10 +472,10 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
         const isOpen = openSections[section.id] ?? section.id === activeSectionId
 
         return (
-          <div key={section.id} className="space-y-1">
+          <div key={section.id} className="space-y-0.5">
             <button
               type="button"
-              className="flex w-full items-center justify-between rounded-md px-3 py-2 text-[0.8rem] font-semibold uppercase tracking-[0.12em] text-slate-500 transition hover:bg-slate-50 hover:text-slate-700"
+              className="flex w-full items-center justify-between rounded-md px-3 py-2 text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-sidebar-muted transition hover:text-sidebar-foreground"
               onClick={() =>
                 setOpenSections((current) => ({
                   ...current,
@@ -488,7 +488,7 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
             </button>
 
             {isOpen ? (
-              <div className="space-y-1">
+              <div className="space-y-0.5">
                 {visibleItems.map((item) => {
                   const active = isRouteActive(pathname, item.to)
                   const Icon = item.icon
@@ -500,11 +500,11 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
                       onClick={onNavigate}
                       className={
                         active
-                          ? 'flex items-center gap-2.5 rounded-md border border-blue-100 bg-blue-50 px-3 py-2 text-[0.88rem] font-semibold text-blue-700'
-                          : 'flex items-center gap-2.5 rounded-md px-3 py-2 text-[0.88rem] font-medium text-slate-600 transition hover:bg-slate-50 hover:text-slate-900'
+                          ? 'relative flex items-center gap-2.5 rounded-md bg-sidebar-accent px-3 py-2 text-[0.87rem] font-semibold text-sidebar-accent-foreground before:absolute before:left-0 before:top-1/2 before:h-5 before:w-[3px] before:-translate-y-1/2 before:rounded-full before:bg-sidebar-primary'
+                          : 'flex items-center gap-2.5 rounded-md px-3 py-2 text-[0.87rem] font-medium text-sidebar-foreground/80 transition hover:bg-sidebar-accent/60 hover:text-sidebar-foreground'
                       }
                     >
-                      <Icon className={active ? 'h-4 w-4 text-blue-600' : 'h-4 w-4 text-slate-400'} />
+                      <Icon className={active ? 'h-4 w-4 text-sidebar-primary' : 'h-4 w-4 text-sidebar-muted'} />
                       <span className="truncate">{getNavigationLabel(item, t)}</span>
                     </Link>
                   )
@@ -526,14 +526,14 @@ function SidebarContent({
   footer?: ReactNode
 }) {
   return (
-    <div className="flex h-full flex-col bg-white">
-      <div className="flex h-16 items-center gap-3 border-b border-slate-200 px-4">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700">
-          <Package2 className="h-5 w-5" />
+    <div className="flex h-full flex-col bg-sidebar">
+      <div className="flex h-16 items-center gap-3 border-b border-sidebar-border px-4">
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+          <Package2 className="h-4.5 w-4.5" />
         </div>
         <div className="min-w-0">
-          <p className="truncate text-sm font-semibold text-slate-900">NearCart</p>
-          <p className="text-xs text-slate-500">Inventory Console</p>
+          <p className="truncate text-sm font-semibold text-sidebar-accent-foreground">NearCart</p>
+          <p className="text-[0.7rem] text-sidebar-muted">Inventory Console</p>
         </div>
       </div>
 
@@ -541,7 +541,7 @@ function SidebarContent({
         <SidebarNav onNavigate={onNavigate} />
       </div>
 
-      {footer ? <div className="border-t border-slate-200 px-3 py-3">{footer}</div> : null}
+      {footer ? <div className="border-t border-sidebar-border px-3 py-3">{footer}</div> : null}
     </div>
   )
 }
@@ -672,15 +672,15 @@ export function AppShell() {
   }, [activeRouteMeta, t])
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top,#f4fbf7_0%,#f8fafc_46%,#f2f5f9_100%)]">
+    <div className="min-h-screen bg-background">
       <div className="flex min-h-screen">
-        <aside className="hidden h-screen w-[228px] shrink-0 border-r border-slate-200 bg-white lg:sticky lg:top-0 lg:block">
+        <aside className="hidden h-screen w-[228px] shrink-0 lg:sticky lg:top-0 lg:block">
           <SidebarContent />
         </aside>
 
         <div className="min-w-0 flex-1">
           <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
-            <SheetContent side="left" className="w-[300px] max-w-[86vw] border-r border-slate-200 p-0">
+            <SheetContent side="left" className="w-[300px] max-w-[86vw] border-r border-sidebar-border bg-sidebar p-0">
               <SidebarContent
                 onNavigate={() => setMobileNavOpen(false)}
                 footer={(
@@ -706,7 +706,7 @@ export function AppShell() {
                 aria-hidden="true"
                 className={`absolute inset-x-0 top-0 h-1 overflow-hidden transition-opacity ${isNavigating ? 'opacity-100' : 'opacity-0'}`}
               >
-                <div className="h-full w-full origin-left animate-pulse bg-[linear-gradient(90deg,#10b981_0%,#34d399_45%,#bfdbfe_100%)]" />
+                <div className="h-full w-full origin-left animate-pulse bg-[linear-gradient(90deg,#fc8019_0%,#ffa851_45%,#ffe0bd_100%)]" />
               </div>
               <div className="hidden min-h-16 items-center justify-between gap-4 px-5 lg:flex xl:px-6">
                 <div className="flex min-w-0 items-center gap-3">
@@ -737,7 +737,7 @@ export function AppShell() {
                     <DropdownMenuTrigger asChild>
                       <Button variant="outline" className="min-w-[176px] justify-between rounded-full px-3">
                         <span className="flex min-w-0 items-center gap-2">
-                          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-blue-700">
+                          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary">
                             <ShieldCheck className="h-4 w-4" />
                           </span>
                           <span className="min-w-0 text-left">
@@ -762,7 +762,7 @@ export function AppShell() {
               <div className="space-y-3 px-4 py-3 lg:hidden">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-emerald-700">NearCart</p>
+                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-primary">NearCart</p>
                     <p className="truncate text-lg font-semibold text-slate-900">{activePageTitle}</p>
                   </div>
                   <div className="flex shrink-0 items-center gap-2">
@@ -837,7 +837,7 @@ export function AppShell() {
                     to={item.to}
                     className={
                       active
-                        ? 'flex flex-col items-center gap-1 rounded-2xl bg-emerald-50 px-2 py-2 text-emerald-700'
+                        ? 'flex flex-col items-center gap-1 rounded-2xl bg-primary/10 px-2 py-2 text-primary'
                         : 'flex flex-col items-center gap-1 rounded-2xl px-2 py-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-900'
                     }
                   >

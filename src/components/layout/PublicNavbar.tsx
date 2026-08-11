@@ -21,7 +21,7 @@ export function PublicNavbar() {
     <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/88 backdrop-blur">
       <nav className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8" aria-label="Primary">
         <Link className="flex items-center gap-3" to="/">
-          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700 shadow-sm">
+          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-sm">
             <Package2 className="h-5 w-5" />
           </span>
           <div className="min-w-0">
@@ -57,7 +57,7 @@ export function PublicNavbar() {
             <div className="flex h-full flex-col">
               <div className="border-b border-slate-200 px-5 py-5">
                 <Link className="flex items-center gap-3" to="/">
-                  <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700">
+                  <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                     <Package2 className="h-5 w-5" />
                   </span>
                   <div>
@@ -71,7 +71,7 @@ export function PublicNavbar() {
                 {navigationLinks.map((item) => (
                   <a
                     key={item.label}
-                    className="flex items-center justify-between rounded-2xl border border-slate-200/80 bg-slate-50/80 px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-emerald-200 hover:bg-emerald-50/60 hover:text-slate-900"
+                    className="flex items-center justify-between rounded-2xl border border-slate-200/80 bg-slate-50/80 px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-primary/30 hover:bg-primary/5 hover:text-slate-900"
                     href={resolveSectionHref(pathname, item.hash)}
                   >
                     <span>{item.label}</span>

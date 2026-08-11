@@ -6,29 +6,52 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color-scheme: light;
-  --background: #f6faf8;
-  --foreground: #0f172a;
-  --card: rgba(255, 255, 255, 0.92);
-  --card-foreground: #0f172a;
+
+  /* ---- Core surface tokens ---- */
+  --background: #f6f7f9;
+  --foreground: #14171f;
+  --card: #ffffff;
+  --card-foreground: #14171f;
   --popover: #ffffff;
-  --popover-foreground: #0f172a;
-  --primary: #4338ca;
-  --primary-foreground: #f5f3ff;
-  --secondary: #eef2ff;
-  --secondary-foreground: #0f172a;
-  --muted: #eff4f8;
-  --muted-foreground: #5f6f83;
-  --accent: #f59e0b;
-  --accent-foreground: #0f172a;
+  --popover-foreground: #14171f;
+
+  /* ---- Brand: NearCart orange (shared with the customer app), used for primary CTAs,
+     active nav states, and focus rings. Everything else in this back-office stays a cool
+     neutral slate so the brand color reads as an accent, not a background wash. ---- */
+  --primary: #fc8019;
+  --primary-hover: #e56f0d;
+  --primary-foreground: #fffaf5;
+
+  --secondary: #eef1f6;
+  --secondary-foreground: #14171f;
+  --muted: #f1f3f7;
+  --muted-foreground: #64748b;
+  --accent: #fff1e2;
+  --accent-foreground: #9a4b0b;
   --destructive: #e11d48;
   --destructive-foreground: #fff7f9;
-  --border: rgba(148, 163, 184, 0.24);
-  --input: rgba(148, 163, 184, 0.32);
-  --ring: rgba(67, 56, 202, 0.3);
-  --radius: 1.15rem;
+
+  --border: rgba(20, 23, 31, 0.09);
+  --input: rgba(20, 23, 31, 0.14);
+  --ring: rgba(252, 128, 25, 0.45);
+
+  --radius: 0.7rem;
   --shadow-soft:
-    0 24px 60px rgba(15, 23, 42, 0.07),
-    0 10px 24px rgba(15, 23, 42, 0.04);
+    0 20px 45px rgba(15, 23, 42, 0.06),
+    0 6px 16px rgba(15, 23, 42, 0.04);
+
+  /* ---- Sidebar chrome: dark slate, deliberately NOT the warm orange-tinted background the
+     consumer app uses — this should read as "professional back-office". Orange only shows up
+     as the active-item accent. ---- */
+  --sidebar: #171b26;
+  --sidebar-foreground: #cbd2e1;
+  --sidebar-primary: #fc8019;
+  --sidebar-primary-foreground: #1a0e02;
+  --sidebar-accent: #232837;
+  --sidebar-accent-foreground: #f6f7f9;
+  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar-ring: rgba(252, 128, 25, 0.5);
+  --sidebar-muted: #7a8194;
 }
 
 @theme inline {
@@ -39,6 +62,7 @@
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
@@ -51,8 +75,17 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --radius-sm: calc(var(--radius) - 6px);
-  --radius-md: calc(var(--radius) - 3px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-muted: var(--sidebar-muted);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 6px);
 }
@@ -65,14 +98,14 @@
 
   html {
     scroll-behavior: smooth;
-    background: #f5f7fb;
+    background: var(--background);
   }
 
   body {
     @apply bg-background text-foreground;
     margin: 0;
     min-height: 100vh;
-    background: #f5f7fb;
+    background: var(--background);
   }
 
   #root {
@@ -100,7 +133,153 @@
   }
 
   ::selection {
-    background: rgba(15, 157, 114, 0.22);
-    color: #064e3b;
+    background: rgba(252, 128, 25, 0.22);
+    color: #7a3a0a;
+  }
+}
+
+/* ---- Motion utilities ----
+   Subtle, functional entrance/feedback animation for a data-dense back-office tool — never
+   decorative, never in the way of rapid review/entry. Everything here is opt-in via a class name
+   (nothing animates just because it exists in the DOM) and stays in the 150-300ms range. See
+   `prefers-reduced-motion` block at the bottom, which is the single source of truth for turning
+   all of this off — individual rules below don't need their own reduced-motion guards. */
+@layer utilities {
+  @keyframes fade-in-up {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fade-in-down {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes field-error-in {
+    from {
+      opacity: 0;
+      transform: translateY(-3px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in-up {
+    animation: fade-in-up 280ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .animate-fade-in-down {
+    animation: fade-in-down 280ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .animate-fade-in {
+    animation: fade-in 200ms ease-out both;
+  }
+
+  .animate-field-error {
+    animation: field-error-in 180ms ease-out both;
+  }
+
+  /* Staggered entrance for a short run of direct-child blocks — page sections, form
+     SectionCards, etc. Capped at 5 explicit steps; anything past that settles at the same last
+     delay rather than growing unbounded, so a long page never feels slow to finish appearing. */
+  .stagger-in > * {
+    animation: fade-in-up 280ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  .stagger-in > *:nth-child(1) {
+    animation-delay: 0ms;
+  }
+  .stagger-in > *:nth-child(2) {
+    animation-delay: 60ms;
+  }
+  .stagger-in > *:nth-child(3) {
+    animation-delay: 120ms;
+  }
+  .stagger-in > *:nth-child(4) {
+    animation-delay: 180ms;
+  }
+  .stagger-in > *:nth-child(n + 5) {
+    animation-delay: 240ms;
+  }
+
+  /* Staggered row entrance for DataTable (components/common/index.tsx) — targets its two layout
+     variants (mobile card grid + desktop table body) by structural selector so DataTable itself
+     stays untouched. Because this is a static class (not toggled per render), it only plays when
+     rows are actually inserted into the DOM — pagination, filtering, initial load. A background
+     refetch that resolves to the same row keys updates cell text in place without unmounting the
+     row, so it never replays here. Capped at 9 explicit steps for the same reason as .stagger-in. */
+  .rows-animate-in tbody tr,
+  .rows-animate-in .grid.gap-3.md\:hidden > * {
+    animation: fade-in-up 260ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  .rows-animate-in tbody tr:nth-child(1),
+  .rows-animate-in .grid.gap-3.md\:hidden > *:nth-child(1) {
+    animation-delay: 0ms;
+  }
+  .rows-animate-in tbody tr:nth-child(2),
+  .rows-animate-in .grid.gap-3.md\:hidden > *:nth-child(2) {
+    animation-delay: 25ms;
+  }
+  .rows-animate-in tbody tr:nth-child(3),
+  .rows-animate-in .grid.gap-3.md\:hidden > *:nth-child(3) {
+    animation-delay: 50ms;
+  }
+  .rows-animate-in tbody tr:nth-child(4),
+  .rows-animate-in .grid.gap-3.md\:hidden > *:nth-child(4) {
+    animation-delay: 75ms;
+  }
+  .rows-animate-in tbody tr:nth-child(5),
+  .rows-animate-in .grid.gap-3.md\:hidden > *:nth-child(5) {
+    animation-delay: 100ms;
+  }
+  .rows-animate-in tbody tr:nth-child(6),
+  .rows-animate-in .grid.gap-3.md\:hidden > *:nth-child(6) {
+    animation-delay: 125ms;
+  }
+  .rows-animate-in tbody tr:nth-child(7),
+  .rows-animate-in .grid.gap-3.md\:hidden > *:nth-child(7) {
+    animation-delay: 150ms;
+  }
+  .rows-animate-in tbody tr:nth-child(8),
+  .rows-animate-in .grid.gap-3.md\:hidden > *:nth-child(8) {
+    animation-delay: 175ms;
+  }
+  .rows-animate-in tbody tr:nth-child(n + 9),
+  .rows-animate-in .grid.gap-3.md\:hidden > *:nth-child(n + 9) {
+    animation-delay: 200ms;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
   }
 }

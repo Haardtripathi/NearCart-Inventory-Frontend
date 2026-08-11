@@ -126,7 +126,7 @@ export function ProductDetailPage() {
           <div className="space-y-3">
             {visibleTranslations.map((translation) => (
               <div key={translation.language} className="rounded-md border border-slate-200 bg-slate-50/80 p-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{translation.language}</p>
+                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-400">{translation.language}</p>
                 <p className="mt-2 font-medium text-slate-900">{translation.name}</p>
                 {translation.description ? <p className="mt-1 text-sm text-slate-600">{translation.description}</p> : null}
               </div>

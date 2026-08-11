@@ -43,7 +43,7 @@ export function AuditLogsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="animate-fade-in-up space-y-6">
       <PageHeader
         title="Audit logs"
         description="Read-only activity history for organization actions, stock posting, and key workflow changes."
@@ -86,19 +86,24 @@ export function AuditLogsPage() {
           placeholder={t('endDate')}
         />
       </FilterBar>
-      <DataTable
-        columns={[
-          { key: 'time', header: 'Time', render: (log) => formatDateTime(log.createdAt) },
-          { key: 'action', header: 'Action', render: (log) => <StatusBadge value={log.action} /> },
-          { key: 'entityType', header: 'Entity type', render: (log) => log.entityType },
-          { key: 'entityId', header: 'Entity ID', render: (log) => log.entityId ?? '—' },
-          { key: 'actor', header: 'Actor', render: (log) => log.actorUser?.fullName ?? log.actorUser?.email ?? 'System' },
-          { key: 'meta', header: 'Meta preview', render: (log) => <span className="text-xs text-slate-500">{JSON.stringify(log.meta ?? {}).slice(0, 90) || '—'}</span> },
-        ]}
-        items={auditQuery.data?.items ?? []}
-        empty={<EmptyState title="No audit logs found" description="Try adjusting your filters or confirm that audit data exists for this organization." />}
-        rowKey={(log) => log.id}
-      />
+      {/* rows-animate-in (see index.css) staggers each row's entrance — plays on genuine list
+          swaps (pagination/filter change/initial load, since those change every row's key) but
+          not on an in-place background refetch of the same page, which never unmounts a row. */}
+      <div className="rows-animate-in">
+        <DataTable
+          columns={[
+            { key: 'time', header: 'Time', render: (log) => formatDateTime(log.createdAt) },
+            { key: 'action', header: 'Action', render: (log) => <StatusBadge value={log.action} /> },
+            { key: 'entityType', header: 'Entity type', render: (log) => log.entityType },
+            { key: 'entityId', header: 'Entity ID', render: (log) => log.entityId ?? '—' },
+            { key: 'actor', header: 'Actor', render: (log) => log.actorUser?.fullName ?? log.actorUser?.email ?? 'System' },
+            { key: 'meta', header: 'Meta preview', render: (log) => <span className="text-xs text-slate-500">{JSON.stringify(log.meta ?? {}).slice(0, 90) || '—'}</span> },
+          ]}
+          items={auditQuery.data?.items ?? []}
+          empty={<EmptyState title="No audit logs found" description="Try adjusting your filters or confirm that audit data exists for this organization." />}
+          rowKey={(log) => log.id}
+        />
+      </div>
       <PaginationControls pagination={auditQuery.data?.pagination} onPageChange={setPage} />
     </div>
   )

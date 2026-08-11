@@ -66,7 +66,7 @@ function NotificationRow({
       onClick={() => onOpen(notification)}
       className={cn(
         'flex w-full items-start gap-3 rounded-md px-3 py-2.5 text-left transition hover:bg-slate-50',
-        isUnread ? 'bg-emerald-50/60' : 'bg-white',
+        isUnread ? 'bg-primary/5' : 'bg-white',
       )}
     >
       <span className={cn('mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full', className)}>
@@ -78,7 +78,7 @@ function NotificationRow({
           <span className={cn('truncate text-sm', isUnread ? 'font-semibold text-slate-900' : 'font-medium text-slate-600')}>
             {notification.title || notification.type}
           </span>
-          {isUnread ? <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-emerald-500" aria-hidden="true" /> : null}
+          {isUnread ? <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-primary" aria-hidden="true" /> : null}
         </span>
         {/* Always render the raw body text, even for a type this UI has no special handling for —
             this is the fallback that guarantees an unrecognized notification type never shows a
@@ -132,7 +132,7 @@ export function NotificationBell() {
           <Button
             variant="ghost"
             size="sm"
-            className="h-auto px-2 py-1 text-xs font-semibold text-emerald-700 hover:bg-emerald-50"
+            className="h-auto px-2 py-1 text-xs font-semibold text-primary hover:bg-primary/10"
             disabled={unreadCount === 0 || markAllReadMutation.isPending}
             onClick={() => markAllReadMutation.mutate()}
           >

@@ -137,7 +137,7 @@ export function RegisterOrganizationOwnerPage() {
   })
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,#eefbf2_0%,#f8fafc_48%,#f3f6fb_100%)]">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,#fff5ea_0%,#f8fafc_48%,#f3f6fb_100%)]">
       <PublicNavbar />
 
       <main className="px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
@@ -147,7 +147,7 @@ export function RegisterOrganizationOwnerPage() {
           <div className="grid gap-6 lg:grid-cols-[0.86fr_1.14fr] lg:items-start">
             <div className="space-y-5 lg:sticky lg:top-24">
               <div className="space-y-4">
-                <div className="inline-flex rounded-full border border-emerald-100 bg-white/90 px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-emerald-700 shadow-sm">
+                <div className="inline-flex rounded-full border border-primary/20 bg-white/90 px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-primary shadow-sm">
                   Start your workspace
                 </div>
                 <h1 className="text-[2.1rem] font-semibold tracking-tight text-slate-900 sm:text-[2.8rem]">
@@ -169,7 +169,7 @@ export function RegisterOrganizationOwnerPage() {
 
                     return (
                       <div key={item.title} className="flex items-start gap-4 rounded-[1.3rem] border border-slate-200/80 bg-slate-50/80 p-4">
-                        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700">
+                        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                           <Icon className="h-5 w-5" />
                         </span>
                         <div>
@@ -182,7 +182,7 @@ export function RegisterOrganizationOwnerPage() {
                 </div>
               </Card>
 
-              <Card className="rounded-[2rem] border-white/80 bg-[linear-gradient(135deg,rgba(255,255,255,0.96),rgba(240,253,244,0.9))] p-6 shadow-[0_20px_55px_rgba(15,23,42,0.07)]">
+              <Card className="rounded-[2rem] border-white/80 bg-[linear-gradient(135deg,rgba(255,255,255,0.96),rgba(255,244,231,0.9))] p-6 shadow-[0_20px_55px_rgba(15,23,42,0.07)]">
                 <p className="text-sm font-semibold text-slate-900">Helpful for local businesses like:</p>
                 <div className="mt-4 flex flex-wrap gap-2.5">
                   {['Kirana', 'Pharmacy', 'Stationery', 'Hardware', 'Personal care', 'Wholesale'].map((item) => (
@@ -192,7 +192,7 @@ export function RegisterOrganizationOwnerPage() {
                   ))}
                 </div>
                 <div className="mt-5 flex items-start gap-3">
-                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                   <p className="text-sm leading-6 text-slate-600">
                     You can keep optional details light for the first pass and fill in more later.
                   </p>
@@ -204,7 +204,7 @@ export function RegisterOrganizationOwnerPage() {
               <CardHeader className="flex flex-col gap-5 p-6 sm:p-8">
                 <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
                   <div className="flex-1">
-                    <div className="inline-flex rounded-full bg-emerald-600/10 px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-emerald-700">
+                    <div className="inline-flex rounded-full bg-primary/10 px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-primary">
                       NearCart Inventory
                     </div>
                     <CardTitle className="mt-3 text-[1.9rem]">{t('register:title')}</CardTitle>
@@ -219,7 +219,7 @@ export function RegisterOrganizationOwnerPage() {
                         className={cn(
                           'rounded-full border px-3.5 py-1.5 text-sm font-semibold transition-colors',
                           language === lang
-                            ? 'border-emerald-600 bg-emerald-600 text-white'
+                            ? 'border-primary bg-primary text-white'
                             : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900',
                         )}
                       >
@@ -228,9 +228,9 @@ export function RegisterOrganizationOwnerPage() {
                     ))}
                   </div>
                 </div>
-                <div className="rounded-[1.4rem] border border-emerald-100 bg-emerald-50/70 p-4">
+                <div className="rounded-[1.4rem] border border-primary/20 bg-primary/5 p-4">
                   <div className="flex items-start gap-3">
-                    <Store className="mt-0.5 h-4 w-4 shrink-0 text-emerald-700" />
+                    <Store className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                     <p className="text-sm leading-6 text-slate-700">
                       Fill the essentials now, then continue to products, stock, and branch work once the workspace is ready.
                     </p>
@@ -388,7 +388,7 @@ export function RegisterOrganizationOwnerPage() {
 
                   <div className="sticky bottom-4 z-10 flex flex-col gap-3 rounded-[1.6rem] border border-slate-200 bg-white/95 p-4 shadow-[0_16px_36px_rgba(15,23,42,0.08)] backdrop-blur sm:static sm:flex-row sm:items-center sm:justify-between sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none">
                     <p className="text-sm text-slate-500">
-                      {t('register:haveAccount')} <Link className="font-semibold text-emerald-700" to="/login">{t('register:signIn')}</Link>
+                      {t('register:haveAccount')} <Link className="font-semibold text-primary" to="/login">{t('register:signIn')}</Link>
                     </p>
                     <Button
                       className="rounded-full px-5"

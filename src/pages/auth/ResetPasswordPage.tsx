@@ -92,7 +92,7 @@ export function ResetPasswordPage() {
               {t('resetPassword')}
             </Button>
             <p className="text-center text-sm text-slate-500">
-              <Link className="font-semibold text-emerald-700" to="/login">{t('backToSignIn')}</Link>
+              <Link className="font-semibold text-primary" to="/login">{t('backToSignIn')}</Link>
             </p>
           </form>
         </CardContent>

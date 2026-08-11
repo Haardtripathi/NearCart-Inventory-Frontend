@@ -25,11 +25,11 @@ export { Command, CommandDialog, CommandInput, CommandList, CommandEmpty, Comman
 export { Checkbox } from './checkbox'
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 rounded-md text-sm font-semibold whitespace-nowrap transition-all duration-200 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-50 disabled:pointer-events-none disabled:opacity-50 [&_svg]:shrink-0',
+  'inline-flex items-center justify-center gap-2 rounded-md text-sm font-semibold whitespace-nowrap transition-all duration-150 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/15 disabled:pointer-events-none disabled:opacity-50 [&_svg]:shrink-0',
   {
     variants: {
       variant: {
-        default: 'bg-emerald-600 text-white shadow-sm shadow-emerald-200 hover:bg-emerald-700',
+        default: 'bg-primary text-primary-foreground shadow-sm shadow-primary/25 hover:bg-primary-hover',
         secondary: 'border border-slate-200 bg-slate-100 text-slate-900 shadow-sm hover:bg-slate-200/80',
         outline: 'border border-slate-200 bg-white text-slate-700 shadow-sm shadow-slate-200/60 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900',
         ghost: 'text-slate-600 hover:bg-slate-100 hover:text-slate-900',
@@ -86,7 +86,7 @@ export const Input = React.forwardRef<HTMLInputElement, React.InputHTMLAttribute
       ref={ref}
       className={cn(
         'flex h-11 w-full min-w-0 rounded-md border border-slate-200 bg-white px-4 py-2 text-[0.925rem] font-medium text-slate-700 shadow-sm outline-none transition [color-scheme:light]',
-        'placeholder:text-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-50',
+        'placeholder:text-slate-400 focus:border-primary focus:ring-4 focus:ring-primary/10',
         'disabled:cursor-not-allowed disabled:opacity-60',
         className,
       )}
@@ -102,7 +102,7 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, React.TextareaHTML
       ref={ref}
       className={cn(
         'flex min-h-[120px] w-full min-w-0 rounded-md border border-slate-200 bg-white px-4 py-3 text-[0.925rem] font-medium text-slate-700 shadow-sm outline-none transition [color-scheme:light]',
-        'placeholder:text-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-50',
+        'placeholder:text-slate-400 focus:border-primary focus:ring-4 focus:ring-primary/10',
         'disabled:cursor-not-allowed disabled:opacity-60',
         className,
       )}
@@ -119,7 +119,7 @@ export const NativeSelect = React.forwardRef<HTMLSelectElement, React.SelectHTML
       className={cn(
         'flex h-11 w-full min-w-0 cursor-pointer appearance-none rounded-md border border-slate-200 bg-white [color-scheme:light]',
         'bg-[url("data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 fill=%27none%27 viewBox=%270 0 20 20%27%3e%3cpath stroke=%27%2364748b%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27 stroke-width=%271.5%27 d=%27M6 8l4 4 4-4%27/%3e%3c/svg%3e")] bg-[length:1.2em_1.2em] bg-[right_0.9rem_center] bg-no-repeat px-4 py-2 pr-10 text-[0.925rem] font-medium text-slate-700 shadow-sm outline-none transition',
-        'focus:border-emerald-500 focus:ring-4 focus:ring-emerald-50 disabled:cursor-not-allowed disabled:opacity-60',
+        'focus:border-primary focus:ring-4 focus:ring-primary/10 disabled:cursor-not-allowed disabled:opacity-60',
         className,
       )}
       {...props}
@@ -414,7 +414,9 @@ export const TabsContent = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.Content>
 >(({ className, ...props }, ref) => (
-  <TabsPrimitive.Content ref={ref} className={cn('mt-4 outline-none', className)} {...props} />
+  // Radix unmounts inactive tab panels by default, so each switch is a real mount — a quick fade
+  // keeps that from feeling like an instant content swap.
+  <TabsPrimitive.Content ref={ref} className={cn('animate-fade-in mt-4 outline-none', className)} {...props} />
 ))
 TabsContent.displayName = TabsPrimitive.Content.displayName
 

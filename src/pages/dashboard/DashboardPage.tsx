@@ -13,7 +13,7 @@ const cardMeta = [
     key: 'totalProducts',
     labelKey: 'totalProducts',
     icon: Boxes,
-    tone: 'bg-sky-50 text-sky-700',
+    tone: 'bg-primary/10 text-primary',
   },
   {
     key: 'activeProducts',

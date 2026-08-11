@@ -134,7 +134,7 @@ export function ProductsPage() {
 
               return (
                 <div className="flex items-center gap-3">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-slate-100">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-slate-100">
                     {imageUrl ? (
                       <img alt={getDisplayName(product)} className="h-full w-full object-cover" src={imageUrl} />
                     ) : (

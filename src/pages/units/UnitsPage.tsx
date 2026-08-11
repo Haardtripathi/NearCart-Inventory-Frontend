@@ -11,7 +11,7 @@ import { usePermissions } from '@/hooks/usePermissions'
 import { useDebounce } from '@/hooks/useDebounce'
 import { DataTable, EmptyState, FilterBar, LoadingState, PageHeader, PaginationControls, SearchInput, StatusBadge } from '@/components/common'
 import { CheckboxField, FormField, TranslationFields } from '@/components/forms'
-import { Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Input } from '@/components/ui'
+import { Badge, Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Input } from '@/components/ui'
 import { getDisplayName } from '@/lib/utils'
 import type { TranslationInput, Unit } from '@/types/common'
 
@@ -94,9 +94,9 @@ export function UnitsPage() {
       key: 'source',
       header: t('common:type'),
       render: (unit: Unit) => (
-        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${unit.isSystem ? 'bg-blue-50 text-blue-700' : 'bg-green-50 text-green-700'}`}>
+        <Badge tone={unit.isSystem ? 'info' : 'success'}>
           {unit.isSystem ? t('units:system') : t('units:custom')}
-        </span>
+        </Badge>
       ),
     },
     ...(permissions.canManageCatalog
