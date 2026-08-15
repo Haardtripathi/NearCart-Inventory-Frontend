@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
+import { Country, State, City } from 'country-state-city'
 
 import { Badge, Button, Card, CardContent, Input, OptionSelect } from '@/components/ui'
 import {
@@ -121,6 +122,9 @@ export function OrganizationsPage() {
       ownerPreferredLanguage: 'EN',
     },
   })
+
+  const selectedCountry = form.watch('country')
+  const selectedState = form.watch('state')
 
   const onSubmit = form.handleSubmit(async (values) => {
     try {
@@ -491,14 +495,38 @@ export function OrganizationsPage() {
                     <FormField label={t('addressLine1')} error={form.formState.errors.addressLine1?.message}>
                       <Input placeholder={t('addressLine1Placeholder', { ns: 'common' })} {...form.register('addressLine1')} />
                     </FormField>
-                    <FormField label={t('city', { ns: 'common' })} error={form.formState.errors.city?.message}>
-                      <Input placeholder={t('cityPlaceholder', { ns: 'register' })} {...form.register('city')} />
+                    <FormField label={t('country', { ns: 'common' })} error={form.formState.errors.country?.message}>
+                      <ControlledSelect
+                        control={form.control as never}
+                        name="country"
+                        placeholder={t('countryPlaceholder', { ns: 'register' })}
+                        options={Country.getAllCountries().map((c) => ({ value: c.isoCode, label: c.name }))}
+                        onValueChange={() => {
+                          form.setValue('state', '')
+                          form.setValue('city', '')
+                        }}
+                      />
                     </FormField>
                     <FormField label={t('state', { ns: 'common' })} error={form.formState.errors.state?.message}>
-                      <Input placeholder={t('statePlaceholder', { ns: 'register' })} {...form.register('state')} />
+                      <ControlledSelect
+                        control={form.control as never}
+                        name="state"
+                        placeholder={t('statePlaceholder', { ns: 'register' })}
+                        options={selectedCountry ? State.getStatesOfCountry(selectedCountry).map((s) => ({ value: s.isoCode, label: s.name })) : []}
+                        disabled={!selectedCountry}
+                        onValueChange={() => {
+                          form.setValue('city', '')
+                        }}
+                      />
                     </FormField>
-                    <FormField label={t('country', { ns: 'common' })} error={form.formState.errors.country?.message}>
-                      <Input placeholder={t('countryPlaceholder', { ns: 'register' })} {...form.register('country')} />
+                    <FormField label={t('city', { ns: 'common' })} error={form.formState.errors.city?.message}>
+                      <ControlledSelect
+                        control={form.control as never}
+                        name="city"
+                        placeholder={t('cityPlaceholder', { ns: 'register' })}
+                        options={selectedCountry && selectedState ? City.getCitiesOfState(selectedCountry, selectedState).map((c) => ({ value: c.name, label: c.name })) : []}
+                        disabled={!selectedState}
+                      />
                     </FormField>
                     <FormField label={t('postalCode', { ns: 'common' })} error={form.formState.errors.postalCode?.message}>
                       <Input placeholder={t('postalCodePlaceholder', { ns: 'register' })} {...form.register('postalCode')} />

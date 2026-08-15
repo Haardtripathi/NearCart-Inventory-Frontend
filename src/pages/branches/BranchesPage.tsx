@@ -5,6 +5,7 @@ import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'react-hot-toast'
 import { Plus } from 'lucide-react'
+import { Country, State, City } from 'country-state-city'
 
 import { useBranchesQuery, useCreateBranchMutation, useDeleteBranchMutation, useUpdateBranchMutation } from '@/features/branches/branches.api'
 import { ShopPhotoVerificationPanel } from './ShopPhotoVerificationPanel'
@@ -94,6 +95,9 @@ export function BranchesPage() {
   const watchedLongitudeRaw = useWatch({ control: form.control, name: 'longitude' })
   const watchedLatitude = typeof watchedLatitudeRaw === 'number' ? watchedLatitudeRaw : undefined
   const watchedLongitude = typeof watchedLongitudeRaw === 'number' ? watchedLongitudeRaw : undefined
+
+  const selectedCountry = useWatch({ control: form.control, name: 'country' })
+  const selectedState = useWatch({ control: form.control, name: 'state' })
 
   const branches = useMemo(() => branchesQuery.data?.items ?? [], [branchesQuery.data?.items])
 
@@ -259,14 +263,38 @@ export function BranchesPage() {
                   <FormField label={t('branches:addressLine2')}>
                     <Input {...form.register('addressLine2')} />
                   </FormField>
-                  <FormField label={t('common:city')}>
-                    <Input placeholder={t('common:cityPlaceholder')} {...form.register('city')} />
+                  <FormField label={t('common:country')}>
+                    <ControlledSelect
+                      control={form.control as never}
+                      name="country"
+                      placeholder={t('common:countryPlaceholder')}
+                      options={Country.getAllCountries().map((c) => ({ value: c.isoCode, label: c.name }))}
+                      onValueChange={() => {
+                        form.setValue('state', '')
+                        form.setValue('city', '')
+                      }}
+                    />
                   </FormField>
                   <FormField label={t('common:state')}>
-                    <Input placeholder={t('common:statePlaceholder')} {...form.register('state')} />
+                    <ControlledSelect
+                      control={form.control as never}
+                      name="state"
+                      placeholder={t('common:statePlaceholder')}
+                      options={selectedCountry ? State.getStatesOfCountry(selectedCountry).map((s) => ({ value: s.isoCode, label: s.name })) : []}
+                      disabled={!selectedCountry}
+                      onValueChange={() => {
+                        form.setValue('city', '')
+                      }}
+                    />
                   </FormField>
-                  <FormField label={t('common:country')}>
-                    <Input placeholder={t('common:countryPlaceholder')} {...form.register('country')} />
+                  <FormField label={t('common:city')}>
+                    <ControlledSelect
+                      control={form.control as never}
+                      name="city"
+                      placeholder={t('common:cityPlaceholder')}
+                      options={selectedCountry && selectedState ? City.getCitiesOfState(selectedCountry, selectedState).map((c) => ({ value: c.name, label: c.name })) : []}
+                      disabled={!selectedState}
+                    />
                   </FormField>
                   <FormField label={t('common:postalCode')}>
                     <Input placeholder={t('common:postalCodePlaceholder')} {...form.register('postalCode')} />

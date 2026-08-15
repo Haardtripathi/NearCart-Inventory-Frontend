@@ -6,6 +6,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
 import { useTranslation } from 'react-i18next'
 import { CheckCircle2, Globe2, Package2, Store, Warehouse } from 'lucide-react'
+import { Country, State, City } from 'country-state-city'
 
 import { PublicNavbar } from '@/components/layout/PublicNavbar'
 import { useRegisterOrganizationOwnerMutation } from '@/features/auth/auth.api'
@@ -87,6 +88,9 @@ export function RegisterOrganizationOwnerPage() {
       longitude: '',
     },
   })
+
+  const selectedCountry = form.watch('country')
+  const selectedState = form.watch('state')
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -349,16 +353,40 @@ export function RegisterOrganizationOwnerPage() {
                         >
                           <Input placeholder={t('register:branchCodePlaceholder')} {...form.register('firstBranchCode')} />
                         </FormField>
-                        <FormField label={t('register:city')}>
-                          <Input placeholder={t('register:cityPlaceholder')} {...form.register('city')} />
+                        <FormField label={t('register:country')} error={form.formState.errors.country?.message}>
+                          <ControlledSelect
+                            control={form.control as never}
+                            name="country"
+                            placeholder={t('register:countryPlaceholder')}
+                            options={Country.getAllCountries().map((c) => ({ value: c.isoCode, label: c.name }))}
+                            onValueChange={() => {
+                              form.setValue('state', '')
+                              form.setValue('city', '')
+                            }}
+                          />
                         </FormField>
-                        <FormField label={t('register:state')}>
-                          <Input placeholder={t('register:statePlaceholder')} {...form.register('state')} />
+                        <FormField label={t('register:state')} error={form.formState.errors.state?.message}>
+                          <ControlledSelect
+                            control={form.control as never}
+                            name="state"
+                            placeholder={t('register:statePlaceholder')}
+                            options={selectedCountry ? State.getStatesOfCountry(selectedCountry).map((s) => ({ value: s.isoCode, label: s.name })) : []}
+                            disabled={!selectedCountry}
+                            onValueChange={() => {
+                              form.setValue('city', '')
+                            }}
+                          />
                         </FormField>
-                        <FormField label={t('register:country')}>
-                          <Input placeholder={t('register:countryPlaceholder')} {...form.register('country')} />
+                        <FormField label={t('register:city')} error={form.formState.errors.city?.message}>
+                          <ControlledSelect
+                            control={form.control as never}
+                            name="city"
+                            placeholder={t('register:cityPlaceholder')}
+                            options={selectedCountry && selectedState ? City.getCitiesOfState(selectedCountry, selectedState).map((c) => ({ value: c.name, label: c.name })) : []}
+                            disabled={!selectedState}
+                          />
                         </FormField>
-                        <FormField label={t('register:postalCode')}>
+                        <FormField label={t('register:postalCode')} error={form.formState.errors.postalCode?.message}>
                           <Input placeholder={t('register:postalCodePlaceholder')} {...form.register('postalCode')} />
                         </FormField>
                       </div>
