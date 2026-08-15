@@ -114,7 +114,7 @@ export function UnitsPage() {
   ]
 
   return (
-    <div className="space-y-6">
+    <div className="animate-fade-in-up space-y-6">
       <PageHeader
         title={t('units:title')}
         description={t('units:description')}
@@ -135,12 +135,14 @@ export function UnitsPage() {
         }} placeholder={t('units:searchPlaceholder')} />
       </FilterBar>
 
-      <DataTable<Unit>
-        columns={columns}
-        empty={<EmptyState title={t('units:noUnitsTitle')} description={t('units:noUnitsDescription')} />}
-        items={units}
-        rowKey={(unit) => unit.id}
-      />
+      <div className="rows-animate-in">
+        <DataTable<Unit>
+          columns={columns}
+          empty={<EmptyState title={t('units:noUnitsTitle')} description={t('units:noUnitsDescription')} />}
+          items={units}
+          rowKey={(unit) => unit.id}
+        />
+      </div>
 
       <PaginationControls pagination={unitsQuery.data?.pagination} onPageChange={setPage} />
 

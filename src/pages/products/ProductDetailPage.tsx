@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router-dom'
+import { ImageOff } from 'lucide-react'
 
 import { useInventoryBalancesQuery, useInventoryLedgerQuery } from '@/features/inventory/inventory.api'
 import { useProductQuery } from '@/features/products/products.api'
@@ -72,13 +73,19 @@ export function ProductDetailPage() {
   }
 
   const product = productQuery.data
+  // Same resolution order as the thumbnail on ProductsPage's list view (own imageUrl, falling
+  // back to the first variant that has one) — this page never showed the photo at all despite
+  // it being set through the real upload flow on ProductFormPage, so keep the fallback logic
+  // identical rather than introducing a second source of truth for "which image represents this
+  // product".
+  const imageUrl = product.imageUrl ?? product.variants.find((variant) => variant.imageUrl)?.imageUrl
   const categoryPath = buildCategoryPath(product.category)
   const visibleTranslations = (product.translations ?? []).filter((translation) =>
     LANGUAGE_CODES.includes(translation.language as (typeof LANGUAGE_CODES)[number]),
   )
 
   return (
-    <div className="space-y-6">
+    <div className="animate-fade-in-up space-y-6">
       <PageHeader
         title={getDisplayName(product)}
         description={product.displayDescription ?? product.description ?? t('noDescriptionProvided')}
@@ -102,6 +109,13 @@ export function ProductDetailPage() {
 
       <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
         <SectionCard title={t('productSummaryTitle')} description={t('productSummaryDescription')}>
+          <div className="mb-4 flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-slate-100">
+            {imageUrl ? (
+              <img alt={getDisplayName(product)} className="h-full w-full object-cover" src={imageUrl} />
+            ) : (
+              <ImageOff className="h-6 w-6 text-slate-400" />
+            )}
+          </div>
           <DetailGrid className="xl:grid-cols-3">
             <DetailItem label={t('sourceType')} value={<StatusBadge value={product.sourceType} />} />
             <DetailItem label={t('status', { ns: 'common' })} value={<StatusBadge value={product.status} />} />
@@ -136,51 +150,53 @@ export function ProductDetailPage() {
       </div>
 
       <SectionCard title={t('variants')} description={t('variantsSectionDescription')}>
-        <DataTable
-          columns={[
-            {
-              key: 'name',
-              header: t('variant'),
-              render: (variant) => {
-                const facts = buildVariantFacts(variant, t)
+        <div className="rows-animate-in">
+          <DataTable
+            columns={[
+              {
+                key: 'name',
+                header: t('variant'),
+                render: (variant) => {
+                  const facts = buildVariantFacts(variant, t)
 
-                return (
-                  <div>
-                    <p className="font-medium text-slate-900">{getDisplayName(variant)}</p>
-                    <p className="text-xs text-slate-500">{variant.sku}</p>
-                    {facts.length ? <p className="mt-1 text-xs text-slate-500">{facts.join(' · ')}</p> : null}
-                  </div>
-                )
+                  return (
+                    <div>
+                      <p className="font-medium text-slate-900">{getDisplayName(variant)}</p>
+                      <p className="text-xs text-slate-500">{variant.sku}</p>
+                      {facts.length ? <p className="mt-1 text-xs text-slate-500">{facts.join(' · ')}</p> : null}
+                    </div>
+                  )
+                },
               },
-            },
-            {
-              key: 'prices',
-              header: t('prices'),
-              render: (variant) => (
-                <div className="text-sm text-slate-600">
-                  {t('sell')}: <CurrencyText value={variant.sellingPrice} /> · {t('cost')}: <CurrencyText value={variant.costPrice} />
-                  {variant.mrp ? <span> · {t('mrp')}: <CurrencyText value={variant.mrp} /></span> : null}
-                </div>
-              ),
-            },
-            {
-              key: 'levels',
-              header: t('levels'),
-              render: (variant) => (
-                <div className="text-sm text-slate-600">
-                  {t('reorderLevel')} <QuantityText value={variant.reorderLevel} />
-                  <span> · {t('minStock')} <QuantityText value={variant.minStockLevel} /></span>
-                  {variant.maxStockLevel ? <span> · {t('maxStock')} <QuantityText value={variant.maxStockLevel} /></span> : null}
-                </div>
-              ),
-            },
-            { key: 'status', header: t('status', { ns: 'common' }), render: (variant) => <StatusBadge value={variant.isActive ? 'ACTIVE' : 'INACTIVE'} /> },
-            { key: 'actions', header: t('actions', { ns: 'common' }), render: (variant) => <Button asChild size="sm" variant="ghost"><Link to={`/products/${product.id}/variants/${variant.id}/edit`}>{t('edit', { ns: 'common' })}</Link></Button> },
-          ]}
-          items={product.variants}
-          empty={<EmptyState title={t('noVariantsTitle')} />}
-          rowKey={(variant) => variant.id}
-        />
+              {
+                key: 'prices',
+                header: t('prices'),
+                render: (variant) => (
+                  <div className="text-sm text-slate-600">
+                    {t('sell')}: <CurrencyText value={variant.sellingPrice} /> · {t('cost')}: <CurrencyText value={variant.costPrice} />
+                    {variant.mrp ? <span> · {t('mrp')}: <CurrencyText value={variant.mrp} /></span> : null}
+                  </div>
+                ),
+              },
+              {
+                key: 'levels',
+                header: t('levels'),
+                render: (variant) => (
+                  <div className="text-sm text-slate-600">
+                    {t('reorderLevel')} <QuantityText value={variant.reorderLevel} />
+                    <span> · {t('minStock')} <QuantityText value={variant.minStockLevel} /></span>
+                    {variant.maxStockLevel ? <span> · {t('maxStock')} <QuantityText value={variant.maxStockLevel} /></span> : null}
+                  </div>
+                ),
+              },
+              { key: 'status', header: t('status', { ns: 'common' }), render: (variant) => <StatusBadge value={variant.isActive ? 'ACTIVE' : 'INACTIVE'} /> },
+              { key: 'actions', header: t('actions', { ns: 'common' }), render: (variant) => <Button asChild size="sm" variant="ghost"><Link to={`/products/${product.id}/variants/${variant.id}/edit`}>{t('edit', { ns: 'common' })}</Link></Button> },
+            ]}
+            items={product.variants}
+            empty={<EmptyState title={t('noVariantsTitle')} />}
+            rowKey={(variant) => variant.id}
+          />
+        </div>
       </SectionCard>
 
       <SectionCard title={t('currentInventoryByBranchTitle')} description={t('currentInventoryByBranchDescription')}>

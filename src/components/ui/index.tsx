@@ -321,7 +321,7 @@ export function DialogContent({
         {...props}
       >
         {children}
-        <DialogPrimitive.Close className="absolute right-4 top-4 rounded-full p-2 text-muted-foreground transition hover:bg-accent hover:text-foreground">
+        <DialogPrimitive.Close className="absolute right-4 top-4 rounded-full p-2 text-muted-foreground transition hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/15">
           <X className="h-4 w-4" />
         </DialogPrimitive.Close>
       </DialogPrimitive.Content>
@@ -372,7 +372,7 @@ export function SheetContent({
         {...props}
       >
         {children}
-        <DialogPrimitive.Close className="absolute right-4 top-4 rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700">
+        <DialogPrimitive.Close className="absolute right-4 top-4 rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/15">
           <X className="h-4 w-4" />
         </DialogPrimitive.Close>
       </DialogPrimitive.Content>
@@ -403,6 +403,7 @@ export const TabsTrigger = React.forwardRef<
     className={cn(
       'inline-flex flex-1 items-center justify-center rounded-md px-3 py-2 text-sm font-semibold transition sm:flex-none',
       'data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm',
+      'focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/15',
       className,
     )}
     {...props}

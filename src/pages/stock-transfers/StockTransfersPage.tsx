@@ -33,7 +33,7 @@ export function StockTransfersPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="animate-fade-in-up space-y-6">
       <PageHeader
         title="Stock transfers"
         description="Move stock between branches using draft, approve, and cancel workflows."
@@ -60,18 +60,20 @@ export function StockTransfersPage() {
           setToBranchId(value)
         }} />
       </FilterBar>
-      <DataTable
-        columns={[
-          { key: 'transfer', header: 'Transfer number', render: (transfer) => <Link className="font-medium text-slate-900 hover:text-primary" to={`/stock-transfers/${transfer.id}`}>{transfer.transferNumber}</Link> },
-          { key: 'from', header: 'From', render: (transfer) => transfer.fromBranch.name },
-          { key: 'to', header: 'To', render: (transfer) => transfer.toBranch.name },
-          { key: 'status', header: 'Status', render: (transfer) => <StatusBadge value={transfer.status} /> },
-          { key: 'createdAt', header: 'Created', render: (transfer) => formatDateTime(transfer.createdAt) },
-        ]}
-        items={transfersQuery.data?.items ?? []}
-        empty={<EmptyState title="No stock transfers yet" description="Create a transfer to move inventory between branches." />}
-        rowKey={(transfer) => transfer.id}
-      />
+      <div className="rows-animate-in">
+        <DataTable
+          columns={[
+            { key: 'transfer', header: 'Transfer number', render: (transfer) => <Link className="font-medium text-slate-900 hover:text-primary" to={`/stock-transfers/${transfer.id}`}>{transfer.transferNumber}</Link> },
+            { key: 'from', header: 'From', render: (transfer) => transfer.fromBranch.name },
+            { key: 'to', header: 'To', render: (transfer) => transfer.toBranch.name },
+            { key: 'status', header: 'Status', render: (transfer) => <StatusBadge value={transfer.status} /> },
+            { key: 'createdAt', header: 'Created', render: (transfer) => formatDateTime(transfer.createdAt) },
+          ]}
+          items={transfersQuery.data?.items ?? []}
+          empty={<EmptyState title="No stock transfers yet" description="Create a transfer to move inventory between branches." />}
+          rowKey={(transfer) => transfer.id}
+        />
+      </div>
       <PaginationControls pagination={transfersQuery.data?.pagination} onPageChange={setPage} />
     </div>
   )

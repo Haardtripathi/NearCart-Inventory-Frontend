@@ -37,7 +37,7 @@ export function SalesOrdersPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="animate-fade-in-up space-y-6">
       <PageHeader
         title="Sales orders"
         description="Create orders, confirm stock deductions, and manage delivery status."
@@ -78,21 +78,23 @@ export function SalesOrdersPage() {
           options={PAYMENT_STATUSES.map((item) => ({ value: item, label: getPaymentStatusLabel(t, item) }))}
         />
       </FilterBar>
-      <DataTable
-        columns={[
-          { key: 'order', header: 'Order number', render: (order) => <Link className="font-medium text-slate-900 hover:text-primary" to={`/sales-orders/${order.id}`}>{order.orderNumber}</Link> },
-          { key: 'customer', header: 'Customer', render: (order) => order.customer?.name ?? 'Walk-in' },
-          { key: 'branch', header: 'Branch', render: (order) => order.branch.name },
-          { key: 'source', header: 'Source', render: (order) => order.source },
-          { key: 'status', header: 'Status', render: (order) => <StatusBadge value={order.status} /> },
-          { key: 'payment', header: 'Payment', render: (order) => <StatusBadge value={order.paymentStatus} /> },
-          { key: 'total', header: 'Total', render: (order) => <CurrencyText value={order.total} /> },
-          { key: 'createdAt', header: 'Created', render: (order) => formatDateTime(order.createdAt) },
-        ]}
-        items={ordersQuery.data?.items ?? []}
-        empty={<EmptyState title="No sales orders yet" description="Create an order to reserve and move stock through fulfillment." />}
-        rowKey={(order) => order.id}
-      />
+      <div className="rows-animate-in">
+        <DataTable
+          columns={[
+            { key: 'order', header: 'Order number', render: (order) => <Link className="font-medium text-slate-900 hover:text-primary" to={`/sales-orders/${order.id}`}>{order.orderNumber}</Link> },
+            { key: 'customer', header: 'Customer', render: (order) => order.customer?.name ?? 'Walk-in' },
+            { key: 'branch', header: 'Branch', render: (order) => order.branch.name },
+            { key: 'source', header: 'Source', render: (order) => order.source },
+            { key: 'status', header: 'Status', render: (order) => <StatusBadge value={order.status} /> },
+            { key: 'payment', header: 'Payment', render: (order) => <StatusBadge value={order.paymentStatus} /> },
+            { key: 'total', header: 'Total', render: (order) => <CurrencyText value={order.total} /> },
+            { key: 'createdAt', header: 'Created', render: (order) => formatDateTime(order.createdAt) },
+          ]}
+          items={ordersQuery.data?.items ?? []}
+          empty={<EmptyState title="No sales orders yet" description="Create an order to reserve and move stock through fulfillment." />}
+          rowKey={(order) => order.id}
+        />
+      </div>
       <PaginationControls pagination={ordersQuery.data?.pagination} onPageChange={setPage} />
     </div>
   )

@@ -144,7 +144,7 @@ export function RegisterOrganizationOwnerPage() {
         <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
           <BreadcrumbTrail items={[{ label: 'Sign in', to: '/login' }, { label: 'Create workspace' }]} />
 
-          <div className="grid gap-6 lg:grid-cols-[0.86fr_1.14fr] lg:items-start">
+          <div className="stagger-in grid gap-6 lg:grid-cols-[0.86fr_1.14fr] lg:items-start">
             <div className="space-y-5 lg:sticky lg:top-24">
               <div className="space-y-4">
                 <div className="inline-flex rounded-full border border-primary/20 bg-white/90 px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-primary shadow-sm">

@@ -83,7 +83,7 @@ export function CustomersPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="animate-fade-in-up space-y-6">
       <PageHeader
         title={t('customers:title')}
         description={t('customers:description')}
@@ -95,26 +95,28 @@ export function CustomersPage() {
           setSearch(event.target.value)
         }} placeholder={t('customers:searchPlaceholder')} />
       </FilterBar>
-      <DataTable
-        columns={[
-          { key: 'name', header: t('customers:name'), render: (customer) => <span className="font-medium text-slate-900">{getDisplayName(customer)}</span> },
-          { key: 'contact', header: t('common:phone'), render: (customer) => customer.phone || customer.email || '—' },
-          { key: 'status', header: t('common:status'), render: (customer) => <StatusBadge value={customer.isActive ? 'ACTIVE' : 'INACTIVE'} /> },
-          {
-            key: 'actions',
-            header: t('common:actions'),
-            render: (customer) => (
-              <div className="flex gap-2">
-                <Button size="sm" variant="outline" onClick={() => openEdit(customer)} disabled={!permissions.canManageCatalog}>{t('common:edit')}</Button>
-                <Button size="sm" variant="ghost" onClick={() => setDeletingCustomer(customer)} disabled={!permissions.canManageCatalog}>{t('common:archive')}</Button>
-              </div>
-            ),
-          },
-        ]}
-        items={items}
-        empty={<EmptyState title={t('customers:noCustomersTitle')} description={t('customers:noCustomersDescription')} />}
-        rowKey={(customer) => customer.id}
-      />
+      <div className="rows-animate-in">
+        <DataTable
+          columns={[
+            { key: 'name', header: t('customers:name'), render: (customer) => <span className="font-medium text-slate-900">{getDisplayName(customer)}</span> },
+            { key: 'contact', header: t('common:phone'), render: (customer) => customer.phone || customer.email || '—' },
+            { key: 'status', header: t('common:status'), render: (customer) => <StatusBadge value={customer.isActive ? 'ACTIVE' : 'INACTIVE'} /> },
+            {
+              key: 'actions',
+              header: t('common:actions'),
+              render: (customer) => (
+                <div className="flex gap-2">
+                  <Button size="sm" variant="outline" onClick={() => openEdit(customer)} disabled={!permissions.canManageCatalog}>{t('common:edit')}</Button>
+                  <Button size="sm" variant="ghost" onClick={() => setDeletingCustomer(customer)} disabled={!permissions.canManageCatalog}>{t('common:archive')}</Button>
+                </div>
+              ),
+            },
+          ]}
+          items={items}
+          empty={<EmptyState title={t('customers:noCustomersTitle')} description={t('customers:noCustomersDescription')} />}
+          rowKey={(customer) => customer.id}
+        />
+      </div>
       <PaginationControls pagination={customersQuery.data?.pagination} onPageChange={setPage} />
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>

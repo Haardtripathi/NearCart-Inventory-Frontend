@@ -55,7 +55,7 @@ export function InventoryBalancesPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="animate-fade-in-up space-y-6">
       <PageHeader
         title="Inventory balances"
         description="Track on-hand, reserved, and available stock across branches."
@@ -89,50 +89,52 @@ export function InventoryBalancesPage() {
           }}
         />
       </FilterBar>
-      <DataTable
-        columns={[
-          { key: 'product', header: 'Product', render: (row) => <div><p className="font-medium text-slate-900">{getDisplayName(row.product)}</p><p className="text-xs text-slate-500">{getDisplayName(row.variant)}</p></div> },
-          { key: 'branch', header: 'Branch', render: (row) => row.branch.name },
-          { key: 'onHand', header: 'On hand', render: (row) => <QuantityText value={row.onHand} /> },
-          { key: 'reserved', header: 'Reserved', render: (row) => <QuantityText value={row.reserved} /> },
-          { key: 'available', header: 'Available', render: (row) => <QuantityText value={row.available} /> },
-          {
-            key: 'levels',
-            header: 'Levels',
-            render: (row) => (
-              <div className="text-sm text-slate-600">
-                Reorder: <QuantityText value={row.variant.reorderLevel} /> · Min: <QuantityText value={row.variant.minStockLevel} />
-              </div>
-            ),
-          },
-          {
-            key: 'status',
-            header: 'Status',
-            render: (row) =>
-              isRowLowStock(row)
-                ? <StatusBadge value="LOW_STOCK" />
-                : <StatusBadge value="HEALTHY" />,
-          },
-          {
-            key: 'actions',
-            header: 'Actions',
-            render: (row) => (
-              <div className="flex gap-2">
-                <Button asChild size="sm" variant="outline">
-                  <Link to={`/inventory/adjustments/new?branchId=${row.branchId}&productId=${row.productId}&variantId=${row.variantId}`}>Adjust</Link>
-                </Button>
-                <Button asChild size="sm" variant="ghost">
-                  <Link to={`/inventory/ledger?productId=${row.productId}&variantId=${row.variantId}&branchId=${row.branchId}`}>Ledger</Link>
-                </Button>
-              </div>
-            ),
-          },
-        ]}
-        items={items}
-        rowClassName={(row) => (isRowLowStock(row) ? 'bg-amber-50/60' : undefined)}
-        empty={<EmptyState title="No inventory balances found" description="Balances appear after purchases, adjustments, sales, or transfers." />}
-        rowKey={(row) => row.id}
-      />
+      <div className="rows-animate-in">
+        <DataTable
+          columns={[
+            { key: 'product', header: 'Product', render: (row) => <div><p className="font-medium text-slate-900">{getDisplayName(row.product)}</p><p className="text-xs text-slate-500">{getDisplayName(row.variant)}</p></div> },
+            { key: 'branch', header: 'Branch', render: (row) => row.branch.name },
+            { key: 'onHand', header: 'On hand', render: (row) => <QuantityText value={row.onHand} /> },
+            { key: 'reserved', header: 'Reserved', render: (row) => <QuantityText value={row.reserved} /> },
+            { key: 'available', header: 'Available', render: (row) => <QuantityText value={row.available} /> },
+            {
+              key: 'levels',
+              header: 'Levels',
+              render: (row) => (
+                <div className="text-sm text-slate-600">
+                  Reorder: <QuantityText value={row.variant.reorderLevel} /> · Min: <QuantityText value={row.variant.minStockLevel} />
+                </div>
+              ),
+            },
+            {
+              key: 'status',
+              header: 'Status',
+              render: (row) =>
+                isRowLowStock(row)
+                  ? <StatusBadge value="LOW_STOCK" />
+                  : <StatusBadge value="HEALTHY" />,
+            },
+            {
+              key: 'actions',
+              header: 'Actions',
+              render: (row) => (
+                <div className="flex gap-2">
+                  <Button asChild size="sm" variant="outline">
+                    <Link to={`/inventory/adjustments/new?branchId=${row.branchId}&productId=${row.productId}&variantId=${row.variantId}`}>Adjust</Link>
+                  </Button>
+                  <Button asChild size="sm" variant="ghost">
+                    <Link to={`/inventory/ledger?productId=${row.productId}&variantId=${row.variantId}&branchId=${row.branchId}`}>Ledger</Link>
+                  </Button>
+                </div>
+              ),
+            },
+          ]}
+          items={items}
+          rowClassName={(row) => (isRowLowStock(row) ? 'bg-amber-50/60' : undefined)}
+          empty={<EmptyState title="No inventory balances found" description="Balances appear after purchases, adjustments, sales, or transfers." />}
+          rowKey={(row) => row.id}
+        />
+      </div>
       <PaginationControls pagination={balancesQuery.data?.pagination} onPageChange={setPage} />
     </div>
   )

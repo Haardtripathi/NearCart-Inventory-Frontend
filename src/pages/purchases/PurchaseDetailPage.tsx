@@ -27,7 +27,7 @@ export function PurchaseDetailPage() {
   const purchase = purchaseQuery.data
 
   return (
-    <div className="space-y-6">
+    <div className="animate-fade-in-up space-y-6">
       <PageHeader
         title={`Purchase ${purchase.receiptNumber}`}
         description={`Created ${formatDateTime(purchase.createdAt)} · Branch ${purchase.branch.name}`}
@@ -60,19 +60,21 @@ export function PurchaseDetailPage() {
         {purchase.notes ? <InlineNotice className="mt-4">{purchase.notes}</InlineNotice> : null}
       </SectionCard>
       <SectionCard title="Items" description="All receipt lines that will affect inventory when posted.">
-        <DataTable
-          columns={[
-            { key: 'product', header: 'Product', render: (item) => item.product?.displayName ?? item.product?.name ?? '—' },
-            { key: 'variant', header: 'Variant', render: (item) => item.variant?.displayName ?? item.variant?.name ?? '—' },
-            { key: 'quantity', header: 'Quantity', render: (item) => <QuantityText value={item.quantity} /> },
-            { key: 'unitCost', header: 'Unit cost', render: (item) => <CurrencyText value={item.unitCost} /> },
-            { key: 'tax', header: 'Tax', render: (item) => <CurrencyText value={item.taxAmount} /> },
-            { key: 'lineTotal', header: 'Line total', render: (item) => <CurrencyText value={item.lineTotal} /> },
-          ]}
-          items={purchase.items}
-          empty={<EmptyState title="No line items" />}
-          rowKey={(item, index) => item.id ?? index}
-        />
+        <div className="rows-animate-in">
+          <DataTable
+            columns={[
+              { key: 'product', header: 'Product', render: (item) => item.product?.displayName ?? item.product?.name ?? '—' },
+              { key: 'variant', header: 'Variant', render: (item) => item.variant?.displayName ?? item.variant?.name ?? '—' },
+              { key: 'quantity', header: 'Quantity', render: (item) => <QuantityText value={item.quantity} /> },
+              { key: 'unitCost', header: 'Unit cost', render: (item) => <CurrencyText value={item.unitCost} /> },
+              { key: 'tax', header: 'Tax', render: (item) => <CurrencyText value={item.taxAmount} /> },
+              { key: 'lineTotal', header: 'Line total', render: (item) => <CurrencyText value={item.lineTotal} /> },
+            ]}
+            items={purchase.items}
+            empty={<EmptyState title="No line items" />}
+            rowKey={(item, index) => item.id ?? index}
+          />
+        </div>
       </SectionCard>
     </div>
   )

@@ -185,7 +185,7 @@ export function LoginPage() {
         <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
           <BreadcrumbTrail items={[{ label: 'Sign in' }]} />
 
-          <div className="grid w-full gap-6 lg:grid-cols-[1.02fr_0.98fr] lg:items-start">
+          <div className="stagger-in grid w-full gap-6 lg:grid-cols-[1.02fr_0.98fr] lg:items-start">
             <div className="order-2 space-y-5 lg:order-1">
               <div className="max-w-2xl space-y-4">
                 <div className="inline-flex rounded-full border border-primary/20 bg-white/90 px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-primary shadow-sm">

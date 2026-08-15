@@ -46,7 +46,7 @@ export function ProductsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="animate-fade-in-up space-y-6">
       <PageHeader
         title={t('title')}
         description={t('listDescription')}
@@ -124,75 +124,77 @@ export function ProductsPage() {
         />
       </FilterBar>
 
-      <DataTable
-        columns={[
-          {
-            key: 'name',
-            header: t('product'),
-            render: (product) => {
-              const imageUrl = product.imageUrl ?? product.variants.find((variant) => variant.imageUrl)?.imageUrl
+      <div className="rows-animate-in">
+        <DataTable
+          columns={[
+            {
+              key: 'name',
+              header: t('product'),
+              render: (product) => {
+                const imageUrl = product.imageUrl ?? product.variants.find((variant) => variant.imageUrl)?.imageUrl
 
-              return (
-                <div className="flex items-center gap-3">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-slate-100">
-                    {imageUrl ? (
-                      <img alt={getDisplayName(product)} className="h-full w-full object-cover" src={imageUrl} />
-                    ) : (
-                      <ImageOff className="h-4 w-4 text-slate-400" />
-                    )}
+                return (
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-slate-100">
+                      {imageUrl ? (
+                        <img alt={getDisplayName(product)} className="h-full w-full object-cover" src={imageUrl} />
+                      ) : (
+                        <ImageOff className="h-4 w-4 text-slate-400" />
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate font-medium text-slate-900">{getDisplayName(product)}</p>
+                      <p className="truncate text-xs text-slate-500">{product.variants.map((variant) => variant.sku).join(', ')}</p>
+                    </div>
                   </div>
-                  <div className="min-w-0">
-                    <p className="truncate font-medium text-slate-900">{getDisplayName(product)}</p>
-                    <p className="truncate text-xs text-slate-500">{product.variants.map((variant) => variant.sku).join(', ')}</p>
-                  </div>
-                </div>
-              )
+                )
+              },
             },
-          },
-          { key: 'category', header: t('category', { ns: 'common' }), render: (product) => product.category ? getDisplayName(product.category) : '—' },
-          { key: 'brand', header: t('brand'), render: (product) => product.brand ? getDisplayName(product.brand, product.brand.name) : '—' },
-          { key: 'type', header: t('type', { ns: 'common' }), render: (product) => t(`typeValues.${product.productType}`, { defaultValue: product.productType }) },
-          { key: 'status', header: t('status', { ns: 'common' }), render: (product) => <StatusBadge value={t(`statusValues.${product.status}`, { defaultValue: product.status })} /> },
-          { key: 'variants', header: t('variantsCount'), render: (product) => product.variants.length },
-          {
-            key: 'actions',
-            header: t('actions', { ns: 'common' }),
-            render: (product) => (
-              <div className="flex gap-2">
-                <Button size="sm" variant="outline" asChild>
-                  <Link to={`/products/${product.id}`}>{t('view', { ns: 'common' })}</Link>
+            { key: 'category', header: t('category', { ns: 'common' }), render: (product) => product.category ? getDisplayName(product.category) : '—' },
+            { key: 'brand', header: t('brand'), render: (product) => product.brand ? getDisplayName(product.brand, product.brand.name) : '—' },
+            { key: 'type', header: t('type', { ns: 'common' }), render: (product) => t(`typeValues.${product.productType}`, { defaultValue: product.productType }) },
+            { key: 'status', header: t('status', { ns: 'common' }), render: (product) => <StatusBadge value={t(`statusValues.${product.status}`, { defaultValue: product.status })} /> },
+            { key: 'variants', header: t('variantsCount'), render: (product) => product.variants.length },
+            {
+              key: 'actions',
+              header: t('actions', { ns: 'common' }),
+              render: (product) => (
+                <div className="flex gap-2">
+                  <Button size="sm" variant="outline" asChild>
+                    <Link to={`/products/${product.id}`}>{t('view', { ns: 'common' })}</Link>
+                  </Button>
+                  {permissions.canManageProducts ? (
+                    <>
+                      <Button size="sm" variant="ghost" asChild>
+                        <Link to={`/products/${product.id}/edit`}>{t('edit', { ns: 'common' })}</Link>
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => setArchivingProductId(product.id)}>
+                        {t('archive', { ns: 'common' })}
+                      </Button>
+                    </>
+                  ) : null}
+                </div>
+              ),
+            },
+          ]}
+          items={products}
+          empty={
+            <EmptyState
+              title={t('noProductsTitle')}
+              description={t('noProductsDescription')}
+              action={permissions.canManageProducts ? (
+                <Button asChild>
+                  <Link to="/products/new">
+                    <Plus className="h-4 w-4" />
+                    {t('addProduct')}
+                  </Link>
                 </Button>
-                {permissions.canManageProducts ? (
-                  <>
-                    <Button size="sm" variant="ghost" asChild>
-                      <Link to={`/products/${product.id}/edit`}>{t('edit', { ns: 'common' })}</Link>
-                    </Button>
-                    <Button size="sm" variant="ghost" onClick={() => setArchivingProductId(product.id)}>
-                      {t('archive', { ns: 'common' })}
-                    </Button>
-                  </>
-                ) : null}
-              </div>
-            ),
-          },
-        ]}
-        items={products}
-        empty={
-          <EmptyState
-            title={t('noProductsTitle')}
-            description={t('noProductsDescription')}
-            action={permissions.canManageProducts ? (
-              <Button asChild>
-                <Link to="/products/new">
-                  <Plus className="h-4 w-4" />
-                  {t('addProduct')}
-                </Link>
-              </Button>
-            ) : undefined}
-          />
-        }
-        rowKey={(product) => product.id}
-      />
+              ) : undefined}
+            />
+          }
+          rowKey={(product) => product.id}
+        />
+      </div>
       <PaginationControls pagination={productsQuery.data?.pagination} onPageChange={setPage} />
 
       <ConfirmDialog

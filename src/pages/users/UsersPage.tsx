@@ -230,7 +230,7 @@ export function UsersPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="animate-fade-in-up space-y-6">
       <PageHeader
         title="Users"
         description="Create organization users, resend setup links, and control role and branch access without leaving the active workspace."
@@ -261,82 +261,84 @@ export function UsersPage() {
         <SearchInput value={search} onChange={(event) => setSearch(event.target.value)} placeholder={t('searchUsersPlaceholder', { ns: 'common' })} />
       </FilterBar>
 
-      <DataTable
-        items={users}
-        rowKey={(user) => user.id}
-        empty={<EmptyState title="No organization users yet" description="Invite your first store owner, manager, or staff member to start the onboarding flow." />}
-        columns={[
-          {
-            key: 'identity',
-            header: 'User',
-            render: (user) => (
-              <div>
-                <p className="font-medium text-slate-900">{user.fullName}</p>
-                <p className="text-xs text-slate-500">{user.email}</p>
-              </div>
-            ),
-          },
-          {
-            key: 'role',
-            header: 'Role',
-            render: (user) => (
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge>{getUserRoleLabel(t, user.role)}</Badge>
-                {user.isDefault ? <Badge tone="muted">Default</Badge> : null}
-              </div>
-            ),
-          },
-          {
-            key: 'access',
-            header: 'Branch access',
-            render: (user) =>
-              user.branchAccess.scope === 'ALL'
-                ? t('allBranches')
-                : `${user.accessibleBranches.map((branch) => branch.name).join(', ') || user.branchAccess.branchIds.length} ${t('selectedBranches').toLowerCase()}`,
-          },
-          {
-            key: 'status',
-            header: 'Status',
-            render: (user) => <StatusBadge value={user.status} />,
-          },
-          {
-            key: 'lastLogin',
-            header: 'Last login',
-            render: (user) => formatDateTime(user.lastLoginAt),
-          },
-          {
-            key: 'actions',
-            header: 'Actions',
-            render: (user) => (
-              <div className="flex gap-2">
-                <Button size="sm" variant="outline" onClick={() => openEdit(user)}>
-                  Edit
-                </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={async () => {
-                    try {
-                      const link = await generateAccessLinkMutation.mutateAsync(user.id)
-                      setLatestAccessLink({
-                        label: link.purpose === 'ACCOUNT_SETUP' ? 'Setup link' : 'Reset link',
-                        sentTo: link.sentTo,
-                        expiresAt: link.expiresAt,
-                      })
-                      toast.success('Access link generated')
-                    } catch (error) {
-                      toast.error(parseApiError(error).message)
-                    }
-                  }}
-                >
-                  <KeyRound className="h-4 w-4" />
-                  Link
-                </Button>
-              </div>
-            ),
-          },
-        ]}
-      />
+      <div className="rows-animate-in">
+        <DataTable
+          items={users}
+          rowKey={(user) => user.id}
+          empty={<EmptyState title="No organization users yet" description="Invite your first store owner, manager, or staff member to start the onboarding flow." />}
+          columns={[
+            {
+              key: 'identity',
+              header: 'User',
+              render: (user) => (
+                <div>
+                  <p className="font-medium text-slate-900">{user.fullName}</p>
+                  <p className="text-xs text-slate-500">{user.email}</p>
+                </div>
+              ),
+            },
+            {
+              key: 'role',
+              header: 'Role',
+              render: (user) => (
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge>{getUserRoleLabel(t, user.role)}</Badge>
+                  {user.isDefault ? <Badge tone="muted">Default</Badge> : null}
+                </div>
+              ),
+            },
+            {
+              key: 'access',
+              header: 'Branch access',
+              render: (user) =>
+                user.branchAccess.scope === 'ALL'
+                  ? t('allBranches')
+                  : `${user.accessibleBranches.map((branch) => branch.name).join(', ') || user.branchAccess.branchIds.length} ${t('selectedBranches').toLowerCase()}`,
+            },
+            {
+              key: 'status',
+              header: 'Status',
+              render: (user) => <StatusBadge value={user.status} />,
+            },
+            {
+              key: 'lastLogin',
+              header: 'Last login',
+              render: (user) => formatDateTime(user.lastLoginAt),
+            },
+            {
+              key: 'actions',
+              header: 'Actions',
+              render: (user) => (
+                <div className="flex gap-2">
+                  <Button size="sm" variant="outline" onClick={() => openEdit(user)}>
+                    Edit
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={async () => {
+                      try {
+                        const link = await generateAccessLinkMutation.mutateAsync(user.id)
+                        setLatestAccessLink({
+                          label: link.purpose === 'ACCOUNT_SETUP' ? 'Setup link' : 'Reset link',
+                          sentTo: link.sentTo,
+                          expiresAt: link.expiresAt,
+                        })
+                        toast.success('Access link generated')
+                      } catch (error) {
+                        toast.error(parseApiError(error).message)
+                      }
+                    }}
+                  >
+                    <KeyRound className="h-4 w-4" />
+                    Link
+                  </Button>
+                </div>
+              ),
+            },
+          ]}
+        />
+      </div>
 
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <DialogContent className="max-w-3xl">

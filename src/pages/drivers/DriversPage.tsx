@@ -40,7 +40,7 @@ export function DriversPage() {
   const drivers = driversQuery.data ?? []
 
   return (
-    <div className="space-y-6">
+    <div className="animate-fade-in-up space-y-6">
       <PageHeader
         title="Drivers"
         description="Verify or suspend drivers in the platform-wide delivery pool. Any shop's staff can assign a verified driver to a ready order."
@@ -55,72 +55,74 @@ export function DriversPage() {
         />
       </FilterBar>
 
-      <DataTable
-        items={drivers}
-        rowKey={(driver) => driver.id}
-        empty={<EmptyState title="No drivers found" description="No drivers match this filter yet. Drivers appear here once they self-register in the NearCart driver app." />}
-        columns={[
-          {
-            key: 'identity',
-            header: 'Driver',
-            render: (driver) => (
-              <div>
-                <p className="font-medium text-slate-900">{driver.fullName}</p>
-                <p className="text-xs text-slate-500">{driver.phone}{driver.email ? ` · ${driver.email}` : ''}</p>
-              </div>
-            ),
-          },
-          {
-            key: 'vehicle',
-            header: 'Vehicle',
-            render: (driver) => (
-              <div>
-                <p className="text-slate-700">{driver.vehicleType}</p>
-                <p className="text-xs text-slate-500">{driver.vehicleNumber}</p>
-              </div>
-            ),
-          },
-          {
-            key: 'status',
-            header: 'Status',
-            render: (driver) => <StatusBadge value={driver.status} />,
-          },
-          {
-            key: 'actions',
-            header: 'Actions',
-            render: (driver) => (
-              <div className="flex gap-2">
-                {driver.status !== 'VERIFIED' ? (
-                  <Button
-                    size="sm"
-                    loading={verifyMutation.isPending && verifyingDriverId === driver.id}
-                    loadingText="Verifying..."
-                    disabled={verifyMutation.isPending && verifyingDriverId !== driver.id}
-                    onClick={async () => {
-                      setVerifyingDriverId(driver.id)
-                      try {
-                        await verifyMutation.mutateAsync(driver.id)
-                        toast.success(`${driver.fullName} verified`)
-                      } catch (error) {
-                        toast.error(parseApiError(error).message)
-                      } finally {
-                        setVerifyingDriverId(null)
-                      }
-                    }}
-                  >
-                    Verify
-                  </Button>
-                ) : null}
-                {driver.status === 'VERIFIED' ? (
-                  <Button size="sm" variant="outline" onClick={() => setSuspendingDriver(driver)}>
-                    Suspend
-                  </Button>
-                ) : null}
-              </div>
-            ),
-          },
-        ]}
-      />
+      <div className="rows-animate-in">
+        <DataTable
+          items={drivers}
+          rowKey={(driver) => driver.id}
+          empty={<EmptyState title="No drivers found" description="No drivers match this filter yet. Drivers appear here once they self-register in the NearCart driver app." />}
+          columns={[
+            {
+              key: 'identity',
+              header: 'Driver',
+              render: (driver) => (
+                <div>
+                  <p className="font-medium text-slate-900">{driver.fullName}</p>
+                  <p className="text-xs text-slate-500">{driver.phone}{driver.email ? ` · ${driver.email}` : ''}</p>
+                </div>
+              ),
+            },
+            {
+              key: 'vehicle',
+              header: 'Vehicle',
+              render: (driver) => (
+                <div>
+                  <p className="text-slate-700">{driver.vehicleType}</p>
+                  <p className="text-xs text-slate-500">{driver.vehicleNumber}</p>
+                </div>
+              ),
+            },
+            {
+              key: 'status',
+              header: 'Status',
+              render: (driver) => <StatusBadge value={driver.status} />,
+            },
+            {
+              key: 'actions',
+              header: 'Actions',
+              render: (driver) => (
+                <div className="flex gap-2">
+                  {driver.status !== 'VERIFIED' ? (
+                    <Button
+                      size="sm"
+                      loading={verifyMutation.isPending && verifyingDriverId === driver.id}
+                      loadingText="Verifying..."
+                      disabled={verifyMutation.isPending && verifyingDriverId !== driver.id}
+                      onClick={async () => {
+                        setVerifyingDriverId(driver.id)
+                        try {
+                          await verifyMutation.mutateAsync(driver.id)
+                          toast.success(`${driver.fullName} verified`)
+                        } catch (error) {
+                          toast.error(parseApiError(error).message)
+                        } finally {
+                          setVerifyingDriverId(null)
+                        }
+                      }}
+                    >
+                      Verify
+                    </Button>
+                  ) : null}
+                  {driver.status === 'VERIFIED' ? (
+                    <Button size="sm" variant="outline" onClick={() => setSuspendingDriver(driver)}>
+                      Suspend
+                    </Button>
+                  ) : null}
+                </div>
+              ),
+            },
+          ]}
+        />
+      </div>
 
       <ConfirmDialog
         open={Boolean(suspendingDriver)}

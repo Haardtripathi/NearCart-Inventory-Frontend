@@ -231,7 +231,7 @@ export function DisclosurePanel({
 }) {
   return (
     <details className={cn('group rounded-md border border-slate-200 bg-slate-50/80', className)} open={defaultOpen}>
-      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3.5 text-left">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-md px-4 py-3.5 text-left focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/15">
         <div className="space-y-1">
           <p className="text-sm font-semibold text-slate-900">{title}</p>
           {description ? <p className="text-xs leading-5 text-slate-500">{description}</p> : null}

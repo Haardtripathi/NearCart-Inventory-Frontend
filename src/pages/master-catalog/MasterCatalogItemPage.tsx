@@ -119,7 +119,7 @@ export function MasterCatalogItemPage() {
   )
 
   return (
-    <div className="space-y-6">
+    <div className="animate-fade-in-up space-y-6">
       <PageHeader
         title={getDisplayName(item)}
         description={item.displayDescription ?? item.canonicalDescription ?? 'No description available.'}
@@ -184,40 +184,42 @@ export function MasterCatalogItemPage() {
       </div>
 
       <SectionCard title={t('variantTemplatesTitle')} description={t('variantTemplatesDescription')}>
-        <DataTable
-          columns={[
-            {
-              key: 'name',
-              header: 'Template',
-              render: (variant) => {
-                const facts = buildVariantTemplateFacts(variant)
+        <div className="rows-animate-in">
+          <DataTable
+            columns={[
+              {
+                key: 'name',
+                header: 'Template',
+                render: (variant) => {
+                  const facts = buildVariantTemplateFacts(variant)
 
-                return (
-                  <div>
-                    <p className="font-medium text-slate-900">{getDisplayName(variant)}</p>
-                    {facts.length ? <p className="mt-1 text-xs text-slate-500">{facts.join(' · ')}</p> : null}
-                  </div>
-                )
+                  return (
+                    <div>
+                      <p className="font-medium text-slate-900">{getDisplayName(variant)}</p>
+                      {facts.length ? <p className="mt-1 text-xs text-slate-500">{facts.join(' · ')}</p> : null}
+                    </div>
+                  )
+                },
               },
-            },
-            { key: 'code', header: 'Code', render: (variant) => variant.code },
-            {
-              key: 'prices',
-              header: 'Defaults',
-              render: (variant) => (
-                <span>
-                  {variant.defaultSellingPrice ?? '—'} / {variant.defaultCostPrice ?? '—'}
-                  {variant.defaultMrp ? ` / ${variant.defaultMrp}` : ''}
-                </span>
-              ),
-            },
-            { key: 'levels', header: 'Levels', render: (variant) => <span>{variant.reorderLevel} / {variant.minStockLevel}</span> },
-            { key: 'status', header: 'Status', render: (variant) => <StatusBadge value={variant.isActive ? 'ACTIVE' : 'INACTIVE'} /> },
-          ]}
-          items={item.variantTemplates}
-          empty={<EmptyState title={t('noVariantTemplatesTitle')} description={t('noVariantTemplatesDescription')} />}
-          rowKey={(variant) => variant.id}
-        />
+              { key: 'code', header: 'Code', render: (variant) => variant.code },
+              {
+                key: 'prices',
+                header: 'Defaults',
+                render: (variant) => (
+                  <span>
+                    {variant.defaultSellingPrice ?? '—'} / {variant.defaultCostPrice ?? '—'}
+                    {variant.defaultMrp ? ` / ${variant.defaultMrp}` : ''}
+                  </span>
+                ),
+              },
+              { key: 'levels', header: 'Levels', render: (variant) => <span>{variant.reorderLevel} / {variant.minStockLevel}</span> },
+              { key: 'status', header: 'Status', render: (variant) => <StatusBadge value={variant.isActive ? 'ACTIVE' : 'INACTIVE'} /> },
+            ]}
+            items={item.variantTemplates}
+            empty={<EmptyState title={t('noVariantTemplatesTitle')} description={t('noVariantTemplatesDescription')} />}
+            rowKey={(variant) => variant.id}
+          />
+        </div>
       </SectionCard>
 
       <ImportMasterItemDialog item={item} onOpenChange={setImportOpen} open={importOpen} />

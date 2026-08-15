@@ -90,7 +90,7 @@ export function SuppliersPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="animate-fade-in-up space-y-6">
       <PageHeader
         title={t('suppliers:title')}
         description={t('suppliers:description')}
@@ -102,27 +102,29 @@ export function SuppliersPage() {
           setSearch(event.target.value)
         }} placeholder={t('suppliers:searchPlaceholder')} />
       </FilterBar>
-      <DataTable
-        columns={[
-          { key: 'name', header: t('suppliers:name'), render: (supplier) => <div><p className="font-medium text-slate-900">{getDisplayName(supplier, supplier.name)}</p><p className="text-xs text-slate-500">{supplier.code ?? 'No code'}</p></div> },
-          { key: 'contact', header: t('suppliers:contactDetails'), render: (supplier) => supplier.phone || supplier.email || '—' },
-          { key: 'tax', header: t('suppliers:taxNumber'), render: (supplier) => supplier.taxNumber || '—' },
-          { key: 'status', header: t('common:status'), render: (supplier) => <StatusBadge value={supplier.isActive ? 'ACTIVE' : 'INACTIVE'} /> },
-          {
-            key: 'actions',
-            header: t('common:actions'),
-            render: (supplier) => (
-              <div className="flex gap-2">
-                <Button size="sm" variant="outline" onClick={() => openEdit(supplier)} disabled={!permissions.canManageCatalog}>{t('common:edit')}</Button>
-                <Button size="sm" variant="ghost" onClick={() => setDeletingSupplier(supplier)} disabled={!permissions.canManageCatalog}>{t('common:archive')}</Button>
-              </div>
-            ),
-          },
-        ]}
-        items={items}
-        empty={<EmptyState title={t('suppliers:noSuppliersTitle')} description={t('suppliers:noSuppliersDescription')} />}
-        rowKey={(supplier) => supplier.id}
-      />
+      <div className="rows-animate-in">
+        <DataTable
+          columns={[
+            { key: 'name', header: t('suppliers:name'), render: (supplier) => <div><p className="font-medium text-slate-900">{getDisplayName(supplier, supplier.name)}</p><p className="text-xs text-slate-500">{supplier.code ?? 'No code'}</p></div> },
+            { key: 'contact', header: t('suppliers:contactDetails'), render: (supplier) => supplier.phone || supplier.email || '—' },
+            { key: 'tax', header: t('suppliers:taxNumber'), render: (supplier) => supplier.taxNumber || '—' },
+            { key: 'status', header: t('common:status'), render: (supplier) => <StatusBadge value={supplier.isActive ? 'ACTIVE' : 'INACTIVE'} /> },
+            {
+              key: 'actions',
+              header: t('common:actions'),
+              render: (supplier) => (
+                <div className="flex gap-2">
+                  <Button size="sm" variant="outline" onClick={() => openEdit(supplier)} disabled={!permissions.canManageCatalog}>{t('common:edit')}</Button>
+                  <Button size="sm" variant="ghost" onClick={() => setDeletingSupplier(supplier)} disabled={!permissions.canManageCatalog}>{t('common:archive')}</Button>
+                </div>
+              ),
+            },
+          ]}
+          items={items}
+          empty={<EmptyState title={t('suppliers:noSuppliersTitle')} description={t('suppliers:noSuppliersDescription')} />}
+          rowKey={(supplier) => supplier.id}
+        />
+      </div>
       <PaginationControls pagination={suppliersQuery.data?.pagination} onPageChange={setPage} />
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>

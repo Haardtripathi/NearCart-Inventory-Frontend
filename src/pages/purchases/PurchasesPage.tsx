@@ -31,7 +31,7 @@ export function PurchasesPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="animate-fade-in-up space-y-6">
       <PageHeader
         title="Purchases"
         description="Create draft purchase receipts and post them when stock is received."
@@ -54,19 +54,21 @@ export function PurchasesPage() {
           setBranchId(value)
         }} />
       </FilterBar>
-      <DataTable
-        columns={[
-          { key: 'receipt', header: 'Receipt number', render: (purchase) => <Link className="font-medium text-slate-900 hover:text-primary" to={`/purchases/${purchase.id}`}>{purchase.receiptNumber}</Link> },
-          { key: 'supplier', header: 'Supplier', render: (purchase) => purchase.supplier?.name ?? '—' },
-          { key: 'branch', header: 'Branch', render: (purchase) => purchase.branch.name },
-          { key: 'status', header: 'Status', render: (purchase) => <StatusBadge value={purchase.status} /> },
-          { key: 'total', header: 'Total', render: (purchase) => <CurrencyText value={purchase.total} /> },
-          { key: 'invoiceDate', header: 'Invoice date', render: (purchase) => formatDate(purchase.invoiceDate) },
-        ]}
-        items={purchasesQuery.data?.items ?? []}
-        empty={<EmptyState title="No purchases yet" description="Create a purchase receipt to bring stock into a branch." />}
-        rowKey={(purchase) => purchase.id}
-      />
+      <div className="rows-animate-in">
+        <DataTable
+          columns={[
+            { key: 'receipt', header: 'Receipt number', render: (purchase) => <Link className="font-medium text-slate-900 hover:text-primary" to={`/purchases/${purchase.id}`}>{purchase.receiptNumber}</Link> },
+            { key: 'supplier', header: 'Supplier', render: (purchase) => purchase.supplier?.name ?? '—' },
+            { key: 'branch', header: 'Branch', render: (purchase) => purchase.branch.name },
+            { key: 'status', header: 'Status', render: (purchase) => <StatusBadge value={purchase.status} /> },
+            { key: 'total', header: 'Total', render: (purchase) => <CurrencyText value={purchase.total} /> },
+            { key: 'invoiceDate', header: 'Invoice date', render: (purchase) => formatDate(purchase.invoiceDate) },
+          ]}
+          items={purchasesQuery.data?.items ?? []}
+          empty={<EmptyState title="No purchases yet" description="Create a purchase receipt to bring stock into a branch." />}
+          rowKey={(purchase) => purchase.id}
+        />
+      </div>
       <PaginationControls pagination={purchasesQuery.data?.pagination} onPageChange={setPage} />
     </div>
   )

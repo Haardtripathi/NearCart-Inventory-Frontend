@@ -28,7 +28,7 @@ export function StockTransferDetailPage() {
   const transfer = transferQuery.data
 
   return (
-    <div className="space-y-6">
+    <div className="animate-fade-in-up space-y-6">
       <PageHeader
         title={`Transfer ${transfer.transferNumber}`}
         description={`Created ${formatDateTime(transfer.createdAt)} · ${transfer.fromBranch.name} → ${transfer.toBranch.name}`}
@@ -68,17 +68,19 @@ export function StockTransferDetailPage() {
         {transfer.notes ? <InlineNotice className="mt-4">{transfer.notes}</InlineNotice> : null}
       </SectionCard>
       <SectionCard title="Items" description="Each line will move stock out of one branch and into another on approval.">
-        <DataTable
-          columns={[
-            { key: 'product', header: 'Product', render: (item) => item.product?.displayName ?? item.product?.name ?? '—' },
-            { key: 'variant', header: 'Variant', render: (item) => item.variant?.displayName ?? item.variant?.name ?? '—' },
-            { key: 'quantity', header: 'Quantity', render: (item) => <QuantityText value={item.quantity} /> },
-            { key: 'unitCost', header: 'Unit cost', render: (item) => <CurrencyText value={item.unitCost} /> },
-          ]}
-          items={transfer.items}
-          empty={<EmptyState title="No transfer items" />}
-          rowKey={(item, index) => item.id ?? index}
-        />
+        <div className="rows-animate-in">
+          <DataTable
+            columns={[
+              { key: 'product', header: 'Product', render: (item) => item.product?.displayName ?? item.product?.name ?? '—' },
+              { key: 'variant', header: 'Variant', render: (item) => item.variant?.displayName ?? item.variant?.name ?? '—' },
+              { key: 'quantity', header: 'Quantity', render: (item) => <QuantityText value={item.quantity} /> },
+              { key: 'unitCost', header: 'Unit cost', render: (item) => <CurrencyText value={item.unitCost} /> },
+            ]}
+            items={transfer.items}
+            empty={<EmptyState title="No transfer items" />}
+            rowKey={(item, index) => item.id ?? index}
+          />
+        </div>
       </SectionCard>
     </div>
   )

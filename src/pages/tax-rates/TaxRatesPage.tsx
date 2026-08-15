@@ -91,7 +91,7 @@ export function TaxRatesPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="animate-fade-in-up space-y-6">
       <PageHeader
         title={t('taxRates:title')}
         description={t('taxRates:description')}
@@ -112,70 +112,72 @@ export function TaxRatesPage() {
         }} placeholder={t('taxRates:searchPlaceholder')} />
       </FilterBar>
 
-      <DataTable<TaxRate>
-        columns={[
-          {
-            key: 'name',
-            header: t('taxRates:name'),
-            render: (taxRate) => (
-              <div>
-                <p className="font-medium text-slate-900">{getDisplayName(taxRate, taxRate.name)}</p>
-                {taxRate.code ? <p className="text-xs text-slate-500">{taxRate.code}</p> : null}
-              </div>
-            ),
-          },
-          {
-            key: 'rate',
-            header: t('taxRates:rate'),
-            render: (taxRate) => <span className="font-mono text-sm font-medium text-slate-900">{Number(taxRate.rate)}%</span>,
-          },
-          {
-            key: 'inclusive',
-            header: t('taxRates:taxType'),
-            render: (taxRate) => (
-              <Badge tone={taxRate.isInclusive ? 'info' : 'muted'}>
-                {taxRate.isInclusive ? t('taxRates:inclusive') : t('taxRates:exclusive')}
-              </Badge>
-            ),
-          },
-          { key: 'status', header: t('common:status'), render: (taxRate) => <StatusBadge value={taxRate.isActive ? 'ACTIVE' : 'INACTIVE'} /> },
-          {
-            key: 'actions',
-            header: t('common:actions'),
-            render: (taxRate) => (
-              <div className="flex gap-2">
-                <Button size="sm" variant="outline" onClick={() => openEdit(taxRate)} disabled={!permissions.canManageCatalog}>
-                  {t('common:edit')}
-                </Button>
-                {taxRate.isActive ? (
-                  <Button size="sm" variant="ghost" onClick={() => setTogglingTaxRate(taxRate)} disabled={!permissions.canManageCatalog}>
-                    {t('taxRates:deactivateLabel')}
+      <div className="rows-animate-in">
+        <DataTable<TaxRate>
+          columns={[
+            {
+              key: 'name',
+              header: t('taxRates:name'),
+              render: (taxRate) => (
+                <div>
+                  <p className="font-medium text-slate-900">{getDisplayName(taxRate, taxRate.name)}</p>
+                  {taxRate.code ? <p className="text-xs text-slate-500">{taxRate.code}</p> : null}
+                </div>
+              ),
+            },
+            {
+              key: 'rate',
+              header: t('taxRates:rate'),
+              render: (taxRate) => <span className="font-mono text-sm font-medium text-slate-900">{Number(taxRate.rate)}%</span>,
+            },
+            {
+              key: 'inclusive',
+              header: t('taxRates:taxType'),
+              render: (taxRate) => (
+                <Badge tone={taxRate.isInclusive ? 'info' : 'muted'}>
+                  {taxRate.isInclusive ? t('taxRates:inclusive') : t('taxRates:exclusive')}
+                </Badge>
+              ),
+            },
+            { key: 'status', header: t('common:status'), render: (taxRate) => <StatusBadge value={taxRate.isActive ? 'ACTIVE' : 'INACTIVE'} /> },
+            {
+              key: 'actions',
+              header: t('common:actions'),
+              render: (taxRate) => (
+                <div className="flex gap-2">
+                  <Button size="sm" variant="outline" onClick={() => openEdit(taxRate)} disabled={!permissions.canManageCatalog}>
+                    {t('common:edit')}
                   </Button>
-                ) : (
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    disabled={!permissions.canManageCatalog || updateTaxRateMutation.isPending}
-                    onClick={async () => {
-                      try {
-                        await updateTaxRateMutation.mutateAsync({ id: taxRate.id, payload: { isActive: true } })
-                        toast.success(t('taxRates:activated'))
-                      } catch (error) {
-                        toast.error(parseApiError(error).message || t('taxRates:activateFailed'))
-                      }
-                    }}
-                  >
-                    {t('taxRates:activateLabel')}
-                  </Button>
-                )}
-              </div>
-            ),
-          },
-        ]}
-        empty={<EmptyState title={t('taxRates:noTaxRatesTitle')} description={t('taxRates:noTaxRatesDescription')} />}
-        items={taxRates}
-        rowKey={(taxRate) => taxRate.id}
-      />
+                  {taxRate.isActive ? (
+                    <Button size="sm" variant="ghost" onClick={() => setTogglingTaxRate(taxRate)} disabled={!permissions.canManageCatalog}>
+                      {t('taxRates:deactivateLabel')}
+                    </Button>
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      disabled={!permissions.canManageCatalog || updateTaxRateMutation.isPending}
+                      onClick={async () => {
+                        try {
+                          await updateTaxRateMutation.mutateAsync({ id: taxRate.id, payload: { isActive: true } })
+                          toast.success(t('taxRates:activated'))
+                        } catch (error) {
+                          toast.error(parseApiError(error).message || t('taxRates:activateFailed'))
+                        }
+                      }}
+                    >
+                      {t('taxRates:activateLabel')}
+                    </Button>
+                  )}
+                </div>
+              ),
+            },
+          ]}
+          empty={<EmptyState title={t('taxRates:noTaxRatesTitle')} description={t('taxRates:noTaxRatesDescription')} />}
+          items={taxRates}
+          rowKey={(taxRate) => taxRate.id}
+        />
+      </div>
 
       <PaginationControls pagination={taxRatesQuery.data?.pagination} onPageChange={setPage} />
 

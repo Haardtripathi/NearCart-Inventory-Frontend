@@ -157,7 +157,7 @@ export function BranchesPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="animate-fade-in-up space-y-6">
       <PageHeader
         title={t('branches:title')}
         description={t('branches:description')}
@@ -178,31 +178,33 @@ export function BranchesPage() {
         }} placeholder={t('branches:searchPlaceholder')} />
       </FilterBar>
 
-      <DataTable
-        columns={[
-          { key: 'name', header: t('branches:name'), render: (branch) => <div><p className="font-medium text-slate-900">{getDisplayName(branch)}</p><p className="text-xs text-slate-500">{branch.code}</p></div> },
-          { key: 'type', header: t('branches:type'), render: (branch) => getBranchTypeLabel(t, branch.type) },
-          { key: 'location', header: t('branches:location'), render: (branch) => [branch.city, branch.state, branch.country].filter(Boolean).join(', ') || '—' },
-          { key: 'status', header: t('common:status'), render: (branch) => <StatusBadge value={branch.isActive ? 'ACTIVE' : 'INACTIVE'} /> },
-          {
-            key: 'actions',
-            header: t('common:actions'),
-            render: (branch) => (
-              <div className="flex gap-2">
-                <Button size="sm" variant="outline" onClick={() => openEdit(branch)} disabled={!permissions.canManageCatalog}>
-                  {t('common:edit')}
-                </Button>
-                <Button size="sm" variant="ghost" onClick={() => setDeletingBranch(branch)} disabled={!permissions.canManageCatalog}>
-                  {t('common:archive')}
-                </Button>
-              </div>
-            ),
-          },
-        ]}
-        empty={<EmptyState title={t('branches:noBranchesTitle')} description={t('branches:noBranchesDescription')} />}
-        items={branches}
-        rowKey={(branch) => branch.id}
-      />
+      <div className="rows-animate-in">
+        <DataTable
+          columns={[
+            { key: 'name', header: t('branches:name'), render: (branch) => <div><p className="font-medium text-slate-900">{getDisplayName(branch)}</p><p className="text-xs text-slate-500">{branch.code}</p></div> },
+            { key: 'type', header: t('branches:type'), render: (branch) => getBranchTypeLabel(t, branch.type) },
+            { key: 'location', header: t('branches:location'), render: (branch) => [branch.city, branch.state, branch.country].filter(Boolean).join(', ') || '—' },
+            { key: 'status', header: t('common:status'), render: (branch) => <StatusBadge value={branch.isActive ? 'ACTIVE' : 'INACTIVE'} /> },
+            {
+              key: 'actions',
+              header: t('common:actions'),
+              render: (branch) => (
+                <div className="flex gap-2">
+                  <Button size="sm" variant="outline" onClick={() => openEdit(branch)} disabled={!permissions.canManageCatalog}>
+                    {t('common:edit')}
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => setDeletingBranch(branch)} disabled={!permissions.canManageCatalog}>
+                    {t('common:archive')}
+                  </Button>
+                </div>
+              ),
+            },
+          ]}
+          empty={<EmptyState title={t('branches:noBranchesTitle')} description={t('branches:noBranchesDescription')} />}
+          items={branches}
+          rowKey={(branch) => branch.id}
+        />
+      </div>
 
       <PaginationControls pagination={branchesQuery.data?.pagination} onPageChange={setPage} />
 

@@ -333,7 +333,7 @@ export function HomePage() {
       <main>
         <section className="relative overflow-hidden">
           <div aria-hidden="true" className="absolute inset-x-0 top-0 h-[32rem] bg-[radial-gradient(circle_at_top_left,rgba(252,128,25,0.18),transparent_42%),radial-gradient(circle_at_top_right,rgba(252,128,25,0.10),transparent_36%)]" />
-          <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 sm:py-18 lg:grid-cols-[1.02fr_0.98fr] lg:items-center lg:px-8 lg:py-22">
+          <div className="stagger-in mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 sm:py-18 lg:grid-cols-[1.02fr_0.98fr] lg:items-center lg:px-8 lg:py-22">
             <div className="relative">
               <div className="inline-flex rounded-full border border-primary/20 bg-white/85 px-3 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-primary shadow-sm">
                 NearCart Inventory
@@ -393,7 +393,9 @@ export function HomePage() {
                       </span>
                       <button
                         type="button"
-                        className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm shadow-primary/25 transition hover:bg-primary-hover"
+                        tabIndex={-1}
+                        aria-hidden="true"
+                        className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm shadow-primary/25 transition hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/15"
                       >
                         <PackagePlus className="h-4 w-4" />
                         Add product

@@ -52,7 +52,7 @@ export function SalesOrderDetailPage() {
   const order = orderQuery.data
 
   return (
-    <div className="space-y-6">
+    <div className="animate-fade-in-up space-y-6">
       <PageHeader
         title={`Sales order ${order.orderNumber}`}
         description={`Created ${formatDateTime(order.createdAt)} · Branch ${order.branch.name}`}
@@ -198,19 +198,21 @@ export function SalesOrderDetailPage() {
         </SectionCard>
       ) : null}
       <SectionCard title="Order items" description="Current order line items from the backend.">
-        <DataTable
-          columns={[
-            { key: 'product', header: 'Product', render: (item) => item.productNameSnapshot ?? item.product?.name ?? '—' },
-            { key: 'variant', header: 'Variant', render: (item) => item.variantNameSnapshot ?? item.variant?.name ?? '—' },
-            { key: 'sku', header: 'SKU', render: (item) => item.skuSnapshot ?? item.variant?.sku ?? '—' },
-            { key: 'quantity', header: 'Quantity', render: (item) => <QuantityText value={item.quantity} /> },
-            { key: 'unitPrice', header: 'Unit price', render: (item) => <CurrencyText value={item.unitPrice} /> },
-            { key: 'lineTotal', header: 'Line total', render: (item) => <CurrencyText value={item.lineTotal} /> },
-          ]}
-          items={order.items}
-          empty={<EmptyState title="No order items" />}
-          rowKey={(item, index) => item.id ?? index}
-        />
+        <div className="rows-animate-in">
+          <DataTable
+            columns={[
+              { key: 'product', header: 'Product', render: (item) => item.productNameSnapshot ?? item.product?.name ?? '—' },
+              { key: 'variant', header: 'Variant', render: (item) => item.variantNameSnapshot ?? item.variant?.name ?? '—' },
+              { key: 'sku', header: 'SKU', render: (item) => item.skuSnapshot ?? item.variant?.sku ?? '—' },
+              { key: 'quantity', header: 'Quantity', render: (item) => <QuantityText value={item.quantity} /> },
+              { key: 'unitPrice', header: 'Unit price', render: (item) => <CurrencyText value={item.unitPrice} /> },
+              { key: 'lineTotal', header: 'Line total', render: (item) => <CurrencyText value={item.lineTotal} /> },
+            ]}
+            items={order.items}
+            empty={<EmptyState title="No order items" />}
+            rowKey={(item, index) => item.id ?? index}
+          />
+        </div>
       </SectionCard>
 
       <Dialog open={rejectOpen} onOpenChange={setRejectOpen}>

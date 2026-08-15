@@ -73,7 +73,7 @@ export function PlatformOrganizationsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="animate-fade-in-up space-y-6">
       <PageHeader eyebrow="Platform" title={t('organizationsTitle')} description={t('organizationsDescription')} />
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -108,64 +108,66 @@ export function PlatformOrganizationsPage() {
       </FilterBar>
 
       <SectionCard title={t('organizationsTitle')} description={t('organizationsDescription')}>
-        <DataTable
-          items={organizations}
-          rowKey={(organization) => organization.id}
-          empty={<EmptyState title={t('noOrganizationsTitle')} description={t('noOrganizationsDescription')} />}
-          columns={[
-            {
-              key: 'organization',
-              header: t('organizationColumn'),
-              render: (organization) => (
-                <div>
-                  <p className="font-medium text-slate-900">{organization.name}</p>
-                  <p className="text-xs text-slate-500">{organization.slug}</p>
-                </div>
-              ),
-            },
-            {
-              key: 'status',
-              header: t('statusColumn'),
-              render: (organization) => <StatusBadge value={organization.status} />,
-            },
-            {
-              key: 'branches',
-              header: t('branchesColumn'),
-              render: (organization) => (
-                <span className="inline-flex items-center gap-1.5">
-                  <Store className="h-3.5 w-3.5 text-slate-400" />
-                  {organization.branchCount}
-                </span>
-              ),
-            },
-            {
-              key: 'members',
-              header: t('membersColumn'),
-              render: (organization) => (
-                <span className="inline-flex items-center gap-1.5">
-                  <Users className="h-3.5 w-3.5 text-slate-400" />
-                  {organization.memberCount}
-                </span>
-              ),
-            },
-            {
-              key: 'salesOrders',
-              header: t('salesOrdersColumn'),
-              render: (organization) => (
-                <span className="inline-flex items-center gap-1.5">
-                  <ShoppingCart className="h-3.5 w-3.5 text-slate-400" />
-                  {organization.salesOrderCount}
-                </span>
-              ),
-            },
-            {
-              key: 'lastActivity',
-              header: t('lastActivityColumn'),
-              render: (organization) =>
-                organization.lastSalesOrderAt ? formatDateTime(organization.lastSalesOrderAt) : t('noActivityYet'),
-            },
-          ]}
-        />
+        <div className="rows-animate-in">
+          <DataTable
+            items={organizations}
+            rowKey={(organization) => organization.id}
+            empty={<EmptyState title={t('noOrganizationsTitle')} description={t('noOrganizationsDescription')} />}
+            columns={[
+              {
+                key: 'organization',
+                header: t('organizationColumn'),
+                render: (organization) => (
+                  <div>
+                    <p className="font-medium text-slate-900">{organization.name}</p>
+                    <p className="text-xs text-slate-500">{organization.slug}</p>
+                  </div>
+                ),
+              },
+              {
+                key: 'status',
+                header: t('statusColumn'),
+                render: (organization) => <StatusBadge value={organization.status} />,
+              },
+              {
+                key: 'branches',
+                header: t('branchesColumn'),
+                render: (organization) => (
+                  <span className="inline-flex items-center gap-1.5">
+                    <Store className="h-3.5 w-3.5 text-slate-400" />
+                    {organization.branchCount}
+                  </span>
+                ),
+              },
+              {
+                key: 'members',
+                header: t('membersColumn'),
+                render: (organization) => (
+                  <span className="inline-flex items-center gap-1.5">
+                    <Users className="h-3.5 w-3.5 text-slate-400" />
+                    {organization.memberCount}
+                  </span>
+                ),
+              },
+              {
+                key: 'salesOrders',
+                header: t('salesOrdersColumn'),
+                render: (organization) => (
+                  <span className="inline-flex items-center gap-1.5">
+                    <ShoppingCart className="h-3.5 w-3.5 text-slate-400" />
+                    {organization.salesOrderCount}
+                  </span>
+                ),
+              },
+              {
+                key: 'lastActivity',
+                header: t('lastActivityColumn'),
+                render: (organization) =>
+                  organization.lastSalesOrderAt ? formatDateTime(organization.lastSalesOrderAt) : t('noActivityYet'),
+              },
+            ]}
+          />
+        </div>
       </SectionCard>
     </div>
   )

@@ -106,7 +106,7 @@ export function BrandsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="animate-fade-in-up space-y-6">
       <PageHeader
         title={t('brands:title')}
         description={t('brands:description')}
@@ -127,30 +127,32 @@ export function BrandsPage() {
         }} placeholder={t('brands:searchPlaceholder')} />
       </FilterBar>
 
-      <DataTable
-        columns={[
-          { key: 'name', header: t('brands:name'), render: (brand) => <span className="font-medium text-slate-900">{getDisplayName(brand, brand.name)}</span> },
-          { key: 'slug', header: t('brands:slug'), render: (brand) => brand.slug },
-          { key: 'status', header: t('common:status'), render: (brand) => <StatusBadge value={brand.isActive ? 'ACTIVE' : 'INACTIVE'} /> },
-          {
-            key: 'actions',
-            header: t('common:actions'),
-            render: (brand) => (
-              <div className="flex gap-2">
-                <Button size="sm" variant="outline" onClick={() => openEdit(brand)} disabled={!permissions.canManageCatalog}>
-                  {t('common:edit')}
-                </Button>
-                <Button size="sm" variant="ghost" onClick={() => setDeletingBrand(brand)} disabled={!permissions.canManageCatalog}>
-                  {t('common:archive')}
-                </Button>
-              </div>
-            ),
-          },
-        ]}
-        empty={<EmptyState title={t('brands:noBrandsTitle')} description={t('brands:noBrandsDescription')} />}
-        items={brands}
-        rowKey={(brand) => brand.id}
-      />
+      <div className="rows-animate-in">
+        <DataTable
+          columns={[
+            { key: 'name', header: t('brands:name'), render: (brand) => <span className="font-medium text-slate-900">{getDisplayName(brand, brand.name)}</span> },
+            { key: 'slug', header: t('brands:slug'), render: (brand) => brand.slug },
+            { key: 'status', header: t('common:status'), render: (brand) => <StatusBadge value={brand.isActive ? 'ACTIVE' : 'INACTIVE'} /> },
+            {
+              key: 'actions',
+              header: t('common:actions'),
+              render: (brand) => (
+                <div className="flex gap-2">
+                  <Button size="sm" variant="outline" onClick={() => openEdit(brand)} disabled={!permissions.canManageCatalog}>
+                    {t('common:edit')}
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => setDeletingBrand(brand)} disabled={!permissions.canManageCatalog}>
+                    {t('common:archive')}
+                  </Button>
+                </div>
+              ),
+            },
+          ]}
+          empty={<EmptyState title={t('brands:noBrandsTitle')} description={t('brands:noBrandsDescription')} />}
+          items={brands}
+          rowKey={(brand) => brand.id}
+        />
+      </div>
 
       <PaginationControls pagination={brandsQuery.data?.pagination} onPageChange={setPage} />
 

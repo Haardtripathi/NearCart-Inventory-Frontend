@@ -158,7 +158,7 @@ export function CategoriesPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="animate-fade-in-up space-y-6">
       <PageHeader
         eyebrow={t('categories', { ns: 'common' })}
         title={t('title')}
@@ -189,27 +189,29 @@ export function CategoriesPage() {
 
       {view === 'list' ? (
         <>
-          <DataTable
-            columns={[
-              { key: 'name', header: t('category'), render: (category) => <div><p className="font-medium text-slate-900">{getDisplayName(category)}</p><p className="text-xs text-slate-500">{category.slug}</p></div> },
-              { key: 'parent', header: t('parent'), render: (category) => category.parent ? getDisplayName(category.parent) : '—' },
-              { key: 'children', header: t('children'), render: (category) => category.children?.length ?? 0 },
-              { key: 'status', header: t('status', { ns: 'common' }), render: (category) => <StatusBadge value={category.isActive ? 'ACTIVE' : 'INACTIVE'} /> },
-              {
-                key: 'actions',
-                header: t('actions', { ns: 'common' }),
-                render: (category) => (
-                  <div className="flex gap-2">
-                    <Button size="sm" variant="outline" onClick={() => openEdit(category)} disabled={!permissions.canManageCatalog}>{t('edit', { ns: 'common' })}</Button>
-                    <Button size="sm" variant="ghost" onClick={() => setDeletingCategory(category)} disabled={!permissions.canManageCatalog}>{t('archive', { ns: 'common' })}</Button>
-                  </div>
-                ),
-              },
-            ]}
-            items={categoriesQuery.data?.items ?? []}
-            empty={<EmptyState title={t('noCategoriesTitle')} description={t('noCategoriesDescription')} />}
-            rowKey={(category) => category.id}
-          />
+          <div className="rows-animate-in">
+            <DataTable
+              columns={[
+                { key: 'name', header: t('category'), render: (category) => <div><p className="font-medium text-slate-900">{getDisplayName(category)}</p><p className="text-xs text-slate-500">{category.slug}</p></div> },
+                { key: 'parent', header: t('parent'), render: (category) => category.parent ? getDisplayName(category.parent) : '—' },
+                { key: 'children', header: t('children'), render: (category) => category.children?.length ?? 0 },
+                { key: 'status', header: t('status', { ns: 'common' }), render: (category) => <StatusBadge value={category.isActive ? 'ACTIVE' : 'INACTIVE'} /> },
+                {
+                  key: 'actions',
+                  header: t('actions', { ns: 'common' }),
+                  render: (category) => (
+                    <div className="flex gap-2">
+                      <Button size="sm" variant="outline" onClick={() => openEdit(category)} disabled={!permissions.canManageCatalog}>{t('edit', { ns: 'common' })}</Button>
+                      <Button size="sm" variant="ghost" onClick={() => setDeletingCategory(category)} disabled={!permissions.canManageCatalog}>{t('archive', { ns: 'common' })}</Button>
+                    </div>
+                  ),
+                },
+              ]}
+              items={categoriesQuery.data?.items ?? []}
+              empty={<EmptyState title={t('noCategoriesTitle')} description={t('noCategoriesDescription')} />}
+              rowKey={(category) => category.id}
+            />
+          </div>
           <PaginationControls pagination={categoriesQuery.data?.pagination} onPageChange={setPage} />
         </>
       ) : (
