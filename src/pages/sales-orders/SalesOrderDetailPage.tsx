@@ -16,11 +16,13 @@ import { useVerifiedDriversQuery } from '@/features/drivers/drivers.api'
 import { CurrencyText, QuantityText } from '@/components/inventory/selectors'
 import { DataTable, DetailGrid, DetailItem, EmptyState, ErrorState, InlineNotice, LoadingState, PageHeader, SectionCard, StatusBadge } from '@/components/common'
 import { Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Input, OptionSelect } from '@/components/ui'
+import { usePermissions } from '@/hooks/usePermissions'
 import { formatDateTime, parseApiError } from '@/lib/utils'
 
 export function SalesOrderDetailPage() {
   const { t } = useTranslation('orders')
   const { id } = useParams()
+  const permissions = usePermissions()
   const [rejectOpen, setRejectOpen] = useState(false)
   const [rejectReason, setRejectReason] = useState('')
   const [selectedDriverId, setSelectedDriverId] = useState('')
@@ -34,7 +36,7 @@ export function SalesOrderDetailPage() {
   // Only needed once the order is READY and doesn't already have a driver — avoid firing this on
   // every order-detail view (DRAFT/CONFIRMED/DELIVERED orders never render the assign-driver UI).
   const verifiedDriversQuery = useVerifiedDriversQuery(
-    orderQuery.data?.status === 'READY' && !orderQuery.data.assignedDriver,
+    permissions.canManageSalesOrderLifecycle && orderQuery.data?.status === 'READY' && !orderQuery.data.assignedDriver,
   )
 
   if (orderQuery.isLoading) {
@@ -58,7 +60,7 @@ export function SalesOrderDetailPage() {
         description={`Created ${formatDateTime(order.createdAt)} · Branch ${order.branch.name}`}
         actions={
           <div className="flex flex-wrap gap-2">
-            {(order.status === 'DRAFT' || order.status === 'PENDING') ? (
+            {permissions.canManageSalesOrderLifecycle && (order.status === 'DRAFT' || order.status === 'PENDING') ? (
               <>
                 <Button loading={confirmMutation.isPending} loadingText="Confirming..." onClick={async () => {
                   try {
@@ -79,7 +81,7 @@ export function SalesOrderDetailPage() {
                 </Button>
               </>
             ) : null}
-            {order.status === 'CONFIRMED' ? (
+            {permissions.canManageSalesOrderLifecycle && order.status === 'CONFIRMED' ? (
               <Button loading={markReadyMutation.isPending} loadingText="Marking ready..." onClick={async () => {
                 try {
                   await markReadyMutation.mutateAsync(order.id)
@@ -91,7 +93,7 @@ export function SalesOrderDetailPage() {
                 Mark ready
               </Button>
             ) : null}
-            {order.status !== 'CANCELLED' && order.status !== 'REJECTED' && order.status !== 'DELIVERED' && order.status !== 'RETURNED' ? (
+            {permissions.canManageSalesOrderLifecycle && order.status !== 'CANCELLED' && order.status !== 'REJECTED' && order.status !== 'DELIVERED' && order.status !== 'RETURNED' ? (
               <Button variant="destructive" loading={cancelMutation.isPending} loadingText="Cancelling..." onClick={async () => {
                 try {
                   await cancelMutation.mutateAsync(order.id)
@@ -103,7 +105,7 @@ export function SalesOrderDetailPage() {
                 Cancel
               </Button>
             ) : null}
-            {order.status === 'OUT_FOR_DELIVERY' ? (
+            {permissions.canManageSalesOrderLifecycle && order.status === 'OUT_FOR_DELIVERY' ? (
               <Button loading={deliverMutation.isPending} loadingText="Delivering..." onClick={async () => {
                 try {
                   await deliverMutation.mutateAsync(order.id)
@@ -138,6 +140,8 @@ export function SalesOrderDetailPage() {
               <DetailItem label="Phone" value={order.assignedDriver.phone} />
               <DetailItem label="Vehicle" value={order.assignedDriver.vehicleType} />
             </DetailGrid>
+          ) : order.status === 'READY' && !permissions.canManageSalesOrderLifecycle ? (
+            <InlineNotice>A manager or org admin needs to assign a driver to this order.</InlineNotice>
           ) : order.status === 'READY' ? (
             verifiedDriversQuery.isError ? (
               <InlineNotice tone="warning">
@@ -188,6 +192,7 @@ export function SalesOrderDetailPage() {
           )}
           {!order.assignedDriver &&
           order.status === 'READY' &&
+          permissions.canManageSalesOrderLifecycle &&
           !verifiedDriversQuery.isLoading &&
           !verifiedDriversQuery.isError &&
           (verifiedDriversQuery.data ?? []).length === 0 ? (

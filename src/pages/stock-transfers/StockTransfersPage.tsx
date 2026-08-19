@@ -7,10 +7,12 @@ import { useStockTransfersQuery } from '@/features/stock-transfers/stock-transfe
 import { BranchSelector } from '@/components/inventory/selectors'
 import { DataTable, EmptyState, ErrorState, FilterBar, LoadingState, PageHeader, PaginationControls, SearchInput, StatusBadge } from '@/components/common'
 import { Button } from '@/components/ui'
+import { usePermissions } from '@/hooks/usePermissions'
 import { formatDateTime } from '@/lib/utils'
 
 export function StockTransfersPage() {
   const { t } = useTranslation('common')
+  const permissions = usePermissions()
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
   const [fromBranchId, setFromBranchId] = useState('')
@@ -38,12 +40,14 @@ export function StockTransfersPage() {
         title="Stock transfers"
         description="Move stock between branches using draft, approve, and cancel workflows."
         actions={
-          <Button asChild>
-            <Link to="/stock-transfers/new">
-              <Plus className="h-4 w-4" />
-              New transfer
-            </Link>
-          </Button>
+          permissions.canManageTransfers ? (
+            <Button asChild>
+              <Link to="/stock-transfers/new">
+                <Plus className="h-4 w-4" />
+                New transfer
+              </Link>
+            </Button>
+          ) : undefined
         }
       />
       <FilterBar className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">

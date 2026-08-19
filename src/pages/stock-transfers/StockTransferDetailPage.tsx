@@ -5,10 +5,12 @@ import { useApproveStockTransferMutation, useCancelStockTransferMutation, useSto
 import { CurrencyText, QuantityText } from '@/components/inventory/selectors'
 import { DataTable, DetailGrid, DetailItem, EmptyState, ErrorState, InlineNotice, LoadingState, PageHeader, SectionCard, StatusBadge } from '@/components/common'
 import { Button } from '@/components/ui'
+import { usePermissions } from '@/hooks/usePermissions'
 import { formatDateTime } from '@/lib/utils'
 
 export function StockTransferDetailPage() {
   const { id } = useParams()
+  const permissions = usePermissions()
   const transferQuery = useStockTransferQuery(id)
   const approveMutation = useApproveStockTransferMutation()
   const cancelMutation = useCancelStockTransferMutation()
@@ -33,7 +35,7 @@ export function StockTransferDetailPage() {
         title={`Transfer ${transfer.transferNumber}`}
         description={`Created ${formatDateTime(transfer.createdAt)} · ${transfer.fromBranch.name} → ${transfer.toBranch.name}`}
         actions={
-          transfer.status === 'DRAFT' ? (
+          permissions.canManageTransfers && transfer.status === 'DRAFT' ? (
             <div className="flex gap-2">
               <Button loading={approveMutation.isPending} loadingText="Approving..." onClick={async () => {
                 try {

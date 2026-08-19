@@ -36,6 +36,14 @@ export function canManageSalesOrders(role?: UserRole | null) {
   return role === 'SUPER_ADMIN' || role === 'ORG_ADMIN' || role === 'MANAGER' || role === 'STAFF'
 }
 
+// Sales order lifecycle transitions (confirm/reject/cancel/deliver/mark-ready/assign-driver) are
+// backend-gated to MANAGER_ROLES (see sales-orders.route.ts), unlike create/view which STAFF can
+// also do via canManageSalesOrders above — kept as its own check so the detail page can hide these
+// buttons for STAFF instead of rendering actions that always 403.
+export function canManageSalesOrderLifecycle(role?: UserRole | null) {
+  return role === 'SUPER_ADMIN' || role === 'ORG_ADMIN' || role === 'MANAGER'
+}
+
 export function canViewAuditLogs(role?: UserRole | null) {
   return role === 'SUPER_ADMIN' || role === 'ORG_ADMIN'
 }

@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 
 import { useInventoryBalancesQuery } from '@/features/inventory/inventory.api'
 import { useDebounce } from '@/hooks/useDebounce'
+import { usePermissions } from '@/hooks/usePermissions'
 import { useOrgStore } from '@/store/org.store'
 import { BranchSelector, ProductSelector, QuantityText, VariantSelector } from '@/components/inventory/selectors'
 import { DataTable, EmptyState, ErrorState, FilterBar, LoadingState, PageHeader, PaginationControls, SearchInput, StatusBadge } from '@/components/common'
@@ -25,6 +26,7 @@ function isRowLowStock(row: { onHand: string; variant: { reorderLevel: string; m
 
 export function InventoryBalancesPage() {
   const { t } = useTranslation(['common', 'inventory'])
+  const permissions = usePermissions()
   const defaultBranchId = useOrgStore((state) => state.activeBranchId)
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
@@ -119,9 +121,11 @@ export function InventoryBalancesPage() {
               header: 'Actions',
               render: (row) => (
                 <div className="flex gap-2">
-                  <Button asChild size="sm" variant="outline">
-                    <Link to={`/inventory/adjustments/new?branchId=${row.branchId}&productId=${row.productId}&variantId=${row.variantId}`}>Adjust</Link>
-                  </Button>
+                  {permissions.canManageInventory ? (
+                    <Button asChild size="sm" variant="outline">
+                      <Link to={`/inventory/adjustments/new?branchId=${row.branchId}&productId=${row.productId}&variantId=${row.variantId}`}>Adjust</Link>
+                    </Button>
+                  ) : null}
                   <Button asChild size="sm" variant="ghost">
                     <Link to={`/inventory/ledger?productId=${row.productId}&variantId=${row.variantId}&branchId=${row.branchId}`}>Ledger</Link>
                   </Button>

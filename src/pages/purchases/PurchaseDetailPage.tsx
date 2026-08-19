@@ -5,10 +5,12 @@ import { usePostPurchaseMutation, usePurchaseQuery } from '@/features/purchases/
 import { CurrencyText, QuantityText } from '@/components/inventory/selectors'
 import { DataTable, DetailGrid, DetailItem, EmptyState, ErrorState, InlineNotice, LoadingState, PageHeader, SectionCard, StatusBadge } from '@/components/common'
 import { Button } from '@/components/ui'
+import { usePermissions } from '@/hooks/usePermissions'
 import { formatDateTime } from '@/lib/utils'
 
 export function PurchaseDetailPage() {
   const { id } = useParams()
+  const permissions = usePermissions()
   const purchaseQuery = usePurchaseQuery(id)
   const postPurchaseMutation = usePostPurchaseMutation()
 
@@ -32,7 +34,7 @@ export function PurchaseDetailPage() {
         title={`Purchase ${purchase.receiptNumber}`}
         description={`Created ${formatDateTime(purchase.createdAt)} · Branch ${purchase.branch.name}`}
         actions={
-          purchase.status === 'DRAFT' ? (
+          permissions.canManagePurchases && purchase.status === 'DRAFT' ? (
             <Button
               loading={postPurchaseMutation.isPending}
               loadingText="Posting purchase..."

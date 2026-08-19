@@ -7,10 +7,12 @@ import { usePurchasesQuery } from '@/features/purchases/purchases.api'
 import { BranchSelector, CurrencyText } from '@/components/inventory/selectors'
 import { DataTable, EmptyState, ErrorState, FilterBar, LoadingState, PageHeader, PaginationControls, SearchInput, StatusBadge } from '@/components/common'
 import { Button } from '@/components/ui'
+import { usePermissions } from '@/hooks/usePermissions'
 import { formatDate } from '@/lib/utils'
 
 export function PurchasesPage() {
   const { t } = useTranslation('common')
+  const permissions = usePermissions()
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
   const [branchId, setBranchId] = useState('')
@@ -36,12 +38,14 @@ export function PurchasesPage() {
         title="Purchases"
         description="Create draft purchase receipts and post them when stock is received."
         actions={
-          <Button asChild>
-            <Link to="/purchases/new">
-              <Plus className="h-4 w-4" />
-              New purchase
-            </Link>
-          </Button>
+          permissions.canManagePurchases ? (
+            <Button asChild>
+              <Link to="/purchases/new">
+                <Plus className="h-4 w-4" />
+                New purchase
+              </Link>
+            </Button>
+          ) : undefined
         }
       />
       <FilterBar className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
