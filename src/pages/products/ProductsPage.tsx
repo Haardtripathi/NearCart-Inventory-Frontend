@@ -9,9 +9,9 @@ import { useCategoriesQuery } from '@/features/categories/categories.api'
 import { useDeleteProductMutation, useProductsQuery } from '@/features/products/products.api'
 import { usePermissions } from '@/hooks/usePermissions'
 import { useDebounce } from '@/hooks/useDebounce'
-import { ConfirmDialog, DataTable, EmptyState, FilterBar, LoadingState, PageHeader, PaginationControls, SearchInput, StatusBadge } from '@/components/common'
+import { ConfirmDialog, DataTable, EmptyState, ErrorState, FilterBar, LoadingState, PageHeader, PaginationControls, SearchInput, StatusBadge } from '@/components/common'
 import { Button, OptionSelect } from '@/components/ui'
-import { getDisplayName } from '@/lib/utils'
+import { getDisplayName, parseApiError } from '@/lib/utils'
 import { PRODUCT_STATUSES, type ProductStatus } from '@/types/common'
 
 export function ProductsPage() {
@@ -43,6 +43,10 @@ export function ProductsPage() {
 
   if (productsQuery.isLoading) {
     return <LoadingState label={t('loadingProducts')} variant="list" />
+  }
+
+  if (productsQuery.isError) {
+    return <ErrorState description="Products could not be loaded right now." onRetry={() => void productsQuery.refetch()} />
   }
 
   return (
@@ -209,8 +213,8 @@ export function ProductsPage() {
             await deleteProductMutation.mutateAsync(archivingProductId)
             toast.success(t('archivedSuccess'))
             setArchivingProductId(null)
-          } catch {
-            toast.error(t('archiveFailed'))
+          } catch (error) {
+            toast.error(parseApiError(error).message || t('archiveFailed'))
           }
         }}
       />

@@ -44,6 +44,37 @@ export function useSalesOrdersQuery(filters: SalesOrderFilters) {
   })
 }
 
+// EXPORT_PAGE_SIZE matches this endpoint's server-side cap (validated 400 above 100 — see
+// sales-orders.validation.ts), so each page request is already at the maximum allowed size.
+// EXPORT_MAX_PAGES bounds the CSV export feature to 5,000 orders as a sane ceiling against an
+// unbounded loop (an org with more matching orders than that should filter by branch/date/status
+// first) rather than a real expectation of hitting it in normal use.
+const EXPORT_PAGE_SIZE = 100
+const EXPORT_MAX_PAGES = 50
+
+/**
+ * Fetches every SalesOrder matching `filters` across all pages (used by the CSV export button —
+ * see SalesOrdersPage.tsx), not just whatever page is currently on screen. A plain sequential loop
+ * rather than `Promise.all`: page N's total-pages count isn't known until page 1 resolves, and
+ * this is a rare, user-initiated one-off action, not something worth optimizing for concurrency.
+ */
+export async function fetchAllSalesOrdersForExport(
+  filters: Omit<SalesOrderFilters, 'page' | 'limit'>,
+): Promise<SalesOrder[]> {
+  const results: SalesOrder[] = []
+  let page = 1
+
+  for (; page <= EXPORT_MAX_PAGES; page += 1) {
+    const response = await unwrapResponse<PaginatedResponse<SalesOrder>>(
+      api.get('/sales-orders', { params: { ...filters, page, limit: EXPORT_PAGE_SIZE } }),
+    )
+    results.push(...response.items)
+    if (page >= response.pagination.totalPages) break
+  }
+
+  return results
+}
+
 export function useSalesOrderQuery(id?: string) {
   return useQuery({
     queryKey: salesOrdersKeys.detail(id ?? 'unknown'),

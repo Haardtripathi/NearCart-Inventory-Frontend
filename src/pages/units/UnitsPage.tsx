@@ -12,7 +12,7 @@ import { useDebounce } from '@/hooks/useDebounce'
 import { DataTable, EmptyState, FilterBar, LoadingState, PageHeader, PaginationControls, SearchInput, StatusBadge } from '@/components/common'
 import { CheckboxField, FormField, TranslationFields } from '@/components/forms'
 import { Badge, Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Input } from '@/components/ui'
-import { getDisplayName } from '@/lib/utils'
+import { getDisplayName, parseApiError } from '@/lib/utils'
 import type { TranslationInput, Unit } from '@/types/common'
 
 const unitSchema = z.object({
@@ -76,8 +76,8 @@ export function UnitsPage() {
         toast.success(t('units:created'))
       }
       setDialogOpen(false)
-    } catch {
-      toast.error(t('units:saveFailed'))
+    } catch (error) {
+      toast.error(parseApiError(error).message || t('units:saveFailed'))
     }
   })
 

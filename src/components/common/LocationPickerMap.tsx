@@ -197,7 +197,16 @@ export function LocationPickerMap({ latitude, longitude, onLocationChange, label
             .fetchFields({ fields: ['location', 'addressComponents', 'displayName'] })
             .then(({ place: fullPlace }) => {
               if (cancelled || !fullPlace.location) return
-              const position = { lat: fullPlace.location.lat, lng: fullPlace.location.lng }
+              // Bug fix: google.maps.LatLng's `lat`/`lng` are METHODS, not plain number
+              // properties — this was assigning the function references themselves into
+              // `position.lat`/`position.lng` instead of calling them, so `map.panTo()` and the
+              // onLocationChange callback below received functions where a number was expected
+              // (caught by `tsc -b`, which was not being run in CI/dev for this project until
+              // this sweep). Concretely: search-and-select in the location picker would silently
+              // fail to pan the map and would hand the parent form a non-numeric
+              // latitude/longitude, which — for the branch location picker this component backs —
+              // could persist garbage coordinates for a branch.
+              const position = { lat: fullPlace.location.lat(), lng: fullPlace.location.lng() }
               map.panTo(position)
               map.setZoom(17)
               placeMarker(position)

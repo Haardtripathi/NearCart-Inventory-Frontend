@@ -170,8 +170,8 @@ export function CustomersPage() {
             await deleteCustomerMutation.mutateAsync(deletingCustomer.id)
             toast.success(t('customers:archived'))
             setDeletingCustomer(null)
-          } catch {
-            toast.error(t('customers:archiveFailed'))
+          } catch (error) {
+            toast.error(parseApiError(error).message || t('customers:archiveFailed'))
           }
         }}
       />

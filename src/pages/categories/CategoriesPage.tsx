@@ -292,8 +292,8 @@ export function CategoriesPage() {
             await deleteCategoryMutation.mutateAsync(deletingCategory.id)
             toast.success(t('archived'))
             setDeletingCategory(null)
-          } catch {
-            toast.error(t('archiveFailed'))
+          } catch (error) {
+            toast.error(parseApiError(error).message || t('archiveFailed'))
           }
         }}
       />

@@ -30,6 +30,29 @@ export function usePurchasesQuery(filters: PurchaseFilters) {
   })
 }
 
+// Same bounded page-walk approach as sales-orders.api.ts's fetchAllSalesOrdersForExport — see
+// that function's doc comment for the full rationale (also used by PurchasesPage.tsx's CSV
+// export button).
+const EXPORT_PAGE_SIZE = 100
+const EXPORT_MAX_PAGES = 50
+
+export async function fetchAllPurchasesForExport(
+  filters: Omit<PurchaseFilters, 'page' | 'limit'>,
+): Promise<PurchaseReceipt[]> {
+  const results: PurchaseReceipt[] = []
+  let page = 1
+
+  for (; page <= EXPORT_MAX_PAGES; page += 1) {
+    const response = await unwrapResponse<PaginatedResponse<PurchaseReceipt>>(
+      api.get('/purchases', { params: { ...filters, page, limit: EXPORT_PAGE_SIZE } }),
+    )
+    results.push(...response.items)
+    if (page >= response.pagination.totalPages) break
+  }
+
+  return results
+}
+
 export function usePurchaseQuery(id?: string) {
   return useQuery({
     queryKey: purchasesKeys.detail(id ?? 'unknown'),

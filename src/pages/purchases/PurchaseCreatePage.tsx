@@ -14,7 +14,7 @@ import { ControlledSelect, DirtyStatePrompt, FormField } from '@/components/form
 import { DisclosurePanel, PageHeader, SectionCard } from '@/components/common'
 import { Button, DatePicker, Input, Textarea } from '@/components/ui'
 import { usePermissions } from '@/hooks/usePermissions'
-import { formatDateForInput, parseDateValue } from '@/lib/utils'
+import { formatDateForInput, parseApiError, parseDateValue } from '@/lib/utils'
 import type { PurchasePayload } from '@/types/inventory'
 
 const purchaseItemSchema = z.object({
@@ -181,8 +181,10 @@ export function PurchaseCreatePage() {
   })
 
   const onSubmit = form.handleSubmit(async (values) => {
+    let createdPurchaseId: string | undefined
     try {
       const purchase = await createPurchaseMutation.mutateAsync(normalizePurchasePayload(values))
+      createdPurchaseId = purchase.id
       if (submitMode === 'post') {
         await postPurchaseMutation.mutateAsync(purchase.id)
         toast.success('Purchase created and posted')
@@ -190,8 +192,20 @@ export function PurchaseCreatePage() {
         toast.success('Purchase draft created')
       }
       navigate(`/purchases/${purchase.id}`)
-    } catch {
-      toast.error('Could not create purchase')
+    } catch (error) {
+      if (createdPurchaseId) {
+        // The draft purchase itself was created successfully — only the follow-up "post" call
+        // failed (e.g. a stock/validation conflict). Saying "could not create purchase" here
+        // would be actively wrong and could lead staff to resubmit and create a duplicate
+        // draft. Navigate to the real draft that now exists and explain what actually happened.
+        toast.error(
+          `Purchase saved as draft, but posting failed: ${parseApiError(error).message || 'unknown error'}`,
+        )
+        navigate(`/purchases/${createdPurchaseId}`)
+        return
+      }
+
+      toast.error(parseApiError(error).message || 'Could not create purchase')
     }
   })
 

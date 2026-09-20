@@ -20,12 +20,12 @@ import {
 } from '@/features/products/products.api'
 import { CheckboxField, ControlledSelect, DirtyStatePrompt, FormField, KeyValueEditor, TranslationFields } from '@/components/forms'
 import { ImageUploadField } from '@/components/forms/ImageUploadField'
-import { DisclosurePanel, LoadingState, PageHeader, SectionCard } from '@/components/common'
+import { DisclosurePanel, ErrorState, LoadingState, PageHeader, SectionCard } from '@/components/common'
 import { Button, Input, Tabs, TabsContent, TabsList, TabsTrigger, Textarea } from '@/components/ui'
 import { IndustryDialog } from '@/components/platform/IndustryDialog'
 import { useActiveOrganizationContext } from '@/hooks/useActiveOrganizationContext'
 import { usePermissions } from '@/hooks/usePermissions'
-import { getDisplayName } from '@/lib/utils'
+import { getDisplayName, parseApiError } from '@/lib/utils'
 import { PRODUCT_STATUSES, PRODUCT_TYPES, TRACK_METHODS, type TranslationInput, type VariantTranslationInput } from '@/types/common'
 import type { ProductVariantPayload } from '@/types/product'
 
@@ -580,8 +580,13 @@ export function ProductFormPage() {
 
       toast.success(t('updatedSuccess'))
       navigate(`/products/${id}`)
-    } catch {
-      toast.error(t('saveFailed'))
+    } catch (error) {
+      // Surface the backend's actual reason (e.g. "SKU X already exists", "Cannot edit variants
+      // for archived product") instead of a generic message — this save is a sequence of several
+      // requests (product, then each removed/updated/created variant), so a specific message is
+      // the only way staff can tell what to fix, since an earlier step in the sequence may already
+      // have been committed even though the overall save reports failure.
+      toast.error(parseApiError(error).message || t('saveFailed'))
     }
   }, () => {
     toast.error(t('fillRequiredFields', { ns: 'common', defaultValue: 'Please fill the required fields.' }))
@@ -589,6 +594,17 @@ export function ProductFormPage() {
 
   if (isEdit && productQuery.isLoading) {
     return <LoadingState label={t('loadingData', { ns: 'common' })} variant="form" />
+  }
+
+  // Without this, a failed fetch here (e.g. the product was concurrently archived, or a network
+  // blip) would leave the form silently sitting at its blank `useForm` defaults — since the reset
+  // in the effect above only ever runs once `productQuery.data` exists — so an edit page would
+  // render as if it were a fresh "create product" form, with no indication anything went wrong.
+  // The zod-required `name` field happens to block an actual accidental blank-overwrite submit,
+  // but the page would still be actively misleading. Match the ErrorState+retry pattern every
+  // other detail/edit page in this app already uses for a failed fetch.
+  if (isEdit && productQuery.isError) {
+    return <ErrorState description="This product could not be loaded right now." onRetry={() => void productQuery.refetch()} />
   }
 
   return (

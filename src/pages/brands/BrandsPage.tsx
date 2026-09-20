@@ -12,7 +12,7 @@ import { useDebounce } from '@/hooks/useDebounce'
 import { ConfirmDialog, DataTable, EmptyState, FilterBar, LoadingState, PageHeader, PaginationControls, SearchInput, StatusBadge } from '@/components/common'
 import { CheckboxField, FormField, TranslationFields } from '@/components/forms'
 import { Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Input } from '@/components/ui'
-import { getDisplayName, slugify } from '@/lib/utils'
+import { getDisplayName, parseApiError, slugify } from '@/lib/utils'
 import type { Brand, TranslationInput } from '@/types/common'
 
 const brandSchema = z.object({
@@ -96,8 +96,8 @@ export function BrandsPage() {
         toast.success(t('brands:created'))
       }
       setIsDialogOpen(false)
-    } catch {
-      toast.error(t('brands:saveFailed'))
+    } catch (error) {
+      toast.error(parseApiError(error).message || t('brands:saveFailed'))
     }
   })
 
@@ -213,8 +213,8 @@ export function BrandsPage() {
             await deleteBrandMutation.mutateAsync(deletingBrand.id)
             toast.success(t('brands:archived'))
             setDeletingBrand(null)
-          } catch {
-            toast.error(t('brands:archiveFailed'))
+          } catch (error) {
+            toast.error(parseApiError(error).message || t('brands:archiveFailed'))
           }
         }}
       />

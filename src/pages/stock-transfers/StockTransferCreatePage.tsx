@@ -12,6 +12,7 @@ import { DirtyStatePrompt, FormField } from '@/components/forms'
 import { DisclosurePanel, PageHeader, SectionCard } from '@/components/common'
 import { Button, Input, Textarea } from '@/components/ui'
 import { usePermissions } from '@/hooks/usePermissions'
+import { parseApiError } from '@/lib/utils'
 import type { StockTransferPayload } from '@/types/inventory'
 
 const transferItemSchema = z.object({
@@ -135,8 +136,8 @@ export function StockTransferCreatePage() {
       const transfer = await createTransferMutation.mutateAsync(normalizeStockTransferPayload(values))
       toast.success('Transfer draft created')
       navigate(`/stock-transfers/${transfer.id}`)
-    } catch {
-      toast.error('Could not create stock transfer')
+    } catch (error) {
+      toast.error(parseApiError(error).message || 'Could not create stock transfer')
     }
   })
 

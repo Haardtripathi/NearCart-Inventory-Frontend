@@ -13,6 +13,7 @@ import {
   useUpdateOrganizationUserMutation,
 } from '@/features/users/users.api'
 import { useBranchesQuery } from '@/features/branches/branches.api'
+import { useAuth } from '@/hooks/useAuth'
 import { usePermissions } from '@/hooks/usePermissions'
 import {
   DataTable,
@@ -82,6 +83,7 @@ function toBranchAccess(scope: BranchAccessState['scope'], branchIds: string[]):
 export function UsersPage() {
   const { t } = useTranslation(['common', 'register'])
   const permissions = usePermissions()
+  const { user: currentUser } = useAuth()
   const usersQuery = useOrganizationUsersQuery()
   const branchesQuery = useBranchesQuery({ page: 1, limit: 100 })
   const createUserMutation = useCreateOrganizationUserMutation()
@@ -115,6 +117,13 @@ export function UsersPage() {
       branchIds: [],
     },
   })
+
+  // Backend only guards against removing the org's *last* active admin (see
+  // assertNotRemovingLastActiveOrgAdmin) — it doesn't stop an admin who isn't the last one from
+  // demoting or suspending *themselves* while other admins remain, which would silently boot them
+  // out of this very page mid-edit with no warning. Disable self role/status edits here so that
+  // can only happen via another admin's action, not an accidental click on your own row.
+  const isEditingSelf = Boolean(editingUser && currentUser && editingUser.id === currentUser.id)
 
   const branches = useMemo(() => branchesQuery.data?.items ?? [], [branchesQuery.data?.items])
   const createBranchScope = useWatch({ control: createForm.control, name: 'branchScope' })
@@ -432,10 +441,16 @@ export function UsersPage() {
             <FormField label="Email">
               <Input disabled {...updateForm.register('email')} />
             </FormField>
-            <FormField label="Role">
-              <ControlledSelect control={updateForm.control as never} name="role" options={roleOptions} />
+            <FormField
+              label="Role"
+              description={isEditingSelf ? "You can't change your own role — ask another admin to update it." : undefined}
+            >
+              <ControlledSelect control={updateForm.control as never} name="role" options={roleOptions} disabled={isEditingSelf} />
             </FormField>
-            <FormField label="Status">
+            <FormField
+              label="Status"
+              description={isEditingSelf ? "You can't change your own status — ask another admin to update it." : undefined}
+            >
               <ControlledSelect
                 control={updateForm.control as never}
                 name="status"
@@ -443,6 +458,7 @@ export function UsersPage() {
                   value: status,
                   label: getMembershipStatusLabel(t, status),
                 }))}
+                disabled={isEditingSelf}
               />
             </FormField>
             <FormField label="Preferred language">

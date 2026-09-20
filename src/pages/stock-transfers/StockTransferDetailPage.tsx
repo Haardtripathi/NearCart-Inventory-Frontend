@@ -6,7 +6,7 @@ import { CurrencyText, QuantityText } from '@/components/inventory/selectors'
 import { DataTable, DetailGrid, DetailItem, EmptyState, ErrorState, InlineNotice, LoadingState, PageHeader, SectionCard, StatusBadge } from '@/components/common'
 import { Button } from '@/components/ui'
 import { usePermissions } from '@/hooks/usePermissions'
-import { formatDateTime } from '@/lib/utils'
+import { formatDateTime, parseApiError } from '@/lib/utils'
 
 export function StockTransferDetailPage() {
   const { id } = useParams()
@@ -41,8 +41,10 @@ export function StockTransferDetailPage() {
                 try {
                   await approveMutation.mutateAsync(transfer.id)
                   toast.success('Transfer approved')
-                } catch {
-                  toast.error('Could not approve transfer')
+                } catch (error) {
+                  // Surface the backend's specific message (e.g. a 409 "already approved or
+                  // cancelled" concurrency conflict) instead of a generic one.
+                  toast.error(parseApiError(error).message || 'Could not approve transfer')
                 }
               }}>
                 Approve
@@ -51,8 +53,8 @@ export function StockTransferDetailPage() {
                 try {
                   await cancelMutation.mutateAsync(transfer.id)
                   toast.success('Transfer cancelled')
-                } catch {
-                  toast.error('Could not cancel transfer')
+                } catch (error) {
+                  toast.error(parseApiError(error).message || 'Could not cancel transfer')
                 }
               }}>
                 Cancel

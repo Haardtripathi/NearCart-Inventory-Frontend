@@ -1,14 +1,16 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
-import { Plus } from 'lucide-react'
+import { toast } from 'react-hot-toast'
+import { Download, Plus } from 'lucide-react'
 
-import { usePurchasesQuery } from '@/features/purchases/purchases.api'
+import { fetchAllPurchasesForExport, usePurchasesQuery } from '@/features/purchases/purchases.api'
 import { BranchSelector, CurrencyText } from '@/components/inventory/selectors'
 import { DataTable, EmptyState, ErrorState, FilterBar, LoadingState, PageHeader, PaginationControls, SearchInput, StatusBadge } from '@/components/common'
 import { Button } from '@/components/ui'
 import { usePermissions } from '@/hooks/usePermissions'
-import { formatDate } from '@/lib/utils'
+import { formatDate, parseApiError } from '@/lib/utils'
+import { exportRowsAsCsv } from '@/lib/csv-export'
 
 export function PurchasesPage() {
   const { t } = useTranslation('common')
@@ -16,13 +18,41 @@ export function PurchasesPage() {
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
   const [branchId, setBranchId] = useState('')
+  const [isExporting, setIsExporting] = useState(false)
 
-  const purchasesQuery = usePurchasesQuery({
-    page,
-    limit: 20,
-    search: search || undefined,
-    branchId: branchId || undefined,
-  })
+  const filters = { search: search || undefined, branchId: branchId || undefined }
+  const purchasesQuery = usePurchasesQuery({ page, limit: 20, ...filters })
+
+  // Same "export the whole filtered set, not just the on-screen page" rationale as
+  // SalesOrdersPage.tsx's identical button — see fetchAllPurchasesForExport's doc comment.
+  async function handleExport() {
+    setIsExporting(true)
+    try {
+      const purchases = await fetchAllPurchasesForExport(filters)
+      if (purchases.length === 0) {
+        toast.error('No purchases match the current filters.')
+        return
+      }
+      exportRowsAsCsv(`purchases-${new Date().toISOString().slice(0, 10)}.csv`, purchases, [
+        { header: 'Receipt number', accessor: (purchase) => purchase.receiptNumber },
+        { header: 'Invoice date', accessor: (purchase) => formatDate(purchase.invoiceDate) },
+        { header: 'Received', accessor: (purchase) => formatDate(purchase.receivedAt) },
+        { header: 'Supplier', accessor: (purchase) => purchase.supplier?.name },
+        { header: 'Branch', accessor: (purchase) => purchase.branch.name },
+        { header: 'Status', accessor: (purchase) => purchase.status },
+        { header: 'Subtotal', accessor: (purchase) => purchase.subtotal },
+        { header: 'Tax', accessor: (purchase) => purchase.taxTotal },
+        { header: 'Discount', accessor: (purchase) => purchase.discountTotal },
+        { header: 'Total', accessor: (purchase) => purchase.total },
+        { header: 'Items', accessor: (purchase) => purchase.items.length },
+      ])
+      toast.success(`Exported ${purchases.length} purchase${purchases.length === 1 ? '' : 's'}.`)
+    } catch (error) {
+      toast.error(parseApiError(error).message || 'Could not export purchases.')
+    } finally {
+      setIsExporting(false)
+    }
+  }
 
   if (purchasesQuery.isLoading) {
     return <LoadingState label="Loading purchases..." variant="list" />
@@ -38,14 +68,20 @@ export function PurchasesPage() {
         title="Purchases"
         description="Create draft purchase receipts and post them when stock is received."
         actions={
-          permissions.canManagePurchases ? (
-            <Button asChild>
-              <Link to="/purchases/new">
-                <Plus className="h-4 w-4" />
-                New purchase
-              </Link>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={() => void handleExport()} disabled={isExporting}>
+              <Download className="h-4 w-4" />
+              {isExporting ? 'Exporting…' : 'Export CSV'}
             </Button>
-          ) : undefined
+            {permissions.canManagePurchases ? (
+              <Button asChild>
+                <Link to="/purchases/new">
+                  <Plus className="h-4 w-4" />
+                  New purchase
+                </Link>
+              </Button>
+            ) : null}
+          </div>
         }
       />
       <FilterBar className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">

@@ -192,8 +192,8 @@ export function SuppliersPage() {
             await deleteSupplierMutation.mutateAsync(deletingSupplier.id)
             toast.success(t('suppliers:archived'))
             setDeletingSupplier(null)
-          } catch {
-            toast.error(t('suppliers:archiveFailed'))
+          } catch (error) {
+            toast.error(parseApiError(error).message || t('suppliers:archiveFailed'))
           }
         }}
       />

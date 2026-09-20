@@ -78,7 +78,12 @@ export function loadGoogleMaps(): Promise<typeof google | null> {
           a.src = `https://maps.${c}apis.com/maps/api/js?` + e;
           d[q] = f;
           a.onerror = () => (h = n(Error(p + " could not load.")));
-          a.nonce = m.querySelector("script[nonce]")?.nonce || "";
+          // Bug fix: `querySelector` with an attribute-selector string types its result as the
+          // generic `Element`, which has no `.nonce` — that property only exists on
+          // `HTMLScriptElement`. This was a real `tsc -b` failure (not just a lint nit), just not
+          // one anyone had run against this file — cast to the actual runtime type (any element
+          // this selector can match is a `<script>` tag).
+          a.nonce = (m.querySelector("script[nonce]") as HTMLScriptElement | null)?.nonce || "";
           m.head.append(a);
         }));
       d[l] ? console.warn(p + " only loads once. Ignoring:", g) : (d[l] = (f: string, ...n: unknown[]) => r.add(f) && u().then(() => d[l](f, ...n)));

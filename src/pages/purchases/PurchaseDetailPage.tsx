@@ -6,7 +6,7 @@ import { CurrencyText, QuantityText } from '@/components/inventory/selectors'
 import { DataTable, DetailGrid, DetailItem, EmptyState, ErrorState, InlineNotice, LoadingState, PageHeader, SectionCard, StatusBadge } from '@/components/common'
 import { Button } from '@/components/ui'
 import { usePermissions } from '@/hooks/usePermissions'
-import { formatDateTime } from '@/lib/utils'
+import { formatDateTime, parseApiError } from '@/lib/utils'
 
 export function PurchaseDetailPage() {
   const { id } = useParams()
@@ -42,8 +42,10 @@ export function PurchaseDetailPage() {
                 try {
                   await postPurchaseMutation.mutateAsync(purchase.id)
                   toast.success('Purchase posted')
-                } catch {
-                  toast.error('Could not post purchase')
+                } catch (error) {
+                  // Surface the backend's specific message (e.g. a 409 "already posted"
+                  // concurrency conflict) instead of a generic one that leaves staff guessing.
+                  toast.error(parseApiError(error).message || 'Could not post purchase')
                 }
               }}
             >
