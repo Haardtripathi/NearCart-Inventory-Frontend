@@ -8,9 +8,8 @@ import { Trash2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { useCreatePurchaseMutation, usePostPurchaseMutation } from '@/features/purchases/purchases.api'
-import { useSuppliersQuery } from '@/features/suppliers/suppliers.api'
-import { BranchSelector, ProductSelector, VariantSelector } from '@/components/inventory/selectors'
-import { ControlledSelect, DirtyStatePrompt, FormField } from '@/components/forms'
+import { BranchSelector, ProductSelector, SupplierSelector, VariantSelector } from '@/components/inventory/selectors'
+import { DirtyStatePrompt, FormField } from '@/components/forms'
 import { DisclosurePanel, PageHeader, SectionCard } from '@/components/common'
 import { Button, DatePicker, Input, Textarea } from '@/components/ui'
 import { usePermissions } from '@/hooks/usePermissions'
@@ -162,7 +161,6 @@ export function PurchaseCreatePage() {
   const [submitMode, setSubmitMode] = useState<'draft' | 'post'>('draft')
   const createPurchaseMutation = useCreatePurchaseMutation()
   const postPurchaseMutation = usePostPurchaseMutation()
-  const suppliersQuery = useSuppliersQuery({ page: 1, limit: 100 })
   const form = useForm({
     resolver: zodResolver(purchaseSchema),
     defaultValues: {
@@ -234,17 +232,20 @@ export function PurchaseCreatePage() {
               />
             </FormField>
             <FormField label="Supplier">
-              <ControlledSelect
+              <Controller
                 control={form.control}
                 name="supplierId"
-                placeholder={t('noSupplier', { ns: 'common' })}
-                emptyOptionLabel={t('noSupplier', { ns: 'common' })}
-                options={suppliersQuery.data?.items.map((supplier) => ({
-                  value: supplier.id,
-                  label: supplier.name,
-                })) ?? []}
-                addActionLabel={t('addSupplier', { ns: 'suppliers' })}
-                onAddAction={() => navigate('/suppliers')}
+                render={({ field }) => (
+                  <SupplierSelector
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder={t('noSupplier', { ns: 'common' })}
+                    emptyLabel={t('noSupplier', { ns: 'common' })}
+                    searchPlaceholder={t('searchPlaceholder', { ns: 'suppliers' })}
+                    addActionLabel={t('addSupplier', { ns: 'suppliers' })}
+                    onAddAction={() => navigate('/suppliers')}
+                  />
+                )}
               />
             </FormField>
           </div>

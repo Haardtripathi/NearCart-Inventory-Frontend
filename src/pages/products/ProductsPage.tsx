@@ -4,10 +4,10 @@ import { Link } from 'react-router-dom'
 import { ImageOff, Plus, Upload } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 
-import { useBrandsQuery } from '@/features/brands/brands.api'
-import { useCategoriesQuery } from '@/features/categories/categories.api'
 import { useDeleteProductMutation, useProductsQuery } from '@/features/products/products.api'
 import { usePermissions } from '@/hooks/usePermissions'
+import { BrandSelector } from '@/components/inventory/selectors'
+import { useCategoryOptions } from '@/features/categories/categories.api'
 import { useDebounce } from '@/hooks/useDebounce'
 import { ConfirmDialog, DataTable, EmptyState, ErrorState, FilterBar, LoadingState, PageHeader, PaginationControls, SearchInput, StatusBadge } from '@/components/common'
 import { Button, OptionSelect } from '@/components/ui'
@@ -35,8 +35,7 @@ export function ProductsPage() {
     brandId: brandId || undefined,
     hasVariants: hasVariants ? hasVariants === 'true' : undefined,
   })
-  const categoriesQuery = useCategoriesQuery({ page: 1, limit: 100 })
-  const brandsQuery = useBrandsQuery({ page: 1, limit: 100 })
+  const categoryOptions = useCategoryOptions()
   const deleteProductMutation = useDeleteProductMutation()
 
   const products = useMemo(() => productsQuery.data?.items ?? [], [productsQuery.data?.items])
@@ -97,22 +96,16 @@ export function ProductsPage() {
             setCategoryId(value)
           }}
           emptyLabel={t('allCategories')}
-          options={(categoriesQuery.data?.items ?? []).map((category) => ({
-            value: category.id,
-            label: getDisplayName(category),
-          }))}
+          options={categoryOptions}
         />
-        <OptionSelect
+        <BrandSelector
           value={brandId}
-          onValueChange={(value) => {
+          onChange={(value) => {
             setPage(1)
             setBrandId(value)
           }}
           emptyLabel={t('allBrands')}
-          options={(brandsQuery.data?.items ?? []).map((brand) => ({
-            value: brand.id,
-            label: getDisplayName(brand, brand.name),
-          }))}
+          searchPlaceholder={t('searchPlaceholder', { ns: 'brands' })}
         />
         <OptionSelect
           value={hasVariants}

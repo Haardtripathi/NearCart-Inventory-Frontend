@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { api, unwrapResponse } from '@/lib/axios'
 import { useAuthStore } from '@/store/auth.store'
@@ -18,6 +18,7 @@ export interface NotificationListResponse extends PaginatedResponse<Notification
 export const notificationsKeys = {
   list: (organizationId: string | null, filters: NotificationFilters) =>
     ['notifications', organizationId, filters] as const,
+  feed: (organizationId: string | null, pageSize: number) => ['notifications', organizationId, 'feed', pageSize] as const,
 }
 
 // Polled from the bell in AppShell so the unread badge updates without a manual refresh — there's
@@ -33,6 +34,29 @@ export function useNotificationsQuery(filters: NotificationFilters = {}) {
     queryKey: notificationsKeys.list(activeOrganizationId, filters),
     queryFn: async () =>
       unwrapResponse<NotificationListResponse>(api.get('/notifications', { params: filters })),
+    enabled: Boolean(activeOrganizationId),
+    refetchInterval: NOTIFICATIONS_POLL_INTERVAL_MS,
+    refetchIntervalInBackground: false,
+    refetchOnWindowFocus: true,
+  })
+}
+
+// Paged variant for the bell's "Load more" — the bell used to show a fixed latest-20 with no way
+// to reach anything older. Polling refetches every loaded page in order, so pages stay consistent
+// with each other at each refresh; callers should still de-dupe by id, since a notification that
+// arrives between a refresh and a "Load more" shifts the offset window by one.
+export function useNotificationsFeedQuery(pageSize = 20) {
+  const activeOrganizationId = useAuthStore((state) => state.activeOrganizationId)
+
+  return useInfiniteQuery({
+    queryKey: notificationsKeys.feed(activeOrganizationId, pageSize),
+    queryFn: async ({ pageParam }) =>
+      unwrapResponse<NotificationListResponse>(
+        api.get('/notifications', { params: { page: pageParam, limit: pageSize } }),
+      ),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) =>
+      lastPage.pagination.page < lastPage.pagination.totalPages ? lastPage.pagination.page + 1 : undefined,
     enabled: Boolean(activeOrganizationId),
     refetchInterval: NOTIFICATIONS_POLL_INTERVAL_MS,
     refetchIntervalInBackground: false,

@@ -2,9 +2,14 @@ import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { useBranchesQuery } from '@/features/branches/branches.api'
-import { useProductsQuery, useProductVariantsQuery } from '@/features/products/products.api'
+import { useProductVariantsQuery } from '@/features/products/products.api'
+import { api, unwrapResponse } from '@/lib/axios'
 import { formatCurrency, formatNumber, getDisplayName } from '@/lib/utils'
 import { OptionSelect } from '@/components/ui'
+import { AsyncCombobox } from '@/components/ui/async-combobox'
+import type { PaginatedResponse } from '@/types/api'
+import type { Brand, Customer, Supplier } from '@/types/common'
+import type { Product } from '@/types/product'
 
 export function BranchSelector({
   value,
@@ -38,6 +43,9 @@ export function BranchSelector({
   )
 }
 
+// Products, customers, suppliers and brands are all unbounded per-organization lists, so these
+// selectors search + page server-side via AsyncCombobox instead of loading a fixed first page
+// (previously `{ page: 1, limit: 100 }`, which silently hid everything past the newest 100).
 export function ProductSelector({
   value,
   onChange,
@@ -52,20 +60,70 @@ export function ProductSelector({
   onAddAction?: () => void
 }) {
   const { t } = useTranslation('common')
-  const { data } = useProductsQuery({ page: 1, limit: 100 })
 
   return (
-    <OptionSelect
-      value={value ?? ''}
-      onValueChange={onChange}
+    <AsyncCombobox<Product>
+      value={value}
+      onChange={onChange}
+      queryKey={['products']}
+      fetchPage={(params) => unwrapResponse<PaginatedResponse<Product>>(api.get('/products', { params }))}
+      fetchById={(id) => unwrapResponse<Product>(api.get(`/products/${id}`))}
+      getOptionValue={(product) => product.id}
+      getOptionLabel={(product) => getDisplayName(product)}
       placeholder={t('selectProduct')}
+      searchPlaceholder={t('searchProductOrSkuPlaceholder')}
       emptyLabel={includeAll ? t('allProducts') : undefined}
       addActionLabel={addActionLabel}
       onAddAction={onAddAction}
-      options={(data?.items ?? []).map((product) => ({
-        value: product.id,
-        label: getDisplayName(product),
-      }))}
+    />
+  )
+}
+
+type EntitySelectorProps = {
+  value?: string
+  onChange: (value: string) => void
+  placeholder?: string
+  emptyLabel?: string
+  searchPlaceholder?: string
+  addActionLabel?: string
+  onAddAction?: () => void
+}
+
+export function CustomerSelector(props: EntitySelectorProps) {
+  return (
+    <AsyncCombobox<Customer>
+      {...props}
+      queryKey={['customers']}
+      fetchPage={(params) => unwrapResponse<PaginatedResponse<Customer>>(api.get('/customers', { params }))}
+      fetchById={(id) => unwrapResponse<Customer>(api.get(`/customers/${id}`))}
+      getOptionValue={(customer) => customer.id}
+      getOptionLabel={(customer) => getDisplayName(customer)}
+    />
+  )
+}
+
+export function SupplierSelector(props: EntitySelectorProps) {
+  return (
+    <AsyncCombobox<Supplier>
+      {...props}
+      queryKey={['suppliers']}
+      fetchPage={(params) => unwrapResponse<PaginatedResponse<Supplier>>(api.get('/suppliers', { params }))}
+      fetchById={(id) => unwrapResponse<Supplier>(api.get(`/suppliers/${id}`))}
+      getOptionValue={(supplier) => supplier.id}
+      getOptionLabel={(supplier) => supplier.name}
+    />
+  )
+}
+
+export function BrandSelector(props: EntitySelectorProps) {
+  return (
+    <AsyncCombobox<Brand>
+      {...props}
+      queryKey={['brands']}
+      fetchPage={(params) => unwrapResponse<PaginatedResponse<Brand>>(api.get('/brands', { params }))}
+      fetchById={(id) => unwrapResponse<Brand>(api.get(`/brands/${id}`))}
+      getOptionValue={(brand) => brand.id}
+      getOptionLabel={(brand) => getDisplayName(brand, brand.name)}
     />
   )
 }

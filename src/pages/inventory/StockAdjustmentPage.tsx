@@ -52,17 +52,25 @@ export function StockAdjustmentPage() {
   const variantId = useWatch({ control: form.control, name: 'variantId' })
   const expiryDate = useWatch({ control: form.control, name: 'expiryDate' })
   const manufactureDate = useWatch({ control: form.control, name: 'manufactureDate' })
-  const currentBalanceQuery = useInventoryBalancesQuery({
-    page: 1,
-    limit: 1,
-    branchId: branchId || undefined,
-    variantId: variantId || undefined,
-  })
-
-  const currentBalance = useMemo(
-    () => currentBalanceQuery.data?.items?.[0],
-    [currentBalanceQuery.data?.items],
+  // Only meaningful once branch + product + variant are all chosen. Before that, the unscoped
+  // `limit: 1` query returned whichever balance row happened to sort first org-wide and this card
+  // presented it as "current stock" for a selection that didn't exist yet.
+  const isBalanceScoped = Boolean(branchId && productId && variantId)
+  const currentBalanceQuery = useInventoryBalancesQuery(
+    {
+      page: 1,
+      limit: 1,
+      branchId: branchId || undefined,
+      productId: productId || undefined,
+      variantId: variantId || undefined,
+    },
+    isBalanceScoped,
   )
+
+  const currentBalance = useMemo(() => {
+    const row = currentBalanceQuery.data?.items?.[0]
+    return isBalanceScoped && row && row.branchId === branchId && row.variantId === variantId ? row : undefined
+  }, [branchId, currentBalanceQuery.data?.items, isBalanceScoped, variantId])
 
   const onSubmit = form.handleSubmit(async (values) => {
     try {
@@ -152,7 +160,13 @@ export function StockAdjustmentPage() {
                 <DetailItem label="Available" value={<QuantityText value={currentBalance.available} />} />
               </DetailGrid>
             ) : (
-              <p className="mt-2 text-sm text-slate-600">No balance found yet for this branch and variant.</p>
+              <p className="mt-2 text-sm text-slate-600">
+                {isBalanceScoped
+                  ? currentBalanceQuery.isLoading
+                    ? 'Loading current stock...'
+                    : 'No balance found yet for this branch and variant.'
+                  : 'Select a branch, product, and variant to see current stock.'}
+              </p>
             )}
           </div>
           <div className="flex justify-end gap-2">

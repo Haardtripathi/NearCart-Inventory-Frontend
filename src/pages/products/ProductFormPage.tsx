@@ -7,8 +7,6 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
 import { Trash2 } from 'lucide-react'
 
-import { useBrandsQuery } from '@/features/brands/brands.api'
-import { useCategoriesQuery } from '@/features/categories/categories.api'
 import { useIndustriesQuery, useTaxRatesQuery, useUnitsQuery } from '@/features/meta/meta.api'
 import {
   useCreateProductMutation,
@@ -20,6 +18,8 @@ import {
 } from '@/features/products/products.api'
 import { CheckboxField, ControlledSelect, DirtyStatePrompt, FormField, KeyValueEditor, TranslationFields } from '@/components/forms'
 import { ImageUploadField } from '@/components/forms/ImageUploadField'
+import { BrandSelector } from '@/components/inventory/selectors'
+import { useCategoryOptions } from '@/features/categories/categories.api'
 import { DisclosurePanel, ErrorState, LoadingState, PageHeader, SectionCard } from '@/components/common'
 import { Button, Input, Tabs, TabsContent, TabsList, TabsTrigger, Textarea } from '@/components/ui'
 import { IndustryDialog } from '@/components/platform/IndustryDialog'
@@ -368,8 +368,7 @@ export function ProductFormPage() {
   const [openedTranslationKeys, setOpenedTranslationKeys] = useState<Record<string, boolean>>({})
   const [dismissedTranslationKeys, setDismissedTranslationKeys] = useState<Record<string, boolean>>({})
   const productQuery = useProductQuery(id)
-  const categoriesQuery = useCategoriesQuery({ page: 1, limit: 100 })
-  const brandsQuery = useBrandsQuery({ page: 1, limit: 100 })
+  const categoryOptions = useCategoryOptions(t('uncategorized', { ns: 'common' }))
   const unitsQuery = useUnitsQuery()
   const taxRatesQuery = useTaxRatesQuery()
   const industriesQuery = useIndustriesQuery()
@@ -637,26 +636,26 @@ export function ProductFormPage() {
                 name="categoryId"
                 placeholder={t('noCategory')}
                 emptyOptionLabel={t('noCategory')}
-                options={categoriesQuery.data?.items.map((category) => ({
-                  value: category.id,
-                  label: getDisplayName(category, t('uncategorized', { ns: 'common' })),
-                })) ?? []}
+                options={categoryOptions}
                 addActionLabel={t('addCategory')}
                 onAddAction={() => navigate('/categories')}
               />
             </FormField>
             <FormField label={t('brand')}>
-              <ControlledSelect
+              <Controller
                 control={form.control}
                 name="brandId"
-                placeholder={t('noBrand')}
-                emptyOptionLabel={t('noBrand')}
-                options={brandsQuery.data?.items.map((brand) => ({
-                  value: brand.id,
-                  label: getDisplayName(brand, brand.name),
-                })) ?? []}
-                addActionLabel={t('addBrand')}
-                onAddAction={() => navigate('/brands')}
+                render={({ field }) => (
+                  <BrandSelector
+                    value={field.value ?? ''}
+                    onChange={field.onChange}
+                    placeholder={t('noBrand')}
+                    emptyLabel={t('noBrand')}
+                    searchPlaceholder={t('searchPlaceholder', { ns: 'brands' })}
+                    addActionLabel={t('addBrand')}
+                    onAddAction={() => navigate('/brands')}
+                  />
+                )}
               />
             </FormField>
             <FormField label={t('primaryUnit')}>

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Bell, Check, PackageSearch, ShoppingCart } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
@@ -7,7 +7,7 @@ import { Button, Popover, PopoverContent, PopoverTrigger, ScrollArea } from '@/c
 import {
   useMarkAllNotificationsReadMutation,
   useMarkNotificationReadMutation,
-  useNotificationsQuery,
+  useNotificationsFeedQuery,
 } from '@/features/notifications/notifications.api'
 import { cn, formatDateTime } from '@/lib/utils'
 import type { NotificationLog } from '@/types/inventory'
@@ -93,12 +93,19 @@ function NotificationRow({
 export function NotificationBell() {
   const [open, setOpen] = useState(false)
   const navigate = useNavigate()
-  const notificationsQuery = useNotificationsQuery({ page: 1, limit: 20 })
+  const notificationsQuery = useNotificationsFeedQuery(20)
   const markReadMutation = useMarkNotificationReadMutation()
   const markAllReadMutation = useMarkAllNotificationsReadMutation()
 
-  const notifications = notificationsQuery.data?.items ?? []
-  const unreadCount = notificationsQuery.data?.unreadCount ?? 0
+  const notifications = useMemo(() => {
+    const seen = new Set<string>()
+    return (notificationsQuery.data?.pages ?? [])
+      .flatMap((page) => page.items)
+      .filter((notification) => (seen.has(notification.id) ? false : (seen.add(notification.id), true)))
+  }, [notificationsQuery.data])
+  const firstPage = notificationsQuery.data?.pages[0]
+  const unreadCount = firstPage?.unreadCount ?? 0
+  const totalNotifications = firstPage?.pagination.totalItems ?? notifications.length
   const badgeLabel = unreadCount > MAX_BADGE_COUNT ? `${MAX_BADGE_COUNT}+` : String(unreadCount)
 
   const handleOpenNotification = (notification: NotificationLog) => {
@@ -159,8 +166,22 @@ export function NotificationBell() {
         </ScrollArea>
 
         {notifications.length > 0 ? (
-          <div className="flex items-center justify-center border-t border-slate-100 py-2">
-            <p className="text-[0.68rem] text-slate-400">Showing the most recent {notifications.length} notifications</p>
+          <div className="flex items-center justify-between gap-2 border-t border-slate-100 px-3.5 py-2">
+            <p className="text-[0.68rem] text-slate-400">
+              Showing {notifications.length} of {totalNotifications}
+            </p>
+            {notificationsQuery.hasNextPage ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-auto px-2 py-1 text-xs font-semibold text-primary hover:bg-primary/10"
+                loading={notificationsQuery.isFetchingNextPage}
+                loadingText="Loading..."
+                onClick={() => void notificationsQuery.fetchNextPage()}
+              >
+                Load more
+              </Button>
+            ) : null}
           </div>
         ) : null}
       </PopoverContent>

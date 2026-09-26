@@ -7,12 +7,12 @@ import { toast } from 'react-hot-toast'
 import { useTranslation } from 'react-i18next'
 import { Trash2 } from 'lucide-react'
 
-import { useCategoriesQuery } from '@/features/categories/categories.api'
+import { useCategoryOptions } from '@/features/categories/categories.api'
 import { useImportMasterItemMutation } from '@/features/master-catalog/master-catalog.api'
 import { InlineNotice } from '@/components/common'
 import { CheckboxField, ControlledSelect, FormField } from '@/components/forms'
 import { Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Input } from '@/components/ui'
-import { getDisplayName, parseApiError } from '@/lib/utils'
+import { parseApiError } from '@/lib/utils'
 import type { MasterCatalogItem } from '@/types/masterCatalog'
 
 const importSchema = z
@@ -55,7 +55,7 @@ export function ImportMasterItemDialog({
   const { t } = useTranslation('masterCatalog')
   const navigate = useNavigate()
   const importMutation = useImportMasterItemMutation()
-  const categoriesQuery = useCategoriesQuery({ page: 1, limit: 100 })
+  const categoryOptions = useCategoryOptions()
   const form = useForm({
     resolver: zodResolver(importSchema),
     defaultValues: {
@@ -184,10 +184,7 @@ export function ImportMasterItemDialog({
                   name="existingCategoryId"
                   placeholder={t('selectCategory')}
                   emptyOptionLabel={t('selectCategory')}
-                  options={(categoriesQuery.data?.items ?? []).map((category) => ({
-                    value: category.id,
-                    label: getDisplayName(category),
-                  }))}
+                  options={categoryOptions}
                   addActionLabel={t('addCategory', { ns: 'categories' })}
                   onAddAction={() => navigate('/categories')}
                 />

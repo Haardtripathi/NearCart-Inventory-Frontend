@@ -35,14 +35,14 @@ export const inventoryKeys = {
     ['inventory', 'ledger', organizationId, filters] as const,
 }
 
-export function useInventoryBalancesQuery(filters: InventoryBalanceFilters) {
+export function useInventoryBalancesQuery(filters: InventoryBalanceFilters, enabled = true) {
   const activeOrganizationId = useAuthStore((state) => state.activeOrganizationId)
 
   return useQuery({
     queryKey: inventoryKeys.balances(activeOrganizationId, filters),
     queryFn: async () =>
       unwrapResponse<PaginatedResponse<InventoryBalance>>(api.get('/inventory/balances', { params: filters })),
-    enabled: Boolean(activeOrganizationId),
+    enabled: enabled && Boolean(activeOrganizationId),
   })
 }
 

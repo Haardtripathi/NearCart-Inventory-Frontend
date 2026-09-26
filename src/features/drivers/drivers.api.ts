@@ -18,13 +18,15 @@ import type { Driver, DriverStatus, DriverSummary, ListState } from '@/types/com
  * DOES paginate (`{ items, pagination }`, same shape as every other real paginated list endpoint
  * in this codebase) — it was previously mistyped here as a plain array, which would have thrown
  * at render time the first time a SUPER_ADMIN opened this page (`items.map is not a function`
- * inside DataTable). Requests `limit: MAX_PAGE_SIZE` since DriversPage has no pagination UI yet.
+ * inside DataTable). DriversPage pages through it with PaginationControls — it used to request a
+ * single `limit: 100` page with no pager, so driver 101+ was unreachable for verification.
  */
-const MAX_PAGE_SIZE = 100
+const DRIVERS_PAGE_SIZE = 20
 
 export const driversKeys = {
   verified: ['drivers', 'verified'] as const,
-  platformList: (status?: DriverStatus | '') => ['platform', 'drivers', status || 'ALL'] as const,
+  platformList: (status: DriverStatus | '' | undefined, page: number) =>
+    ['platform', 'drivers', status || 'ALL', page] as const,
 }
 
 // GET /api/drivers?status=VERIFIED — minimal fields (id, fullName, phone, vehicleType) for the
@@ -48,14 +50,13 @@ export function useVerifiedDriversQuery(enabled = true) {
 // callers should gate this on the SUPER_ADMIN-only permission check so a non-SUPER_ADMIN who
 // reaches the page (e.g. by direct URL — there's no route-level guard) never fires this request,
 // which the backend would 403 anyway.
-export function usePlatformDriversQuery(status?: DriverStatus | '', enabled = true) {
+export function usePlatformDriversQuery(status?: DriverStatus | '', enabled = true, page = 1) {
   return useQuery({
-    queryKey: driversKeys.platformList(status),
+    queryKey: driversKeys.platformList(status, page),
     queryFn: async () =>
       unwrapResponse<ListState<Driver>>(
-        api.get('/platform/drivers', { params: { limit: MAX_PAGE_SIZE, ...(status ? { status } : undefined) } }),
+        api.get('/platform/drivers', { params: { page, limit: DRIVERS_PAGE_SIZE, ...(status ? { status } : undefined) } }),
       ),
-    select: (data) => data.items,
     enabled,
   })
 }

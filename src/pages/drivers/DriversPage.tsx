@@ -5,7 +5,7 @@ import { toast } from 'react-hot-toast'
 import { usePlatformDriversQuery, useSuspendDriverMutation, useVerifyDriverMutation } from '@/features/drivers/drivers.api'
 import { usePermissions } from '@/hooks/usePermissions'
 import { AccessDeniedPage } from '@/pages/errors/AccessDeniedPage'
-import { ConfirmDialog, DataTable, EmptyState, ErrorState, FilterBar, LoadingState, PageHeader, StatusBadge } from '@/components/common'
+import { ConfirmDialog, DataTable, EmptyState, ErrorState, FilterBar, LoadingState, PageHeader, PaginationControls, StatusBadge } from '@/components/common'
 import { Button, OptionSelect } from '@/components/ui'
 import { DRIVER_STATUSES, type Driver, type DriverStatus } from '@/types/common'
 import { getDriverStatusLabel } from '@/lib/labels'
@@ -15,13 +15,14 @@ export function DriversPage() {
   const { t } = useTranslation('common')
   const permissions = usePermissions()
   const [status, setStatus] = useState<DriverStatus | ''>('')
+  const [page, setPage] = useState(1)
   const [suspendingDriver, setSuspendingDriver] = useState<Driver | null>(null)
   // verifyMutation is a single shared mutation instance, so its `isPending` flag is global across
   // every row in the table — track which specific driver is being verified so only that row's
   // button shows a loading state instead of every "Verify" button in the list lighting up at once.
   const [verifyingDriverId, setVerifyingDriverId] = useState<string | null>(null)
 
-  const driversQuery = usePlatformDriversQuery(status, permissions.canManageDrivers)
+  const driversQuery = usePlatformDriversQuery(status, permissions.canManageDrivers, page)
   const verifyMutation = useVerifyDriverMutation()
   const suspendMutation = useSuspendDriverMutation()
 
@@ -37,7 +38,7 @@ export function DriversPage() {
     return <ErrorState description="Drivers could not be loaded right now." onRetry={() => void driversQuery.refetch()} />
   }
 
-  const drivers = driversQuery.data ?? []
+  const drivers = driversQuery.data?.items ?? []
 
   return (
     <div className="animate-fade-in-up space-y-6">
@@ -49,7 +50,10 @@ export function DriversPage() {
       <FilterBar className="grid gap-3 md:grid-cols-3 xl:grid-cols-4">
         <OptionSelect
           value={status}
-          onValueChange={(value) => setStatus(value as DriverStatus | '')}
+          onValueChange={(value) => {
+            setPage(1)
+            setStatus(value as DriverStatus | '')
+          }}
           emptyLabel={t('allStatuses')}
           options={DRIVER_STATUSES.map((item) => ({ value: item, label: getDriverStatusLabel(t, item) }))}
         />
@@ -123,6 +127,8 @@ export function DriversPage() {
           ]}
         />
       </div>
+
+      <PaginationControls pagination={driversQuery.data?.pagination} onPageChange={setPage} />
 
       <ConfirmDialog
         open={Boolean(suspendingDriver)}

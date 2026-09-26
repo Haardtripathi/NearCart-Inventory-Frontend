@@ -7,18 +7,17 @@ import { toast } from 'react-hot-toast'
 import { Trash2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
-import { useCustomersQuery } from '@/features/customers/customers.api'
 import { useCreateSalesOrderMutation } from '@/features/sales-orders/sales-orders.api'
 import { useProductQuery, useProductVariantsQuery } from '@/features/products/products.api'
 import { useTaxRatesQuery } from '@/features/tax-rates/tax-rates.api'
-import { BranchSelector, ProductSelector, VariantSelector } from '@/components/inventory/selectors'
+import { BranchSelector, CustomerSelector, ProductSelector, VariantSelector } from '@/components/inventory/selectors'
 import { ControlledSelect, DirtyStatePrompt, FormField } from '@/components/forms'
 import { DisclosurePanel, PageHeader, SectionCard } from '@/components/common'
 import { Button, Input, Textarea } from '@/components/ui'
 import { usePermissions } from '@/hooks/usePermissions'
 import { ORDER_SOURCES, PAYMENT_STATUSES } from '@/types/common'
 import type { SalesOrderPayload } from '@/types/inventory'
-import { getDisplayName, parseApiError } from '@/lib/utils'
+import { parseApiError } from '@/lib/utils'
 import { getOrderSourceLabel, getPaymentStatusLabel } from '@/lib/labels'
 
 const orderItemSchema = z.object({
@@ -188,7 +187,6 @@ export function SalesOrderCreatePage() {
   const permissions = usePermissions()
   const [submitStatus, setSubmitStatus] = useState<'DRAFT' | 'PENDING'>('PENDING')
   const createSalesOrderMutation = useCreateSalesOrderMutation()
-  const customersQuery = useCustomersQuery({ page: 1, limit: 100 })
   const form = useForm({
     resolver: zodResolver(salesOrderSchema),
     defaultValues: {
@@ -242,17 +240,20 @@ export function SalesOrderCreatePage() {
               />
             </FormField>
             <FormField label="Customer">
-              <ControlledSelect
+              <Controller
                 control={form.control}
                 name="customerId"
-                placeholder={t('walkInNone', { ns: 'common' })}
-                emptyOptionLabel={t('walkInNone', { ns: 'common' })}
-                options={customersQuery.data?.items.map((customer) => ({
-                  value: customer.id,
-                  label: getDisplayName(customer),
-                })) ?? []}
-                addActionLabel={t('addCustomer', { ns: 'customers' })}
-                onAddAction={() => navigate('/customers')}
+                render={({ field }) => (
+                  <CustomerSelector
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder={t('walkInNone', { ns: 'common' })}
+                    emptyLabel={t('walkInNone', { ns: 'common' })}
+                    searchPlaceholder={t('searchPlaceholder', { ns: 'customers' })}
+                    addActionLabel={t('addCustomer', { ns: 'customers' })}
+                    onAddAction={() => navigate('/customers')}
+                  />
+                )}
               />
             </FormField>
           </div>
