@@ -131,6 +131,22 @@ export function LocationPickerMap({ latitude, longitude, onLocationChange, label
         mapRef.current = map
         geocoderRef.current = new maps.maps.Geocoder()
 
+        // No saved location: open on the browser's position instead of the whole of India. Camera
+        // only — no pin is dropped, and it's skipped if the user already placed one meanwhile.
+        if (typeof latitude !== 'number' && navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              if (cancelled || markerRef.current) return
+              map.setCenter({ lat: position.coords.latitude, lng: position.coords.longitude })
+              map.setZoom(15)
+            },
+            () => {
+              // Denied/unavailable: stay on the country-wide default.
+            },
+            { enableHighAccuracy: false, timeout: 10_000, maximumAge: 5 * 60_000 },
+          )
+        }
+
         const placeMarker = (position: google.maps.LatLng | google.maps.LatLngLiteral) => {
           if (markerRef.current) {
             if ('position' in markerRef.current) {
