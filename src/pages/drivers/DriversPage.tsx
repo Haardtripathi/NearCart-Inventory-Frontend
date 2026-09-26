@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'react-hot-toast'
 
@@ -23,6 +23,12 @@ export function DriversPage() {
   const [verifyingDriverId, setVerifyingDriverId] = useState<string | null>(null)
 
   const driversQuery = usePlatformDriversQuery(status, permissions.canManageDrivers, page)
+  // Verifying/suspending the last driver on the last page empties it; totalPages drops and the
+  // pager hides, stranding the admin on "No drivers found". Step back to the last real page.
+  const lastPage = Math.max(1, driversQuery.data?.pagination.totalPages ?? 1)
+  useEffect(() => {
+    if (driversQuery.data && page > lastPage) setPage(lastPage)
+  }, [driversQuery.data, page, lastPage])
   const verifyMutation = useVerifyDriverMutation()
   const suspendMutation = useSuspendDriverMutation()
 

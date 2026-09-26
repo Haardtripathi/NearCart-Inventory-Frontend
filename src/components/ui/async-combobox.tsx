@@ -92,6 +92,8 @@ export function AsyncCombobox<T>({
     queryFn: () => fetchById!(value!),
     enabled: Boolean(value && fetchById && !loadedMatch && !pickedLabel),
     staleTime: 60_000,
+    // A deleted record 404s — no point retrying, and it must not leave the trigger on "Loading".
+    retry: false,
   })
 
   const selectedLabel = value
@@ -99,8 +101,10 @@ export function AsyncCombobox<T>({
       ? getOptionLabel(loadedMatch)
       : pickedLabel ?? (selectedQuery.data ? getOptionLabel(selectedQuery.data) : undefined)
     : undefined
-  const triggerLabel = value ? selectedLabel ?? t('loading') : emptyLabel
   const resolvedPlaceholder = placeholder ?? t('selectOption')
+  const triggerLabel = value
+    ? selectedLabel ?? (selectedQuery.isError ? emptyLabel ?? resolvedPlaceholder : t('loading'))
+    : emptyLabel
 
   const handleOpenChange = (next: boolean) => {
     setOpen(next)
